@@ -1510,7 +1510,9 @@ function renderSelectionBar(c) {
 
   var label = document.createElement("span");
   label.className = "sp-selection-label";
-  label.textContent = c.selected.length === 1 ? "1 card selected" : c.selected.length + " cards selected";
+  label.textContent = c.selected.length === 1 && c.selected[0] === -2
+    ? "Back button selected"
+    : (c.selected.length === 1 ? "1 card selected" : c.selected.length + " cards selected");
   els.selectionBar.appendChild(label);
 
   var actions = document.createElement("div");
@@ -2553,6 +2555,7 @@ function moveSelectedToCell(fromPos, toPos) {
   clearSpans(sourceEntries, c.maxSlots);
 
   var movingSlot = sourceEntries[fromPos];
+  if (movingSlot === -2 || c.selected.indexOf(-2) !== -1) return false;
   if (c.selected.length <= 1 || c.selected.indexOf(movingSlot) === -1) return false;
 
   var movingSlots = c.selected.slice();
@@ -2791,6 +2794,19 @@ function handleBtnClick(e, slot, pos) {
   if (didDrag) { didDrag = false; return; }
   var c = ctx();
   if (e.shiftKey || e.ctrlKey || e.metaKey) e.preventDefault();
+
+  if (slot === -2) {
+    if (c.selected.length === 1 && c.selected[0] === -2) {
+      c.setSelected([]);
+    } else {
+      c.setSelected([-2]);
+    }
+    c.setLastClicked(-1);
+    renderPreview();
+    renderButtonSettings();
+    clearTextSelection();
+    return;
+  }
 
   if (e.shiftKey && c.getLastClicked() > 0) {
     var anchorPos = c.grid.indexOf(c.getLastClicked());
@@ -3172,6 +3188,11 @@ function addBulkCardMenuItems(slots) {
 }
 
 function addSingleCardMenuItems(slot) {
+  if (slot === -2) {
+    addBackButtonMenuItems();
+    return;
+  }
+
   var c = ctx();
   var b = c.buttons[slot - 1];
   addCtxItem("pencil", "Edit Card", function () { openCardSettings(slot); });
@@ -3253,6 +3274,12 @@ function showBackContextMenu(e) {
   hideContextMenu();
   ctxMenu = document.createElement("div");
   ctxMenu.className = "sp-ctx-menu";
+  addBackButtonMenuItems();
+  document.body.appendChild(ctxMenu);
+  positionMenu(ctxMenu, e);
+}
+
+function addBackButtonMenuItems() {
   var sp = getSubpage(state.editingSubpage);
   var bkSz = sp.sizes[-2] || 1;
   addCtxItem("pencil", "Edit Label", function () { openCardSettings(-2); });
@@ -3266,8 +3293,6 @@ function showBackContextMenu(e) {
     addSubItem(sub, "", "Extra Wide (1x3)", function () { resizeSlot(-2, 6); }, bkSz === 6);
     addSubItem(sub, "", "Large (2x2)", function () { resizeSlot(-2, 4); }, bkSz === 4);
   });
-  document.body.appendChild(ctxMenu);
-  positionMenu(ctxMenu, e);
 }
 
 function showEmptySlotMenu(e, pos) {
@@ -3305,6 +3330,7 @@ function hideContextMenu() {
 // ── Cut / Paste ────────────────────────────────────────────────────────
 
 function buildClipboardEntry(slot) {
+  if (slot < 1) return null;
   var c = ctx();
   var src = c.buttons[slot - 1];
   var entry = {
@@ -3321,25 +3347,34 @@ function buildClipboardEntry(slot) {
 }
 
 function copySlot(slot) {
-  state.clipboard = { buttons: [buildClipboardEntry(slot)] };
+  var entry = buildClipboardEntry(slot);
+  if (!entry) return;
+  state.clipboard = { buttons: [entry] };
 }
 
 function copyButtons(slots) {
   var entries = [];
-  slots.forEach(function (slot) { entries.push(buildClipboardEntry(slot)); });
+  slots.forEach(function (slot) {
+    var entry = buildClipboardEntry(slot);
+    if (entry) entries.push(entry);
+  });
+  if (!entries.length) return;
   state.clipboard = { buttons: entries };
 }
 
 function cutSlot(slot) {
   if (isConfigLocked()) return;
+  if (slot < 1) return;
   copySlot(slot);
   deleteSlot(slot);
 }
 
 function cutButtons(slots) {
   if (isConfigLocked()) return;
-  copyButtons(slots);
-  deleteButtons(slots);
+  var cardSlots = slots.filter(function (slot) { return slot > 0; });
+  if (!cardSlots.length) return;
+  copyButtons(cardSlots);
+  deleteButtons(cardSlots);
 }
 
 function pasteButton(pos) {

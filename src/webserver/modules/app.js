@@ -1271,6 +1271,8 @@ if (typeof globalThis !== "undefined" && globalThis.__ESPCONTROL_TEST_HOOKS__) {
     },
     parseSubpageConfig: parseSubpageConfig,
     serializeSubpageConfig: serializeSubpageConfig,
+    buildSubpageGrid: buildSubpageGrid,
+    serializeSubpageGrid: serializeSubpageGrid,
     parseBackOrderToken: parseBackOrderToken,
     backOrderToken: backOrderToken,
     backLabelFromOrder: backLabelFromOrder,
