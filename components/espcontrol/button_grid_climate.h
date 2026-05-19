@@ -566,7 +566,7 @@ inline void climate_apply_selected_target(ClimateControlCtx *ctx, int value, boo
 inline void climate_preview_selected_target(ClimateControlCtx *ctx, int value) {
   if (!ctx || !climate_temperature_controls_enabled(ctx)) return;
   ClimateControlModalUi &ui = climate_control_modal_ui();
-  value = climate_constrain_selected_target(ctx, value);
+  value = climate_round_to_step(ctx, climate_constrain_selected_target(ctx, value));
   if (ui.has_drag_preview && ui.drag_preview_tenths == value) return;
   ui.drag_preview_tenths = value;
   ui.has_drag_preview = true;
