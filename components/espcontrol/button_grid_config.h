@@ -2,7 +2,7 @@
 
 // Internal implementation detail for button_grid.h. Include button_grid.h from device YAML.
 
-constexpr int COLOR_CORRECTION_GREEN_PERCENT = 90;
+constexpr int COLOR_CORRECTION_GREEN_PERCENT = 0;
 
 constexpr uint32_t correct_display_color(uint32_t rgb) {
   return (rgb & 0xFF00FFFF) |
