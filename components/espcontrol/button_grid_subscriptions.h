@@ -22,21 +22,37 @@ inline void apply_toggle_text_sensor_label(ToggleTextSensorCtx *ctx) {
   set_wrapped_button_label_text(ctx->text_lbl, ctx->on ? ctx->sensor_text : ctx->steady_text);
 }
 
+inline void apply_sensor_active_color(lv_obj_t *btn, bool active_color,
+                                      esphome::StringRef state,
+                                      uint32_t on_color, uint32_t sensor_color,
+                                      bool unavailable) {
+  if (!btn || !active_color) return;
+  uint32_t next_color = (!unavailable && is_entity_on_ref(state)) ? on_color : sensor_color;
+  lv_obj_set_style_bg_color(btn, lv_color_hex(next_color),
+    static_cast<lv_style_selector_t>(LV_PART_MAIN) | static_cast<lv_style_selector_t>(LV_STATE_DEFAULT));
+}
+
 // Subscribe to a HA sensor entity and update an LVGL label with its numeric value.
 inline void subscribe_sensor_value(lv_obj_t *sensor_lbl, const std::string &sensor_id,
                                    int precision = 0,
                                    lv_obj_t *unit_lbl = nullptr,
                                    const std::string &unit = "",
-                                   lv_obj_t *availability_obj = nullptr) {
+                                   lv_obj_t *availability_obj = nullptr,
+                                   bool active_color = false,
+                                   uint32_t on_color = DEFAULT_SLIDER_COLOR,
+                                   uint32_t sensor_color = DEFAULT_TERTIARY_COLOR) {
   std::string display_unit = trim_display_unit(unit);
   esphome::api::global_api_server->subscribe_home_assistant_state(
     sensor_id, {},
     std::function<void(esphome::StringRef)>(
-      [sensor_lbl, precision, unit_lbl, display_unit, availability_obj](esphome::StringRef state) {
+      [sensor_lbl, precision, unit_lbl, display_unit, availability_obj,
+       active_color, on_color, sensor_color](esphome::StringRef state) {
       bool unavailable = ha_state_unavailable_ref(state);
       if (availability_obj) {
         apply_control_availability(availability_obj, availability_obj, !unavailable, false);
       }
+      apply_sensor_active_color(availability_obj, active_color, state,
+        on_color, sensor_color, unavailable);
 
       float val = 0.0f;
       if (!unavailable && parse_float_ref(state, val) && std::isfinite(val)) {
@@ -63,10 +79,21 @@ inline void subscribe_toggle_text_sensor_value(ToggleTextSensorCtx *ctx, const s
   );
 }
 
-inline void subscribe_text_sensor_value(lv_obj_t *text_lbl, const std::string &sensor_id) {
+inline void subscribe_text_sensor_value(lv_obj_t *text_lbl, const std::string &sensor_id,
+                                        lv_obj_t *availability_obj = nullptr,
+                                        bool active_color = false,
+                                        uint32_t on_color = DEFAULT_SLIDER_COLOR,
+                                        uint32_t sensor_color = DEFAULT_TERTIARY_COLOR) {
   esphome::api::global_api_server->subscribe_home_assistant_state(
     sensor_id, {},
-    std::function<void(esphome::StringRef)>([text_lbl](esphome::StringRef state) {
+    std::function<void(esphome::StringRef)>(
+      [text_lbl, availability_obj, active_color, on_color, sensor_color](esphome::StringRef state) {
+      bool unavailable = ha_state_unavailable_ref(state);
+      if (availability_obj) {
+        apply_control_availability(availability_obj, availability_obj, !unavailable, false);
+      }
+      apply_sensor_active_color(availability_obj, active_color, state,
+        on_color, sensor_color, unavailable);
       set_wrapped_button_label_text(text_lbl, text_sensor_display_text(state));
     })
   );

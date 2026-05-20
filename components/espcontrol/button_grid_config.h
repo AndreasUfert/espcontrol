@@ -158,6 +158,19 @@ inline std::string cfg_option_value(const std::string &options, const char *name
   return "";
 }
 
+inline std::string sensor_card_options_normalized(const std::string &options,
+                                                  const std::string &precision) {
+  std::string out;
+  if (precision != "text" && cfg_option_token_present(options, "large_numbers")) {
+    out = "large_numbers";
+  }
+  if (cfg_option_token_present(options, "active_color")) {
+    if (!out.empty()) out += ",";
+    out += "active_color";
+  }
+  return out;
+}
+
 inline std::string normalize_climate_label_display(const std::string &value) {
   return (value == "status" || value == "actual" || value == "target") ? value : "label";
 }
@@ -280,8 +293,11 @@ inline ParsedCfg normalize_parsed_cfg(ParsedCfg p) {
     p.icon_on.clear();
     if (p.icon.empty() || p.icon == "Auto" || p.icon == "Chevron Down") p.icon = "Flash";
   }
-  if (!p.type.empty() && p.type != "action" && p.type != "alarm" && p.type != "climate" && p.type != "garage" && !fan_card_type(p.type) && !card_large_numbers_supported(p)) {
+  if (!p.type.empty() && p.type != "action" && p.type != "alarm" && p.type != "climate" && p.type != "garage" && p.type != "sensor" && !fan_card_type(p.type) && !card_large_numbers_supported(p)) {
     p.options.clear();
+  }
+  if (p.type == "sensor") {
+    p.options = sensor_card_options_normalized(p.options, p.precision);
   }
   return p;
 }
@@ -353,6 +369,10 @@ inline bool card_large_numbers_enabled(const ParsedCfg &p) {
 
 inline bool sensor_large_numbers_enabled(const ParsedCfg &p) {
   return card_large_numbers_enabled(p);
+}
+
+inline bool sensor_active_color_enabled(const ParsedCfg &p) {
+  return p.type == "sensor" && cfg_option_enabled(p.options, "active_color");
 }
 
 inline bool switch_confirmation_enabled(const ParsedCfg &p) {

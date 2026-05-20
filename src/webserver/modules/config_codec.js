@@ -104,6 +104,8 @@ function normalizeButtonConfig(b) {
   }
   if (b && !b.type) {
     b.options = normalizeSwitchConfirmationOptions(b.options);
+  } else if (b && b.type === "sensor") {
+    b.options = normalizeSensorOptions(b.options, b.precision);
   } else if (b && b.type !== "action" && b.type !== "alarm" && b.type !== "climate" && b.type !== "garage" && !cardLargeNumbersSupported(b)) {
     b.options = "";
   }
@@ -135,6 +137,7 @@ function fanCardDefaultIcon(type) {
 }
 
 var SENSOR_LARGE_NUMBERS_OPTION = "large_numbers";
+var SENSOR_ACTIVE_COLOR_OPTION = "active_color";
 var SWITCH_CONFIRM_OFF_OPTION = "confirm_off";
 var SWITCH_CONFIRM_MESSAGE_OPTION = "confirm_message";
 var SWITCH_CONFIRM_YES_OPTION = "confirm_yes";
@@ -227,6 +230,28 @@ function setSensorLargeNumbersEnabled(b, enabled) {
   if (!b) return "";
   b.options = setConfigOption(b.options, SENSOR_LARGE_NUMBERS_OPTION, enabled);
   return b.options;
+}
+
+function sensorActiveColorEnabled(b) {
+  return !!(b && b.type === "sensor" &&
+    configOptionEnabled(b.options, SENSOR_ACTIVE_COLOR_OPTION));
+}
+
+function setSensorActiveColorEnabled(b, enabled) {
+  if (!b) return "";
+  b.options = setConfigOption(b.options, SENSOR_ACTIVE_COLOR_OPTION, enabled);
+  return b.options;
+}
+
+function normalizeSensorOptions(options, precision) {
+  var out = "";
+  if (precision !== "text" && configOptionEnabled(options, SENSOR_LARGE_NUMBERS_OPTION)) {
+    out = setConfigOption(out, SENSOR_LARGE_NUMBERS_OPTION, true);
+  }
+  if (configOptionEnabled(options, SENSOR_ACTIVE_COLOR_OPTION)) {
+    out = setConfigOption(out, SENSOR_ACTIVE_COLOR_OPTION, true);
+  }
+  return out;
 }
 
 function switchConfirmationEnabled(b) {
@@ -549,6 +574,8 @@ function buttonConfigFields(b) {
     options = normalizeGarageOptions(options, sensor);
   } else if (type === "climate") {
     options = normalizeClimateOptions(options);
+  } else if (type === "sensor") {
+    options = normalizeSensorOptions(options, precision);
   } else if (isActionOptionSelect || isFanCardType(type)) {
     options = "";
   } else if (type !== "action" && type !== "garage" && !cardLargeNumbersSupported({ type: type, precision: precision })) {
@@ -873,6 +900,8 @@ function legacySubpageConfigSafe(sp) {
       options = normalizeGarageOptions(options, sensor);
     } else if (type === "climate") {
       options = normalizeClimateOptions(options);
+    } else if (type === "sensor") {
+      options = normalizeSensorOptions(options, precision);
     } else if (isActionOptionSelect || isFanCardType(type)) {
       options = "";
     } else if (type !== "action" && type !== "garage" && !cardLargeNumbersSupported({ type: type || "", precision: precision })) {
@@ -917,6 +946,8 @@ function serializeLegacySubpageConfig(sp) {
       options = normalizeGarageOptions(options, sensor);
     } else if (type === "climate") {
       options = normalizeClimateOptions(options);
+    } else if (type === "sensor") {
+      options = normalizeSensorOptions(options, precision);
     } else if (isActionOptionSelect || isFanCardType(type)) {
       options = "";
     } else if (type !== "action" && type !== "garage" && !cardLargeNumbersSupported({ type: type || "", precision: precision })) {
@@ -959,6 +990,8 @@ function serializeCompactSubpageConfig(sp) {
       options = normalizeGarageOptions(options, sensor);
     } else if (type === "climate") {
       options = normalizeClimateOptions(options);
+    } else if (type === "sensor") {
+      options = normalizeSensorOptions(options, precision);
     } else if (isActionOptionSelect || isFanCardType(type)) {
       options = "";
     } else if (type !== "action" && type !== "garage" && !cardLargeNumbersSupported({ type: type || "", precision: precision })) {

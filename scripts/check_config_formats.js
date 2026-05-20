@@ -311,6 +311,37 @@ assertButtonRoundTrip(hooks, "large sensor numbers option", {
   options: "large_numbers",
 }, false);
 
+assertButtonRoundTrip(hooks, "sensor active colour option", {
+  entity: "",
+  label: "Patio Door",
+  icon: "Door Closed",
+  icon_on: "Auto",
+  sensor: "binary_sensor.patio_door",
+  unit: "",
+  type: "sensor",
+  precision: "text",
+  options: "active_color",
+}, false);
+const parsedActiveSensor = hooks.parseButtonConfig(";;;;binary_sensor.patio_door;;sensor;text;active_color");
+assert.strictEqual(hooks.sensorActiveColorEnabled(parsedActiveSensor), true, "sensor active colour enabled");
+
+assertButtonMigration(
+  hooks,
+  "text sensor drops large numbers but keeps active colour",
+  "sensor.patio_door;Patio Door;Door Closed;Auto;binary_sensor.patio_door;;sensor;text;large_numbers,active_color",
+  {
+    entity: "sensor.patio_door",
+    label: "Patio Door",
+    icon: "Door Closed",
+    icon_on: "Auto",
+    sensor: "binary_sensor.patio_door",
+    unit: "",
+    type: "sensor",
+    precision: "text",
+    options: "active_color",
+  }
+);
+
 assertButtonRoundTrip(hooks, "internal relay push button", {
   entity: "relay_1",
   label: "Door Strike",

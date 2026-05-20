@@ -8,7 +8,7 @@ registerButtonType("sensor", {
     b.icon_on = "Auto";
     if (!b.precision) b.precision = "";
     if (b.precision !== "text") b.icon = "Auto";
-    if (b.precision === "text") b.options = "";
+    b.options = normalizeSensorOptions(b.options, b.precision);
   },
   renderSettings: function (panel, b, slot, helpers) {
     var isTextMode = b.precision === "text";
@@ -73,6 +73,37 @@ registerButtonType("sensor", {
     textSection.appendChild(textIconPicker);
     panel.appendChild(textSection);
 
+    var advancedToggleSection = helpers.toggleSection(
+      "Advanced",
+      helpers.idPrefix + "sensor-advanced-toggle",
+      sensorActiveColorEnabled(b)
+    );
+    var advancedToggle = advancedToggleSection.toggle;
+    var advancedSection = advancedToggleSection.section;
+    panel.appendChild(advancedToggle.row);
+    if (sensorActiveColorEnabled(b)) advancedSection.classList.add("sp-visible");
+
+    var activeColorToggle = helpers.toggleRow(
+      "Use On Colour When Active",
+      helpers.idPrefix + "sensor-active-color",
+      sensorActiveColorEnabled(b)
+    );
+    advancedSection.appendChild(activeColorToggle.row);
+    panel.appendChild(advancedSection);
+
+    advancedToggle.input.addEventListener("change", function () {
+      advancedSection.classList.toggle("sp-visible", this.checked);
+      if (this.checked) return;
+      activeColorToggle.input.checked = false;
+      setSensorActiveColorEnabled(b, false);
+      helpers.saveField("options", b.options);
+    });
+
+    activeColorToggle.input.addEventListener("change", function () {
+      setSensorActiveColorEnabled(b, this.checked);
+      helpers.saveField("options", b.options);
+    });
+
     function setMode(mode, persist) {
       isTextMode = mode === "text";
       numericBtn.classList.toggle("active", !isTextMode);
@@ -85,19 +116,21 @@ registerButtonType("sensor", {
         b.label = "";
         b.unit = "";
         b.icon_on = "Auto";
-        b.options = "";
+        b.options = normalizeSensorOptions(b.options, "text");
         labelInp.value = "";
         unitInp.value = "";
         helpers.saveField("precision", "text");
         helpers.saveField("label", "");
         helpers.saveField("unit", "");
         helpers.saveField("icon_on", "Auto");
-        helpers.saveField("options", "");
+        helpers.saveField("options", b.options);
       } else {
         b.precision = "";
         b.icon = "Auto";
+        b.options = normalizeSensorOptions(b.options, "");
         helpers.saveField("precision", "");
         helpers.saveField("icon", "Auto");
+        helpers.saveField("options", b.options);
         var iconPreview = textIconPicker.querySelector(".sp-icon-picker-preview");
         if (iconPreview) iconPreview.className = "sp-icon-picker-preview mdi mdi-cog";
         var iconInput = textIconPicker.querySelector(".sp-icon-picker-input");

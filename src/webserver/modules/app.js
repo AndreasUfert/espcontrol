@@ -1248,6 +1248,7 @@ if (typeof globalThis !== "undefined" && globalThis.__ESPCONTROL_TEST_HOOKS__) {
     switchConfirmationMessage: switchConfirmationMessage,
     switchConfirmationYesText: switchConfirmationYesText,
     switchConfirmationNoText: switchConfirmationNoText,
+    sensorActiveColorEnabled: sensorActiveColorEnabled,
     garageLabelDisplayMode: garageLabelDisplayMode,
     actionCardStateEntity: actionCardStateEntity,
     actionCardStateUnit: actionCardStateUnit,

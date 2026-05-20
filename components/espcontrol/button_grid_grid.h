@@ -506,13 +506,15 @@ inline void grid_phase2(
     ParsedCfg p = parse_cfg(scfg);
     if (is_text_sensor_card(p)) {
       if (!p.sensor.empty())
-        subscribe_text_sensor_value(s.text_lbl, p.sensor);
+        subscribe_text_sensor_value(s.text_lbl, p.sensor, s.btn,
+          sensor_active_color_enabled(p), palette.on_val, palette.sensor_val);
       continue;
     }
     if (p.type == "sensor") {
       if (p.sensor.empty()) continue;
       subscribe_sensor_value(s.sensor_lbl, p.sensor, parse_precision(p.precision),
-        s.unit_lbl, p.unit, s.btn);
+        s.unit_lbl, p.unit, s.btn,
+        sensor_active_color_enabled(p), palette.on_val, palette.sensor_val);
       if (p.label.empty())
         subscribe_friendly_name(s.text_lbl, p.sensor);
       continue;
@@ -978,13 +980,15 @@ inline void grid_phase2(
 
       if (is_text_sensor_card(sb_cfg)) {
         if (!sb_cfg.sensor.empty())
-          subscribe_text_sensor_value(sub_slot.text_lbl, sb_cfg.sensor);
+          subscribe_text_sensor_value(sub_slot.text_lbl, sb_cfg.sensor, sub_slot.btn,
+            sensor_active_color_enabled(sb_cfg), palette.on_val, palette.sensor_val);
         continue;
       }
       if (sb_cfg.type == "sensor") {
         if (sb_cfg.sensor.empty()) continue;
         subscribe_sensor_value(sub_slot.sensor_lbl, sb_cfg.sensor, parse_precision(sb_cfg.precision),
-          sub_slot.unit_lbl, sb_cfg.unit, sub_slot.btn);
+          sub_slot.unit_lbl, sb_cfg.unit, sub_slot.btn,
+          sensor_active_color_enabled(sb_cfg), palette.on_val, palette.sensor_val);
         if (sb_cfg.label.empty())
           subscribe_friendly_name(sub_slot.text_lbl, sb_cfg.sensor);
         continue;
