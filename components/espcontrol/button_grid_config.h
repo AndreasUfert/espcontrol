@@ -171,6 +171,22 @@ inline std::string sensor_card_options_normalized(const std::string &options,
   return out;
 }
 
+inline std::string normalize_door_window_subtype(const std::string &value) {
+  return value == "window" ? "window" : "door";
+}
+
+inline const char *door_window_closed_icon_name(const std::string &subtype) {
+  return normalize_door_window_subtype(subtype) == "window" ? "Window Closed" : "Door";
+}
+
+inline const char *door_window_open_icon_name(const std::string &subtype) {
+  return normalize_door_window_subtype(subtype) == "window" ? "Window Open" : "Door Open";
+}
+
+inline std::string door_window_card_options_normalized(const std::string &options) {
+  return cfg_option_token_present(options, "active_color") ? "active_color" : "";
+}
+
 inline std::string normalize_climate_label_display(const std::string &value) {
   return (value == "status" || value == "actual" || value == "target") ? value : "label";
 }
@@ -293,7 +309,15 @@ inline ParsedCfg normalize_parsed_cfg(ParsedCfg p) {
     p.icon_on.clear();
     if (p.icon.empty() || p.icon == "Auto" || p.icon == "Chevron Down") p.icon = "Flash";
   }
-  if (!p.type.empty() && p.type != "action" && p.type != "alarm" && p.type != "climate" && p.type != "garage" && p.type != "sensor" && !fan_card_type(p.type) && !card_large_numbers_supported(p)) {
+  if (p.type == "door_window") {
+    p.entity.clear();
+    p.unit.clear();
+    p.precision = normalize_door_window_subtype(p.precision);
+    if (p.icon.empty() || p.icon == "Auto") p.icon = door_window_closed_icon_name(p.precision);
+    if (p.icon_on.empty() || p.icon_on == "Auto") p.icon_on = door_window_open_icon_name(p.precision);
+    p.options = door_window_card_options_normalized(p.options);
+  }
+  if (!p.type.empty() && p.type != "action" && p.type != "alarm" && p.type != "climate" && p.type != "garage" && p.type != "sensor" && p.type != "door_window" && !fan_card_type(p.type) && !card_large_numbers_supported(p)) {
     p.options.clear();
   }
   if (p.type == "sensor") {
@@ -373,6 +397,10 @@ inline bool sensor_large_numbers_enabled(const ParsedCfg &p) {
 
 inline bool sensor_active_color_enabled(const ParsedCfg &p) {
   return p.type == "sensor" && cfg_option_enabled(p.options, "active_color");
+}
+
+inline bool door_window_active_color_enabled(const ParsedCfg &p) {
+  return p.type == "door_window" && cfg_option_enabled(p.options, "active_color");
 }
 
 inline bool switch_confirmation_enabled(const ParsedCfg &p) {

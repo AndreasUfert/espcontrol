@@ -98,6 +98,11 @@ inline void setup_card_visual(BtnSlot &s, const ParsedCfg &p,
     }
     return;
   }
+  if (p.type == "door_window") {
+    if (p.sensor.empty()) return;
+    setup_door_window_card(s, p, palette.has_sensor_color, palette.sensor_val);
+    return;
+  }
   if (p.type == "calendar") {
     setup_calendar_card(s, p, palette.has_sensor_color, palette.sensor_val);
     if (row_span == 2 && col_span == 2 &&
@@ -515,6 +520,15 @@ inline void grid_phase2(
       subscribe_sensor_value(s.sensor_lbl, p.sensor, parse_precision(p.precision),
         s.unit_lbl, p.unit, s.btn,
         sensor_active_color_enabled(p), palette.on_val, palette.sensor_val);
+      if (p.label.empty())
+        subscribe_friendly_name(s.text_lbl, p.sensor);
+      continue;
+    }
+    if (p.type == "door_window") {
+      if (p.sensor.empty()) continue;
+      subscribe_door_window_state(s.btn, s.icon_lbl, p.sensor,
+        door_window_closed_icon(p), door_window_open_icon(p),
+        door_window_active_color_enabled(p), palette.on_val, palette.sensor_val);
       if (p.label.empty())
         subscribe_friendly_name(s.text_lbl, p.sensor);
       continue;
@@ -989,6 +1003,15 @@ inline void grid_phase2(
         subscribe_sensor_value(sub_slot.sensor_lbl, sb_cfg.sensor, parse_precision(sb_cfg.precision),
           sub_slot.unit_lbl, sb_cfg.unit, sub_slot.btn,
           sensor_active_color_enabled(sb_cfg), palette.on_val, palette.sensor_val);
+        if (sb_cfg.label.empty())
+          subscribe_friendly_name(sub_slot.text_lbl, sb_cfg.sensor);
+        continue;
+      }
+      if (sb_cfg.type == "door_window") {
+        if (sb_cfg.sensor.empty()) continue;
+        subscribe_door_window_state(sub_slot.btn, sub_slot.icon_lbl, sb_cfg.sensor,
+          door_window_closed_icon(sb_cfg), door_window_open_icon(sb_cfg),
+          door_window_active_color_enabled(sb_cfg), palette.on_val, palette.sensor_val);
         if (sb_cfg.label.empty())
           subscribe_friendly_name(sub_slot.text_lbl, sb_cfg.sensor);
         continue;

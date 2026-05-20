@@ -55,6 +55,7 @@ function subpageTypeFromCode(code) {
     D: "calendar",
     T: "timezone",
     S: "sensor",
+    X: "door_window",
     W: "weather",
     F: "weather_forecast",
     B: "fan_switch",
@@ -338,6 +339,35 @@ assertButtonMigration(
     unit: "",
     type: "sensor",
     precision: "text",
+    options: "active_color",
+  }
+);
+
+assertButtonRoundTrip(hooks, "door window card door subtype", {
+  entity: "",
+  label: "Patio Door",
+  icon: "Door",
+  icon_on: "Door Open",
+  sensor: "binary_sensor.patio_door",
+  unit: "",
+  type: "door_window",
+  precision: "door",
+  options: "active_color",
+}, false);
+assert.strictEqual(
+  hooks.doorWindowActiveColorEnabled(hooks.parseButtonConfig(";;Auto;Auto;binary_sensor.patio_door;;door_window;window;active_color")),
+  true,
+  "door/window active colour enabled");
+assertButtonMigration(
+  hooks,
+  "door window defaults icons and subtype",
+  ";;Auto;Auto;binary_sensor.kitchen_window;;door_window;;large_numbers,active_color",
+  {
+    icon: "Door",
+    icon_on: "Door Open",
+    sensor: "binary_sensor.kitchen_window",
+    type: "door_window",
+    precision: "door",
     options: "active_color",
   }
 );
@@ -1587,6 +1617,13 @@ assert.deepStrictEqual(subpageShape(hooks.parseSubpageConfig("~1,B,2|L,light.str
     buttonShape({ entity: "sensor.temp", label: "Temp", icon: "Thermometer", icon_on: "Auto", sensor: "sensor.temp", unit: "deg C", type: "sensor", precision: "1" }),
   ],
 }, "compact subpage parse");
+
+assert.deepStrictEqual(subpageShape(hooks.parseSubpageConfig("~1,B|X,,Kitchen%20Window,Window%20Closed,Window%20Open,binary_sensor.kitchen_window,,window,active_color")), {
+  order: ["1", "B"],
+  buttons: [
+    buttonShape({ label: "Kitchen Window", icon: "Window Closed", icon_on: "Window Open", sensor: "binary_sensor.kitchen_window", type: "door_window", precision: "window", options: "active_color" }),
+  ],
+}, "compact door/window subpage parse");
 
 assert.deepStrictEqual(subpageShape(hooks.parseSubpageConfig("~1,B|D")), {
   order: ["1", "B"],

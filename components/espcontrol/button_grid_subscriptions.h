@@ -99,6 +99,26 @@ inline void subscribe_text_sensor_value(lv_obj_t *text_lbl, const std::string &s
   );
 }
 
+inline void subscribe_door_window_state(lv_obj_t *btn_ptr, lv_obj_t *icon_lbl,
+                                        const std::string &sensor_id,
+                                        const char *closed_icon, const char *open_icon,
+                                        bool active_color,
+                                        uint32_t on_color,
+                                        uint32_t sensor_color) {
+  esphome::api::global_api_server->subscribe_home_assistant_state(
+    sensor_id, {},
+    std::function<void(esphome::StringRef)>(
+      [btn_ptr, icon_lbl, closed_icon, open_icon, active_color, on_color, sensor_color](esphome::StringRef state) {
+        bool unavailable = ha_state_unavailable_ref(state);
+        apply_control_availability(btn_ptr, btn_ptr, !unavailable, false);
+        bool open = !unavailable && is_entity_on_ref(state);
+        lv_label_set_text(icon_lbl, open ? open_icon : closed_icon);
+        apply_sensor_active_color(btn_ptr, active_color, state,
+          on_color, sensor_color, unavailable);
+      })
+  );
+}
+
 inline void subscribe_weather_state(lv_obj_t *icon_lbl, lv_obj_t *text_lbl, const std::string &entity_id) {
   esphome::api::global_api_server->subscribe_home_assistant_state(
     entity_id, {},

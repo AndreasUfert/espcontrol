@@ -106,6 +106,13 @@ function normalizeButtonConfig(b) {
     b.options = normalizeSwitchConfirmationOptions(b.options);
   } else if (b && b.type === "sensor") {
     b.options = normalizeSensorOptions(b.options, b.precision);
+  } else if (b && b.type === "door_window") {
+    b.entity = "";
+    b.unit = "";
+    b.precision = normalizeDoorWindowSubtype(b.precision);
+    if (!b.icon || b.icon === "Auto") b.icon = doorWindowClosedIcon(b.precision);
+    if (!b.icon_on || b.icon_on === "Auto") b.icon_on = doorWindowOpenIcon(b.precision);
+    b.options = normalizeDoorWindowOptions(b.options);
   } else if (b && b.type !== "action" && b.type !== "alarm" && b.type !== "climate" && b.type !== "garage" && !cardLargeNumbersSupported(b)) {
     b.options = "";
   }
@@ -248,6 +255,38 @@ function normalizeSensorOptions(options, precision) {
   if (precision !== "text" && configOptionEnabled(options, SENSOR_LARGE_NUMBERS_OPTION)) {
     out = setConfigOption(out, SENSOR_LARGE_NUMBERS_OPTION, true);
   }
+  if (configOptionEnabled(options, SENSOR_ACTIVE_COLOR_OPTION)) {
+    out = setConfigOption(out, SENSOR_ACTIVE_COLOR_OPTION, true);
+  }
+  return out;
+}
+
+function normalizeDoorWindowSubtype(value) {
+  value = String(value || "").trim();
+  return value === "window" ? "window" : "door";
+}
+
+function doorWindowClosedIcon(subtype) {
+  return normalizeDoorWindowSubtype(subtype) === "window" ? "Window Closed" : "Door";
+}
+
+function doorWindowOpenIcon(subtype) {
+  return normalizeDoorWindowSubtype(subtype) === "window" ? "Window Open" : "Door Open";
+}
+
+function doorWindowActiveColorEnabled(b) {
+  return !!(b && b.type === "door_window" &&
+    configOptionEnabled(b.options, SENSOR_ACTIVE_COLOR_OPTION));
+}
+
+function setDoorWindowActiveColorEnabled(b, enabled) {
+  if (!b) return "";
+  b.options = setConfigOption(b.options, SENSOR_ACTIVE_COLOR_OPTION, enabled);
+  return b.options;
+}
+
+function normalizeDoorWindowOptions(options) {
+  var out = "";
   if (configOptionEnabled(options, SENSOR_ACTIVE_COLOR_OPTION)) {
     out = setConfigOption(out, SENSOR_ACTIVE_COLOR_OPTION, true);
   }
@@ -565,6 +604,7 @@ function buttonConfigFields(b) {
   if (type === "fan_switch" && (!iconOn || iconOn === "Auto")) iconOn = "Fan";
   var precision = (isActionOptionSelect || type === "light_switch" || type === "alarm" || isFanCardType(type)) ? "" : (b && b.precision || "");
   if (type === "climate") precision = normalizeClimatePrecisionConfig(precision);
+  if (type === "door_window") precision = normalizeDoorWindowSubtype(precision);
   var options = b && b.options || "";
   if (type === "") {
     options = normalizeSwitchConfirmationOptions(options);
@@ -576,17 +616,26 @@ function buttonConfigFields(b) {
     options = normalizeClimateOptions(options);
   } else if (type === "sensor") {
     options = normalizeSensorOptions(options, precision);
+  } else if (type === "door_window") {
+    options = normalizeDoorWindowOptions(options);
   } else if (isActionOptionSelect || isFanCardType(type)) {
     options = "";
   } else if (type !== "action" && type !== "garage" && !cardLargeNumbersSupported({ type: type, precision: precision })) {
     options = "";
+  }
+  if (type === "door_window") {
+    b = b || {};
+    b.entity = "";
+    unit = "";
+    if (!icon || icon === "Auto") icon = doorWindowClosedIcon(precision);
+    if (!iconOn || iconOn === "Auto") iconOn = doorWindowOpenIcon(precision);
   }
   if (!type && !sensor) {
     unit = "";
     precision = "";
   }
   return trimConfigFields([
-    b && b.entity || "",
+    type === "door_window" ? "" : (b && b.entity || ""),
     b && b.label || "",
     icon,
     iconOn,
@@ -757,6 +806,7 @@ function subpageTypeCode(type) {
     calendar: "D",
     timezone: "T",
     sensor: "S",
+    door_window: "X",
     weather: "W",
     weather_forecast: "F",
     option_select: "U",
@@ -788,6 +838,7 @@ function subpageTypeFromCode(code) {
     D: "calendar",
     T: "timezone",
     S: "sensor",
+    X: "door_window",
     W: "weather",
     F: "weather_forecast",
     U: "option_select",
@@ -891,6 +942,7 @@ function legacySubpageConfigSafe(sp) {
     if (type === "fan_switch" && (!iconOn || iconOn === "Auto")) iconOn = "Fan";
     var precision = (isActionOptionSelect || type === "light_switch" || type === "alarm" || isFanCardType(type)) ? "" : (b.precision || "");
     if (type === "climate") precision = normalizeClimatePrecisionConfig(precision);
+    if (type === "door_window") precision = normalizeDoorWindowSubtype(precision);
     var options = b.options || "";
     if (!type) {
       options = normalizeSwitchConfirmationOptions(options);
@@ -902,12 +954,21 @@ function legacySubpageConfigSafe(sp) {
       options = normalizeClimateOptions(options);
     } else if (type === "sensor") {
       options = normalizeSensorOptions(options, precision);
+    } else if (type === "door_window") {
+      options = normalizeDoorWindowOptions(options);
     } else if (isActionOptionSelect || isFanCardType(type)) {
       options = "";
     } else if (type !== "action" && type !== "garage" && !cardLargeNumbersSupported({ type: type || "", precision: precision })) {
       options = "";
     }
-    var fields = [b.entity || "", b.label || "", icon, iconOn, sensor, unit, type, precision, options];
+    if (type === "door_window") {
+      b = b || {};
+      b.entity = "";
+      unit = "";
+      if (!icon || icon === "Auto") icon = doorWindowClosedIcon(precision);
+      if (!iconOn || iconOn === "Auto") iconOn = doorWindowOpenIcon(precision);
+    }
+    var fields = [type === "door_window" ? "" : (b.entity || ""), b.label || "", icon, iconOn, sensor, unit, type, precision, options];
     for (var j = 0; j < fields.length; j++) {
       if (String(fields[j] || "").indexOf("|") >= 0 || String(fields[j] || "").indexOf(":") >= 0) {
         return false;
@@ -937,6 +998,7 @@ function serializeLegacySubpageConfig(sp) {
     if (type === "fan_switch" && (!iconOn || iconOn === "Auto")) iconOn = "Fan";
     var precision = (isActionOptionSelect || type === "light_switch" || type === "alarm" || isFanCardType(type)) ? "" : (b.precision || "");
     if (type === "climate") precision = normalizeClimatePrecisionConfig(precision);
+    if (type === "door_window") precision = normalizeDoorWindowSubtype(precision);
     var options = b.options || "";
     if (!type) {
       options = normalizeSwitchConfirmationOptions(options);
@@ -948,12 +1010,21 @@ function serializeLegacySubpageConfig(sp) {
       options = normalizeClimateOptions(options);
     } else if (type === "sensor") {
       options = normalizeSensorOptions(options, precision);
+    } else if (type === "door_window") {
+      options = normalizeDoorWindowOptions(options);
     } else if (isActionOptionSelect || isFanCardType(type)) {
       options = "";
     } else if (type !== "action" && type !== "garage" && !cardLargeNumbersSupported({ type: type || "", precision: precision })) {
       options = "";
     }
-    var fields = [b.entity || "", b.label || "", icon, iconOn, sensor, unit, type, precision, options];
+    if (type === "door_window") {
+      b = b || {};
+      b.entity = "";
+      unit = "";
+      if (!icon || icon === "Auto") icon = doorWindowClosedIcon(precision);
+      if (!iconOn || iconOn === "Auto") iconOn = doorWindowOpenIcon(precision);
+    }
+    var fields = [type === "door_window" ? "" : (b.entity || ""), b.label || "", icon, iconOn, sensor, unit, type, precision, options];
     while (fields.length > 1 && !fields[fields.length - 1]) fields.pop();
     if (fields.length > 1 && fields[fields.length - 1] === "Auto") {
       while (fields.length > 1 && (fields[fields.length - 1] === "Auto" || !fields[fields.length - 1])) fields.pop();
@@ -981,6 +1052,7 @@ function serializeCompactSubpageConfig(sp) {
     if (type === "fan_switch" && (!iconOn || iconOn === "Auto")) iconOn = "Fan";
     var precision = (isActionOptionSelect || type === "light_switch" || type === "alarm" || isFanCardType(type)) ? "" : (b.precision || "");
     if (type === "climate") precision = normalizeClimatePrecisionConfig(precision);
+    if (type === "door_window") precision = normalizeDoorWindowSubtype(precision);
     var options = b.options || "";
     if (!type) {
       options = normalizeSwitchConfirmationOptions(options);
@@ -992,14 +1064,23 @@ function serializeCompactSubpageConfig(sp) {
       options = normalizeClimateOptions(options);
     } else if (type === "sensor") {
       options = normalizeSensorOptions(options, precision);
+    } else if (type === "door_window") {
+      options = normalizeDoorWindowOptions(options);
     } else if (isActionOptionSelect || isFanCardType(type)) {
       options = "";
     } else if (type !== "action" && type !== "garage" && !cardLargeNumbersSupported({ type: type || "", precision: precision })) {
       options = "";
     }
+    if (type === "door_window") {
+      b = b || {};
+      b.entity = "";
+      unit = "";
+      if (!icon || icon === "Auto") icon = doorWindowClosedIcon(precision);
+      if (!iconOn || iconOn === "Auto") iconOn = doorWindowOpenIcon(precision);
+    }
     var fields = [
       subpageTypeCode(type),
-      encodeSubpageField(b.entity),
+      encodeSubpageField(type === "door_window" ? "" : b.entity),
       encodeSubpageField(b.label),
       icon && icon !== "Auto" ? encodeSubpageField(icon) : "",
       iconOn && iconOn !== "Auto" ? encodeSubpageField(iconOn) : "",

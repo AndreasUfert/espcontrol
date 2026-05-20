@@ -399,6 +399,7 @@ inline void handle_button_click(const std::string &cfg, int slot_num,
   if (btn_obj && lv_obj_has_state(btn_obj, LV_STATE_DISABLED)) return;
   ParsedCfg p = parse_cfg(cfg);
   if (p.type == "sensor" || p.type == "text_sensor" ||
+      p.type == "door_window" ||
       p.type == "calendar" || p.type == "timezone" ||
       p.type == "weather_forecast") return;
   if (p.type == "push") {
