@@ -66,6 +66,7 @@ function subpageTypeFromCode(code) {
     V: "light_brightness",
     Q: "light_switch",
     Y: "alarm",
+    AA: "alarm_action",
     L: "slider",
     C: "cover",
     N: "light_temperature",
@@ -509,9 +510,22 @@ assertButtonMigration(hooks, "alarm clears ignored fields", "alarm_control_panel
   options: "pin_disarm=0,actions=home%7Cnight",
 });
 
+assertButtonRoundTrip(hooks, "alarm action button", {
+  entity: "alarm_control_panel.house",
+  label: "Arm Home",
+  icon: "Home",
+  icon_on: "Auto",
+  sensor: "home",
+  unit: "",
+  type: "alarm_action",
+  precision: "",
+  options: "pin_arm=0",
+}, false);
+
 assert.strictEqual(hooks.buttonTypeVisibleInPickerForExperimental("alarm", false, false), false, "alarm picker hidden without experimental flag");
 assert.strictEqual(hooks.buttonTypeVisibleInPickerForExperimental("alarm", true, false), true, "alarm picker visible with experimental flag");
 assert.strictEqual(hooks.buttonTypeVisibleInPickerForExperimental("alarm", true, true), false, "alarm picker hidden in subpages");
+assert.strictEqual(hooks.buttonTypeVisibleInPickerForExperimental("alarm_action", false, true), true, "alarm action picker visible in subpages");
 assert.strictEqual(
   loadHooks("?developer=experimental").buttonTypeVisibleInPickerForExperimental("alarm", false, false),
   true,
@@ -1452,6 +1466,14 @@ assertSubpageRoundTrip(hooks, "lock command subpage", {
   buttons: [
     buttonShape({ entity: "lock.front_door", label: "Lock", icon: "Lock", icon_on: "Auto", sensor: "lock", type: "lock" }),
     buttonShape({ entity: "lock.front_door", label: "Unlock", icon: "Lock Open", icon_on: "Auto", sensor: "unlock", type: "lock" }),
+  ],
+}, true);
+
+assertSubpageRoundTrip(hooks, "alarm action subpage", {
+  order: ["B", "1", "2"],
+  buttons: [
+    buttonShape({ entity: "alarm_control_panel.house", label: "Arm Away", icon: "Security", icon_on: "Auto", sensor: "away", type: "alarm_action", options: "pin_arm=0" }),
+    buttonShape({ entity: "alarm_control_panel.house", label: "Disarm", icon: "Lock Open", icon_on: "Auto", sensor: "disarm", type: "alarm_action" }),
   ],
 }, true);
 

@@ -3,6 +3,52 @@ function alarmUsesDefaultIcon(icon) {
   return !icon || icon === "Auto" || icon === "Security" || icon === "Alarm";
 }
 
+function createAlarmActionButton(alarm, mode) {
+  var info = alarmActionInfo(mode) || ALARM_ACTIONS[0];
+  return normalizeButtonConfig({
+    entity: alarm.entity || "",
+    label: info.label,
+    icon: info.icon,
+    icon_on: "Auto",
+    sensor: info.value,
+    unit: "",
+    type: "alarm_action",
+    precision: "",
+    options: normalizeAlarmOptions(alarm.options),
+  });
+}
+
+function syncAlarmActionSubpage(slot, alarm) {
+  if (!slot || !alarm) return;
+  var sp = getSubpage(slot);
+  buildSubpageGrid(sp);
+
+  var visible = alarmVisibleActions(alarm);
+  var byMode = {};
+  for (var i = 0; i < sp.buttons.length; i++) {
+    var child = sp.buttons[i];
+    if (!child || child.type !== "alarm_action") continue;
+    var mode = alarmActionInfo(child.sensor) ? child.sensor : "";
+    if (!mode) continue;
+    byMode[mode] = child;
+    child.entity = alarm.entity || "";
+    child.options = normalizeAlarmOptions(alarm.options);
+  }
+
+  for (var vi = 0; vi < visible.length; vi++) {
+    var action = visible[vi];
+    if (byMode[action]) continue;
+    var newSlot = subpageFirstFreeSlot(sp);
+    while (sp.buttons.length < newSlot) sp.buttons.push({ entity: "", label: "", icon: "Auto", icon_on: "Auto", sensor: "", unit: "", type: "", precision: "", options: "" });
+    sp.buttons[newSlot - 1] = createAlarmActionButton(alarm, action);
+    var pos = findPlacementCell(sp.grid, 0, 1, NUM_SLOTS);
+    if (pos >= 0) placeSlotAt(sp.grid, newSlot, pos, 1);
+  }
+
+  sp.order = serializeSubpageGrid(sp);
+  saveSubpageEntity(slot);
+}
+
 registerButtonType("alarm", {
   label: "Alarm",
   allowInSubpage: false,
@@ -108,6 +154,8 @@ registerButtonType("alarm", {
       helpers.saveField("options", b.options);
       scheduleRender();
     }
+
+    appendEditAlarmPageButton(panel, slot);
   },
   renderPreview: function (b, helpers) {
     var label = (b.label && b.label.trim()) || (b.entity && b.entity.trim()) || "Alarm";
@@ -119,4 +167,112 @@ registerButtonType("alarm", {
         helpers.escHtml(label) + '</span><span class="sp-alarm-badge mdi mdi-security"></span></span>',
     };
   },
+  afterSave: function (b, slot, helpers) {
+    if (helpers && helpers.isSub) return;
+    syncAlarmActionSubpage(slot, b);
+  },
+  contextMenuItems: function (slot, b, helpers) {
+    helpers.addCtxItem("cog", "Edit Alarm Page", function () {
+      syncAlarmActionSubpage(slot, b);
+      enterSubpage(slot);
+    });
+  },
 });
+
+registerButtonType("alarm_action", {
+  label: "Alarm Action",
+  allowInSubpage: true,
+  isAvailable: function (ctx) { return !!(ctx && ctx.isSub); },
+  labelPlaceholder: "e.g. Arm Away",
+  onSelect: function (b) {
+    var info = ALARM_ACTIONS[0];
+    b.entity = "";
+    b.label = info.label;
+    b.sensor = info.value;
+    b.unit = "";
+    b.icon = info.icon;
+    b.icon_on = "Auto";
+    b.precision = "";
+    b.options = "";
+  },
+  renderSettingsBeforeLabel: function (panel, b, slot, helpers) {
+    b.sensor = alarmActionInfo(b.sensor) ? b.sensor : "away";
+    var actionField = helpers.selectField("Action", helpers.idPrefix + "alarm-action-mode", ALARM_ACTIONS, b.sensor);
+    panel.appendChild(actionField.field);
+    actionField.select.addEventListener("change", function () {
+      var info = alarmActionInfo(this.value) || ALARM_ACTIONS[0];
+      b.sensor = info.value;
+      if (!b.label || ALARM_ACTIONS.some(function (action) { return b.label === action.label; })) {
+        b.label = info.label;
+      }
+      if (!b.icon || b.icon === "Auto" || ALARM_ACTIONS.some(function (action) { return b.icon === action.icon; })) {
+        b.icon = info.icon;
+      }
+      helpers.saveField("sensor", b.sensor);
+      helpers.saveField("label", b.label);
+      helpers.saveField("icon", b.icon);
+      renderButtonSettings();
+    });
+  },
+  renderSettings: function (panel, b, slot, helpers) {
+    b.sensor = alarmActionInfo(b.sensor) ? b.sensor : "away";
+    b.unit = "";
+    b.precision = "";
+    b.icon_on = "Auto";
+    b.options = normalizeAlarmOptions(b.options);
+
+    var entityField = helpers.entityField(
+      "Alarm Entity",
+      helpers.idPrefix + "alarm-action-entity",
+      b.entity,
+      "e.g. alarm_control_panel.house",
+      ["alarm_control_panel"],
+      "entity",
+      true,
+      "Add an alarm_control_panel entity before saving."
+    );
+    panel.appendChild(entityField.field);
+
+    panel.appendChild(helpers.iconPickerField(
+      helpers.idPrefix + "alarm-action-icon-picker", helpers.idPrefix + "alarm-action-icon",
+      b.icon || alarmActionInfo(b.sensor).icon, function (opt) {
+        b.icon = opt || alarmActionInfo(b.sensor).icon;
+        helpers.saveField("icon", b.icon);
+      }, "Icon"
+    ));
+
+    var pinMode = b.sensor === "disarm" ? "disarm" : "arm";
+    var pinToggle = helpers.toggleRow(
+      "PIN required",
+      helpers.idPrefix + "alarm-action-pin",
+      alarmPinRequired(b, pinMode)
+    );
+    panel.appendChild(pinToggle.row);
+    pinToggle.input.addEventListener("change", function () {
+      setAlarmPinRequired(b, pinMode, this.checked);
+      helpers.saveField("options", b.options);
+    });
+  },
+  renderPreview: function (b, helpers) {
+    var info = alarmActionInfo(b.sensor) || ALARM_ACTIONS[0];
+    var label = b.label || info.label;
+    var iconName = iconSlug(b.icon || info.icon);
+    return {
+      iconHtml: '<span class="sp-btn-icon mdi mdi-' + iconName + '"></span>',
+      labelHtml: '<span class="sp-btn-label">' + helpers.escHtml(label) + '</span>',
+    };
+  },
+});
+
+function appendEditAlarmPageButton(panel, slot) {
+  var configBtn = document.createElement("button");
+  configBtn.className = "sp-action-btn sp-edit-subpage-btn";
+  configBtn.textContent = "Edit Alarm Page";
+  configBtn.addEventListener("click", function () {
+    var alarm = state.buttons[slot - 1];
+    syncAlarmActionSubpage(slot, alarm);
+    closeSettings();
+    enterSubpage(slot);
+  });
+  panel.appendChild(configBtn);
+}

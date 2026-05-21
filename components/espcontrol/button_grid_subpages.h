@@ -12,7 +12,7 @@ struct SubpageBtn {
   std::string icon_on;
   std::string sensor;     // sensor entity, cover/internal mode, or action name
   std::string unit;
-  std::string type;       // button type: "" (toggle), action, sensor, door_window, calendar, timezone, weather_forecast, slider, light_brightness, light_switch, fan_*, cover, garage, lock, alarm, media, push, internal, subpage
+  std::string type;       // button type: "" (toggle), action, sensor, door_window, calendar, timezone, weather_forecast, slider, light_brightness, light_switch, fan_*, cover, garage, lock, alarm, alarm_action, media, push, internal, subpage
   std::string precision;  // decimal places for sensor display; "text" = text sensor mode
   std::string options;    // comma-delimited card options
 };
@@ -46,6 +46,7 @@ inline std::string compact_subpage_type(const std::string &code) {
   if (code == "V") return "light_brightness";
   if (code == "Q") return "light_switch";
   if (code == "Y") return "alarm";
+  if (code == "AA") return "alarm_action";
   if (code == "L") return "slider";
   if (code == "C") return "cover";
   if (code == "N") return "light_temperature";
@@ -125,7 +126,27 @@ inline SubpageBtn normalize_subpage_btn(SubpageBtn b) {
     b.unit.clear();
     b.precision.clear();
     b.icon_on.clear();
+    b.options = alarm_card_options_normalized(b.options);
     if (b.icon.empty() || b.icon == "Auto") b.icon = "Security";
+  }
+  if (b.type == "alarm_action") {
+    if (!alarm_action_mode_valid(b.sensor)) b.sensor = "away";
+    b.unit.clear();
+    b.precision.clear();
+    b.icon_on.clear();
+    b.options = alarm_card_options_normalized(b.options);
+    if (b.label.empty()) {
+      if (b.sensor == "home") b.label = "Arm Home";
+      else if (b.sensor == "night") b.label = "Arm Night";
+      else if (b.sensor == "disarm") b.label = "Disarm";
+      else b.label = "Arm Away";
+    }
+    if (b.icon.empty() || b.icon == "Auto") {
+      if (b.sensor == "home") b.icon = "Home";
+      else if (b.sensor == "night") b.icon = "Weather Night";
+      else if (b.sensor == "disarm") b.icon = "Lock Open";
+      else b.icon = "Security";
+    }
   }
   if (b.type == "light_switch") {
     b.sensor.clear();
@@ -154,6 +175,7 @@ inline SubpageBtn normalize_subpage_btn(SubpageBtn b) {
   p.type = b.type;
   p.precision = b.precision;
   if (!b.type.empty() && b.type != "action" && b.type != "alarm" &&
+      b.type != "alarm_action" &&
       b.type != "climate" && b.type != "garage" &&
       b.type != "sensor" && b.type != "door_window" &&
       !fan_card_type(b.type) && !card_large_numbers_supported(p)) {

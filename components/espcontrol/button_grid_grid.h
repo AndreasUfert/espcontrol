@@ -150,6 +150,10 @@ inline void setup_card_visual(BtnSlot &s, const ParsedCfg &p,
     setup_alarm_card(s, p);
     return;
   }
+  if (p.type == "alarm_action") {
+    setup_alarm_action_card(s, p);
+    return;
+  }
   if (fan_non_speed_card_type(p.type)) {
     setup_fan_card(s, p);
     return;
@@ -610,6 +614,10 @@ inline void grid_phase2(
     }
     if (p.type == "alarm") {
       if (!p.entity.empty()) {
+        std::string alarm_sp_cfg = optional_text_state(sp_configs, idx - 1) +
+          optional_text_state(sp_ext_configs, idx - 1) +
+          optional_text_state(sp_ext2_configs, idx - 1) +
+          optional_text_state(sp_ext3_configs, idx - 1);
         AlarmCardCtx *ctx = create_alarm_card_context(
           s, p, main_page_obj, NS, COLS,
           has_on ? on_val : DEFAULT_SLIDER_COLOR,
@@ -619,7 +627,8 @@ inline void grid_phase2(
           cfg.sp_sensor_font,
           lv_obj_get_style_text_font(s.text_lbl, LV_PART_MAIN),
           lv_obj_get_style_text_color(s.text_lbl, LV_PART_MAIN),
-          cfg.width_compensation_percent);
+          cfg.width_compensation_percent,
+          alarm_sp_cfg.empty());
         lv_obj_set_user_data(s.btn, ctx);
         subscribe_alarm_state(ctx);
         if (p.label.empty())
@@ -872,7 +881,7 @@ inline void grid_phase2(
 
   for (int si = 0; si < NS; si++) {
     ParsedCfg p = parse_cfg(slots[si].config->state);
-    if (p.type != "subpage") continue;
+    if (p.type != "subpage" && p.type != "alarm") continue;
     bool sp_indicator = p.sensor == "indicator" && p.entity.empty();
 
     bool sp_has_icon_on = !p.icon_on.empty() && p.icon_on != "Auto";
@@ -1102,6 +1111,38 @@ inline void grid_phase2(
       }
       if (sb_cfg.type == "alarm") {
         apply_control_availability(sub_slot.btn, sub_slot.btn, false);
+        continue;
+      }
+      if (sb_cfg.type == "alarm_action") {
+        std::string action_entity = sb_cfg.entity.empty() ? p.entity : sb_cfg.entity;
+        if (!action_entity.empty()) {
+          AlarmCardCtx *alarm_action_card = new AlarmCardCtx();
+          alarm_action_card->entity_id = action_entity;
+          alarm_action_card->label = sb_cfg.label.empty()
+            ? alarm_action_label(sb_cfg.sensor) : sb_cfg.label;
+          alarm_action_card->options = sb_cfg.options.empty() ? p.options : sb_cfg.options;
+          alarm_action_card->btn = sub_slot.btn;
+          alarm_action_card->icon_lbl = sub_slot.icon_lbl;
+          alarm_action_card->grid_page = sub_scr;
+          alarm_action_card->label_font = lv_obj_get_style_text_font(sub_slot.text_lbl, LV_PART_MAIN);
+          alarm_action_card->on_color = has_on ? on_val : DEFAULT_SLIDER_COLOR;
+          alarm_action_card->off_color = has_off ? off_val : DEFAULT_OFF_COLOR;
+          alarm_action_card->tertiary_color = has_sensor_color ? sensor_val : DEFAULT_TERTIARY_COLOR;
+          alarm_action_card->width_compensation_percent = cfg.width_compensation_percent;
+          alarm_action_card->grid_cols = COLS;
+          alarm_set_card_state_colors(alarm_action_card, alarm_action_card->on_color);
+          subscribe_alarm_action_availability(alarm_action_card);
+
+          AlarmActionCtx *action_ctx = new AlarmActionCtx();
+          action_ctx->card = alarm_action_card;
+          action_ctx->mode = alarm_action_valid(sb_cfg.sensor) ? sb_cfg.sensor : "away";
+          action_ctx->requires_pin =
+            alarm_action_requires_pin(alarm_action_card->options, action_ctx->mode);
+          lv_obj_add_event_cb(sb_btn, [](lv_event_t *e) {
+            AlarmActionCtx *action = static_cast<AlarmActionCtx *>(lv_event_get_user_data(e));
+            alarm_action_activate(action);
+          }, LV_EVENT_CLICKED, action_ctx);
+        }
         continue;
       }
       if (fan_non_speed_card_type(sb_cfg.type)) {
@@ -1406,7 +1447,12 @@ inline void grid_phase2(
       }
     }
 
-    lv_obj_set_user_data(slots[si].btn, (void *)sub_scr);
+    if (p.type == "alarm") {
+      AlarmCardCtx *ctx = (AlarmCardCtx *)lv_obj_get_user_data(slots[si].btn);
+      if (ctx) ctx->page = sub_scr;
+    } else {
+      lv_obj_set_user_data(slots[si].btn, (void *)sub_scr);
+    }
   }
   refresh_weather_forecast_cards();
   ESP_LOGI("sensors", "Phase 2: done (%lu ms)", esphome::millis());

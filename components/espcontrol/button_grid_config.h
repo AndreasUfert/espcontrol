@@ -124,7 +124,7 @@ struct ParsedCfg {
   std::string icon_on;     // 3  icon name for on state (blank = no swap)
   std::string sensor;      // 4  sensor entity, cover mode, or action name for Action cards
   std::string unit;        // 5  unit suffix for sensor display
-  std::string type;        // 6  button type: "" (toggle), action, sensor, calendar, timezone, weather_forecast, slider, light_brightness, light_switch, fan_*, cover, garage, lock, alarm, media, climate, push, internal, subpage
+  std::string type;        // 6  button type: "" (toggle), action, sensor, calendar, timezone, weather_forecast, slider, light_brightness, light_switch, fan_*, cover, garage, lock, alarm, alarm_action, media, climate, push, internal, subpage
   std::string precision;   // 7  decimal places for sensors; "text" = text sensor mode
   std::string options;     // 8  comma-delimited card options
 };
@@ -253,6 +253,41 @@ inline std::string garage_card_options_normalized(const std::string &options,
     : "";
 }
 
+inline bool alarm_action_mode_valid(const std::string &mode) {
+  return mode == "away" || mode == "home" || mode == "night" || mode == "disarm";
+}
+
+inline std::string alarm_card_options_normalized(const std::string &options) {
+  std::string out;
+  if (cfg_option_value(options, "pin_arm") == "0") out = "pin_arm=0";
+  if (cfg_option_value(options, "pin_disarm") == "0") {
+    if (!out.empty()) out += ",";
+    out += "pin_disarm=0";
+  }
+  std::string actions = cfg_option_value(options, "actions");
+  if (!actions.empty()) {
+    std::string filtered;
+    bool saw_valid = false;
+    size_t start = 0;
+    while (start <= actions.length()) {
+      size_t end = actions.find('|', start);
+      if (end == std::string::npos) end = actions.length();
+      std::string action = actions.substr(start, end - start);
+      if (alarm_action_mode_valid(action)) {
+        if (!filtered.empty()) filtered += "|";
+        filtered += action;
+        saw_valid = true;
+      }
+      start = end + 1;
+    }
+    if (saw_valid && filtered != "away|home|night|disarm") {
+      if (!out.empty()) out += ",";
+      out += "actions=" + filtered;
+    }
+  }
+  return out;
+}
+
 inline ParsedCfg normalize_parsed_cfg(ParsedCfg p) {
   // Slider cards used to store "h" here for horizontal layout. Sliders are
   // now always vertical, so treat any saved slider sensor value as legacy.
@@ -319,6 +354,14 @@ inline ParsedCfg normalize_parsed_cfg(ParsedCfg p) {
     p.precision.clear();
     p.icon_on.clear();
     if (p.icon.empty() || p.icon == "Auto") p.icon = "Security";
+    p.options = alarm_card_options_normalized(p.options);
+  }
+  if (p.type == "alarm_action") {
+    if (!alarm_action_mode_valid(p.sensor)) p.sensor = "away";
+    p.unit.clear();
+    p.precision.clear();
+    p.icon_on.clear();
+    p.options = alarm_card_options_normalized(p.options);
   }
   if (p.type == "light_switch") {
     p.sensor.clear();
@@ -351,7 +394,7 @@ inline ParsedCfg normalize_parsed_cfg(ParsedCfg p) {
     if (p.icon_on.empty() || p.icon_on == "Auto") p.icon_on = door_window_open_icon_name(p.precision);
     p.options = door_window_card_options_normalized(p.options);
   }
-  if (!p.type.empty() && p.type != "action" && p.type != "alarm" && p.type != "climate" && p.type != "garage" && p.type != "sensor" && p.type != "door_window" && !fan_card_type(p.type) && !card_large_numbers_supported(p)) {
+  if (!p.type.empty() && p.type != "action" && p.type != "alarm" && p.type != "alarm_action" && p.type != "climate" && p.type != "garage" && p.type != "sensor" && p.type != "door_window" && !fan_card_type(p.type) && !card_large_numbers_supported(p)) {
     p.options.clear();
   }
   if (p.type == "sensor") {

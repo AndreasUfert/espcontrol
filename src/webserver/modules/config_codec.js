@@ -79,6 +79,15 @@ function normalizeButtonConfig(b) {
     if (!b.icon || b.icon === "Auto") b.icon = "Security";
     b.options = normalizeAlarmOptions(b.options);
   }
+  if (b && b.type === "alarm_action") {
+    b.sensor = alarmActionInfo(b.sensor) ? b.sensor : "away";
+    b.unit = "";
+    b.precision = "";
+    b.icon_on = "Auto";
+    if (!b.label) b.label = alarmActionInfo(b.sensor).label;
+    if (!b.icon || b.icon === "Auto") b.icon = alarmActionInfo(b.sensor).icon;
+    b.options = normalizeAlarmOptions(b.options);
+  }
   if (b && b.type === "light_switch") {
     b.sensor = "";
     b.unit = "";
@@ -113,7 +122,7 @@ function normalizeButtonConfig(b) {
     if (!b.icon || b.icon === "Auto") b.icon = doorWindowClosedIcon(b.precision);
     if (!b.icon_on || b.icon_on === "Auto") b.icon_on = doorWindowOpenIcon(b.precision);
     b.options = normalizeDoorWindowOptions(b.options);
-  } else if (b && b.type !== "action" && b.type !== "alarm" && b.type !== "climate" && b.type !== "garage" && !cardLargeNumbersSupported(b)) {
+  } else if (b && b.type !== "action" && b.type !== "alarm" && b.type !== "alarm_action" && b.type !== "climate" && b.type !== "garage" && !cardLargeNumbersSupported(b)) {
     b.options = "";
   }
   return b;
@@ -592,20 +601,21 @@ function buttonConfigFields(b) {
   if (isActionOptionSelect) type = "action";
   var sensor = isActionOptionSelect ? ACTION_CARD_OPTION_SELECT_ACTION :
     (isBrightnessSliderType(type) || type === "climate" || type === "light_switch" || type === "alarm" || isFanCardType(type)) ? "" : (b && b.sensor || "");
-  var unit = (isActionOptionSelect || type === "climate" || type === "light_switch" || type === "alarm" || isFanCardType(type)) ? "" : (b && b.unit || "");
+  var unit = (isActionOptionSelect || type === "climate" || type === "light_switch" || type === "alarm" || type === "alarm_action" || isFanCardType(type)) ? "" : (b && b.unit || "");
   var icon = b && b.icon || "Auto";
   if (isActionOptionSelect && (!icon || icon === "Auto" || icon === "Chevron Down")) icon = "Flash";
   if (type === "alarm" && (!icon || icon === "Auto")) icon = "Security";
+  if (type === "alarm_action" && (!icon || icon === "Auto")) icon = (alarmActionInfo(sensor) || ALARM_ACTIONS[0]).icon;
   if (isFanCardType(type) && (!icon || icon === "Auto")) icon = fanCardDefaultIcon(type);
-  var iconOn = (isActionOptionSelect || type === "climate" || type === "alarm" || (isFanCardType(type) && type !== "fan_switch")) ? "Auto" : (b && b.icon_on || "Auto");
+  var iconOn = (isActionOptionSelect || type === "climate" || type === "alarm" || type === "alarm_action" || (isFanCardType(type) && type !== "fan_switch")) ? "Auto" : (b && b.icon_on || "Auto");
   if (type === "fan_switch" && (!iconOn || iconOn === "Auto")) iconOn = "Fan";
-  var precision = (isActionOptionSelect || type === "light_switch" || type === "alarm" || isFanCardType(type)) ? "" : (b && b.precision || "");
+  var precision = (isActionOptionSelect || type === "light_switch" || type === "alarm" || type === "alarm_action" || isFanCardType(type)) ? "" : (b && b.precision || "");
   if (type === "climate") precision = normalizeClimatePrecisionConfig(precision);
   if (type === "door_window") precision = normalizeDoorWindowSubtype(precision);
   var options = b && b.options || "";
   if (type === "") {
     options = normalizeSwitchConfirmationOptions(options);
-  } else if (type === "alarm") {
+  } else if (type === "alarm" || type === "alarm_action") {
     options = normalizeAlarmOptions(options);
   } else if (type === "garage") {
     options = normalizeGarageOptions(options, sensor);
@@ -617,7 +627,7 @@ function buttonConfigFields(b) {
     options = normalizeDoorWindowOptions(options);
   } else if (isActionOptionSelect || isFanCardType(type)) {
     options = "";
-  } else if (type !== "action" && type !== "garage" && !cardLargeNumbersSupported({ type: type, precision: precision })) {
+  } else if (type !== "action" && type !== "alarm_action" && type !== "garage" && !cardLargeNumbersSupported({ type: type, precision: precision })) {
     options = "";
   }
   if (type === "door_window") {
@@ -815,6 +825,7 @@ function subpageTypeCode(type) {
     light_brightness: "V",
     light_switch: "Q",
     alarm: "Y",
+    alarm_action: "AA",
     slider: "L",
     cover: "C",
     light_temperature: "N",
@@ -847,6 +858,7 @@ function subpageTypeFromCode(code) {
     V: "light_brightness",
     Q: "light_switch",
     Y: "alarm",
+    AA: "alarm_action",
     L: "slider",
     C: "cover",
     N: "light_temperature",
@@ -930,20 +942,21 @@ function legacySubpageConfigSafe(sp) {
     var isActionOptionSelect = actionCardIsOptionSelect(b) || isOptionSelectType(b.type);
     var sensor = isActionOptionSelect ? ACTION_CARD_OPTION_SELECT_ACTION :
       (type === "climate" || type === "light_switch" || type === "alarm" || isFanCardType(type)) ? "" : (b.sensor || "");
-    var unit = (isActionOptionSelect || type === "climate" || type === "light_switch" || type === "alarm" || isFanCardType(type)) ? "" : (b.unit || "");
+    var unit = (isActionOptionSelect || type === "climate" || type === "light_switch" || type === "alarm" || type === "alarm_action" || isFanCardType(type)) ? "" : (b.unit || "");
     var icon = b.icon || "Auto";
     if (isActionOptionSelect && (!icon || icon === "Auto" || icon === "Chevron Down")) icon = "Flash";
     if (type === "alarm" && (!icon || icon === "Auto")) icon = "Security";
+    if (type === "alarm_action" && (!icon || icon === "Auto")) icon = (alarmActionInfo(b.sensor) || ALARM_ACTIONS[0]).icon;
     if (isFanCardType(type) && (!icon || icon === "Auto")) icon = fanCardDefaultIcon(type);
-    var iconOn = (isActionOptionSelect || type === "climate" || type === "alarm" || (isFanCardType(type) && type !== "fan_switch")) ? "Auto" : (b.icon_on || "Auto");
+    var iconOn = (isActionOptionSelect || type === "climate" || type === "alarm" || type === "alarm_action" || (isFanCardType(type) && type !== "fan_switch")) ? "Auto" : (b.icon_on || "Auto");
     if (type === "fan_switch" && (!iconOn || iconOn === "Auto")) iconOn = "Fan";
-    var precision = (isActionOptionSelect || type === "light_switch" || type === "alarm" || isFanCardType(type)) ? "" : (b.precision || "");
+    var precision = (isActionOptionSelect || type === "light_switch" || type === "alarm" || type === "alarm_action" || isFanCardType(type)) ? "" : (b.precision || "");
     if (type === "climate") precision = normalizeClimatePrecisionConfig(precision);
     if (type === "door_window") precision = normalizeDoorWindowSubtype(precision);
     var options = b.options || "";
     if (!type) {
       options = normalizeSwitchConfirmationOptions(options);
-    } else if (type === "alarm") {
+    } else if (type === "alarm" || type === "alarm_action") {
       options = normalizeAlarmOptions(options);
     } else if (type === "garage") {
       options = normalizeGarageOptions(options, sensor);
@@ -955,7 +968,7 @@ function legacySubpageConfigSafe(sp) {
       options = normalizeDoorWindowOptions(options);
     } else if (isActionOptionSelect || isFanCardType(type)) {
       options = "";
-    } else if (type !== "action" && type !== "garage" && !cardLargeNumbersSupported({ type: type || "", precision: precision })) {
+    } else if (type !== "action" && type !== "alarm_action" && type !== "garage" && !cardLargeNumbersSupported({ type: type || "", precision: precision })) {
       options = "";
     }
     if (type === "door_window") {
@@ -986,20 +999,21 @@ function serializeLegacySubpageConfig(sp) {
     var isActionOptionSelect = actionCardIsOptionSelect(b) || isOptionSelectType(b.type);
     var sensor = isActionOptionSelect ? ACTION_CARD_OPTION_SELECT_ACTION :
       (isBrightnessSliderType(type) || type === "climate" || type === "light_switch" || type === "alarm" || isFanCardType(type)) ? "" : (b.sensor || "");
-    var unit = (isActionOptionSelect || type === "climate" || type === "light_switch" || type === "alarm" || isFanCardType(type)) ? "" : (b.unit || "");
+    var unit = (isActionOptionSelect || type === "climate" || type === "light_switch" || type === "alarm" || type === "alarm_action" || isFanCardType(type)) ? "" : (b.unit || "");
     var icon = b.icon || "Auto";
     if (isActionOptionSelect && (!icon || icon === "Auto" || icon === "Chevron Down")) icon = "Flash";
     if (type === "alarm" && (!icon || icon === "Auto")) icon = "Security";
+    if (type === "alarm_action" && (!icon || icon === "Auto")) icon = (alarmActionInfo(b.sensor) || ALARM_ACTIONS[0]).icon;
     if (isFanCardType(type) && (!icon || icon === "Auto")) icon = fanCardDefaultIcon(type);
-    var iconOn = (isActionOptionSelect || type === "climate" || type === "alarm" || (isFanCardType(type) && type !== "fan_switch")) ? "Auto" : (b.icon_on || "Auto");
+    var iconOn = (isActionOptionSelect || type === "climate" || type === "alarm" || type === "alarm_action" || (isFanCardType(type) && type !== "fan_switch")) ? "Auto" : (b.icon_on || "Auto");
     if (type === "fan_switch" && (!iconOn || iconOn === "Auto")) iconOn = "Fan";
-    var precision = (isActionOptionSelect || type === "light_switch" || type === "alarm" || isFanCardType(type)) ? "" : (b.precision || "");
+    var precision = (isActionOptionSelect || type === "light_switch" || type === "alarm" || type === "alarm_action" || isFanCardType(type)) ? "" : (b.precision || "");
     if (type === "climate") precision = normalizeClimatePrecisionConfig(precision);
     if (type === "door_window") precision = normalizeDoorWindowSubtype(precision);
     var options = b.options || "";
     if (!type) {
       options = normalizeSwitchConfirmationOptions(options);
-    } else if (type === "alarm") {
+    } else if (type === "alarm" || type === "alarm_action") {
       options = normalizeAlarmOptions(options);
     } else if (type === "garage") {
       options = normalizeGarageOptions(options, sensor);
@@ -1011,7 +1025,7 @@ function serializeLegacySubpageConfig(sp) {
       options = normalizeDoorWindowOptions(options);
     } else if (isActionOptionSelect || isFanCardType(type)) {
       options = "";
-    } else if (type !== "action" && type !== "garage" && !cardLargeNumbersSupported({ type: type || "", precision: precision })) {
+    } else if (type !== "action" && type !== "alarm_action" && type !== "garage" && !cardLargeNumbersSupported({ type: type || "", precision: precision })) {
       options = "";
     }
     if (type === "door_window") {
@@ -1040,20 +1054,21 @@ function serializeCompactSubpageConfig(sp) {
     var isActionOptionSelect = actionCardIsOptionSelect(b) || isOptionSelectType(b.type);
     var sensor = isActionOptionSelect ? ACTION_CARD_OPTION_SELECT_ACTION :
       (isBrightnessSliderType(type) || type === "climate" || type === "light_switch" || type === "alarm" || isFanCardType(type)) ? "" : (b.sensor || "");
-    var unit = (isActionOptionSelect || type === "climate" || type === "light_switch" || type === "alarm" || isFanCardType(type)) ? "" : (b.unit || "");
+    var unit = (isActionOptionSelect || type === "climate" || type === "light_switch" || type === "alarm" || type === "alarm_action" || isFanCardType(type)) ? "" : (b.unit || "");
     var icon = b.icon || "Auto";
     if (isActionOptionSelect && (!icon || icon === "Auto" || icon === "Chevron Down")) icon = "Flash";
     if (type === "alarm" && (!icon || icon === "Auto")) icon = "Security";
+    if (type === "alarm_action" && (!icon || icon === "Auto")) icon = (alarmActionInfo(b.sensor) || ALARM_ACTIONS[0]).icon;
     if (isFanCardType(type) && (!icon || icon === "Auto")) icon = fanCardDefaultIcon(type);
-    var iconOn = (isActionOptionSelect || type === "climate" || type === "alarm" || (isFanCardType(type) && type !== "fan_switch")) ? "Auto" : (b.icon_on || "Auto");
+    var iconOn = (isActionOptionSelect || type === "climate" || type === "alarm" || type === "alarm_action" || (isFanCardType(type) && type !== "fan_switch")) ? "Auto" : (b.icon_on || "Auto");
     if (type === "fan_switch" && (!iconOn || iconOn === "Auto")) iconOn = "Fan";
-    var precision = (isActionOptionSelect || type === "light_switch" || type === "alarm" || isFanCardType(type)) ? "" : (b.precision || "");
+    var precision = (isActionOptionSelect || type === "light_switch" || type === "alarm" || type === "alarm_action" || isFanCardType(type)) ? "" : (b.precision || "");
     if (type === "climate") precision = normalizeClimatePrecisionConfig(precision);
     if (type === "door_window") precision = normalizeDoorWindowSubtype(precision);
     var options = b.options || "";
     if (!type) {
       options = normalizeSwitchConfirmationOptions(options);
-    } else if (type === "alarm") {
+    } else if (type === "alarm" || type === "alarm_action") {
       options = normalizeAlarmOptions(options);
     } else if (type === "garage") {
       options = normalizeGarageOptions(options, sensor);
@@ -1065,7 +1080,7 @@ function serializeCompactSubpageConfig(sp) {
       options = normalizeDoorWindowOptions(options);
     } else if (isActionOptionSelect || isFanCardType(type)) {
       options = "";
-    } else if (type !== "action" && type !== "garage" && !cardLargeNumbersSupported({ type: type || "", precision: precision })) {
+    } else if (type !== "action" && type !== "alarm_action" && type !== "garage" && !cardLargeNumbersSupported({ type: type || "", precision: precision })) {
       options = "";
     }
     if (type === "door_window") {

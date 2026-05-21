@@ -1832,6 +1832,10 @@ function renderButtonSettings(forceOpen) {
     } else {
       saveButtonConfig(slot);
     }
+    var savedTypeDef = BUTTON_TYPES[liveButton.type || ""];
+    if (savedTypeDef && savedTypeDef.afterSave) {
+      savedTypeDef.afterSave(liveButton, slot, { isSub: c.isSub });
+    }
     renderPreview();
   }
 
@@ -2949,7 +2953,7 @@ function duplicateButton(srcSlot) {
   if (placement.size === 1) delete state.sizes[newSlot]; else state.sizes[newSlot] = placement.size;
   placeSlotAt(state.grid, newSlot, placement.pos, placement.size);
 
-  if (src.type === "subpage" && state.subpages[srcSlot]) {
+  if (state.subpages[srcSlot]) {
     var spJson = serializeSubpageConfig(state.subpages[srcSlot]);
     var spCopy = parseSubpageConfig(spJson);
     spCopy.sizes = {};
