@@ -642,7 +642,7 @@ inline void grid_phase2(
           false);
         lv_obj_set_user_data(s.btn, ctx);
         subscribe_alarm_state(ctx);
-        if (p.label.empty())
+        if (p.label.empty() && !ctx->show_status_label)
           subscribe_friendly_name(ctx->status_label, p.entity);
       }
       continue;

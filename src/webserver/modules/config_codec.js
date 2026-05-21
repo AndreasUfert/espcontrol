@@ -164,6 +164,8 @@ var SWITCH_CONFIRM_DEFAULT_NO = "No";
 var ALARM_PIN_ARM_OPTION = "pin_arm";
 var ALARM_PIN_DISARM_OPTION = "pin_disarm";
 var ALARM_ACTIONS_OPTION = "actions";
+var ALARM_ICON_DISPLAY_OPTION = "icon_display";
+var ALARM_LABEL_DISPLAY_OPTION = "label_display";
 var GARAGE_LABEL_DISPLAY_OPTION = "label_display";
 var CLIMATE_LABEL_DISPLAY_OPTION = "label_display";
 var CLIMATE_NUMBER_DISPLAY_OPTION = "number_display";
@@ -506,6 +508,48 @@ function setAlarmVisibleActions(b, actions) {
   return b.options;
 }
 
+function normalizeAlarmIconDisplayMode(value) {
+  return String(value || "").trim() === "status" ? "status" : "static";
+}
+
+function normalizeAlarmLabelDisplayMode(value) {
+  return String(value || "").trim() === "status" ? "status" : "name";
+}
+
+function alarmIconDisplayMode(b) {
+  return normalizeAlarmIconDisplayMode(
+    configOptionValue(b && b.options, ALARM_ICON_DISPLAY_OPTION));
+}
+
+function setAlarmIconDisplayMode(b, mode) {
+  if (!b) return "";
+  var normalized = normalizeAlarmIconDisplayMode(mode);
+  b.options = setConfigOptionValue(
+    b.options,
+    ALARM_ICON_DISPLAY_OPTION,
+    normalized === "static" ? "" : normalized
+  );
+  b.options = normalizeAlarmOptions(b.options);
+  return b.options;
+}
+
+function alarmLabelDisplayMode(b) {
+  return normalizeAlarmLabelDisplayMode(
+    configOptionValue(b && b.options, ALARM_LABEL_DISPLAY_OPTION));
+}
+
+function setAlarmLabelDisplayMode(b, mode) {
+  if (!b) return "";
+  var normalized = normalizeAlarmLabelDisplayMode(mode);
+  b.options = setConfigOptionValue(
+    b.options,
+    ALARM_LABEL_DISPLAY_OPTION,
+    normalized === "name" ? "" : normalized
+  );
+  b.options = normalizeAlarmOptions(b.options);
+  return b.options;
+}
+
 function normalizeAlarmOptions(options) {
   var out = "";
   if (configOptionValue(options, ALARM_PIN_ARM_OPTION) === "0") {
@@ -520,6 +564,16 @@ function normalizeAlarmOptions(options) {
     if (!alarmActionsAreDefault(actions)) {
       out = setConfigOptionValue(out, ALARM_ACTIONS_OPTION, actions.join("|"));
     }
+  }
+  var iconMode = normalizeAlarmIconDisplayMode(
+    configOptionValue(options, ALARM_ICON_DISPLAY_OPTION));
+  if (iconMode !== "static") {
+    out = setConfigOptionValue(out, ALARM_ICON_DISPLAY_OPTION, iconMode);
+  }
+  var labelMode = normalizeAlarmLabelDisplayMode(
+    configOptionValue(options, ALARM_LABEL_DISPLAY_OPTION));
+  if (labelMode !== "name") {
+    out = setConfigOptionValue(out, ALARM_LABEL_DISPLAY_OPTION, labelMode);
   }
   return out;
 }

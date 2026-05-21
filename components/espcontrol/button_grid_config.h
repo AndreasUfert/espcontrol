@@ -257,6 +257,14 @@ inline bool alarm_action_mode_valid(const std::string &mode) {
   return mode == "away" || mode == "home" || mode == "night" || mode == "disarm";
 }
 
+inline std::string normalize_alarm_icon_display(const std::string &value) {
+  return value == "status" ? "status" : "static";
+}
+
+inline std::string normalize_alarm_label_display(const std::string &value) {
+  return value == "status" ? "status" : "name";
+}
+
 inline std::string alarm_card_options_normalized(const std::string &options) {
   std::string out;
   if (cfg_option_value(options, "pin_arm") == "0") out = "pin_arm=0";
@@ -284,6 +292,18 @@ inline std::string alarm_card_options_normalized(const std::string &options) {
       if (!out.empty()) out += ",";
       out += "actions=" + filtered;
     }
+  }
+  std::string icon_display = normalize_alarm_icon_display(
+    cfg_option_value(options, "icon_display"));
+  if (icon_display != "static") {
+    if (!out.empty()) out += ",";
+    out += "icon_display=" + icon_display;
+  }
+  std::string label_display = normalize_alarm_label_display(
+    cfg_option_value(options, "label_display"));
+  if (label_display != "name") {
+    if (!out.empty()) out += ",";
+    out += "label_display=" + label_display;
   }
   return out;
 }
@@ -974,6 +994,14 @@ inline const char *garage_card_label(const ParsedCfg &p) {
 inline bool garage_card_show_status(const ParsedCfg &p) {
   return !garage_command_mode(p.sensor) &&
     normalize_garage_label_display(cfg_option_value(p.options, "label_display")) == "status";
+}
+
+inline bool alarm_card_show_status_icon(const ParsedCfg &p) {
+  return normalize_alarm_icon_display(cfg_option_value(p.options, "icon_display")) == "status";
+}
+
+inline bool alarm_card_show_status_label(const ParsedCfg &p) {
+  return normalize_alarm_label_display(cfg_option_value(p.options, "label_display")) == "status";
 }
 
 inline const char* lock_locked_icon(const std::string &icon) {

@@ -157,6 +157,32 @@ registerButtonType("alarm", {
       }, "Icon"
     ));
 
+    function setActive(buttons, value) {
+      for (var key in buttons) buttons[key].classList.toggle("active", key === value);
+    }
+
+    var iconDisplayField = helpers.segmentControl([
+      ["static", "Static"],
+      ["status", "Status"],
+    ], alarmIconDisplayMode(b), function (value) {
+      setActive(iconDisplayField.buttons, value);
+      setAlarmIconDisplayMode(b, value);
+      helpers.saveField("options", b.options);
+      scheduleRender();
+    });
+    panel.appendChild(helpers.fieldWithControl("Icon Display", null, iconDisplayField.segment));
+
+    var labelDisplayField = helpers.segmentControl([
+      ["name", "Name"],
+      ["status", "Status"],
+    ], alarmLabelDisplayMode(b), function (value) {
+      setActive(labelDisplayField.buttons, value);
+      setAlarmLabelDisplayMode(b, value);
+      helpers.saveField("options", b.options);
+      scheduleRender();
+    });
+    panel.appendChild(helpers.fieldWithControl("Label Display", null, labelDisplayField.segment));
+
     function savePinOptions() {
       setAlarmPinRequired(b, "arm", armPinToggle.input.checked);
       setAlarmPinRequired(b, "disarm", disarmPinToggle.input.checked);
@@ -180,7 +206,9 @@ registerButtonType("alarm", {
   },
   renderPreview: function (b, helpers) {
     var label = (b.label && b.label.trim()) || (b.entity && b.entity.trim()) || "Alarm";
+    if (alarmLabelDisplayMode(b) === "status") label = "Disarmed";
     var iconName = iconSlug(b.icon && b.icon !== "Auto" ? b.icon : "Security");
+    if (alarmIconDisplayMode(b) === "status") iconName = iconSlug("Lock Open");
     return {
       iconHtml: '<span class="sp-btn-icon mdi mdi-' + iconName + '"></span>',
       labelHtml: '<span class="sp-btn-label">' + helpers.escHtml(label) + '</span>',

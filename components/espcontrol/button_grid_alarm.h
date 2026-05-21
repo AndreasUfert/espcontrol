@@ -29,6 +29,8 @@ struct AlarmCardCtx {
   int width_compensation_percent = 100;
   int grid_cols = 3;
   bool available = false;
+  bool show_status_icon = false;
+  bool show_status_label = false;
   bool pending_action_had_code = false;
 };
 
@@ -212,6 +214,17 @@ inline std::string alarm_effective_state(const std::string &state,
   return normalized.empty() ? state : normalized;
 }
 
+inline const char *alarm_state_icon(const std::string &state,
+                                    const std::string &arm_mode = "") {
+  std::string effective = alarm_effective_state(state, arm_mode);
+  if (effective == "armed_home") return find_icon("Home");
+  if (effective == "armed_away" || effective == "armed_custom_bypass") return find_icon("Security");
+  if (effective == "armed_night") return find_icon("Weather Night");
+  if (effective == "disarmed") return find_icon("Lock Open");
+  if (effective == "triggered") return find_icon("Alarm Light");
+  return find_icon("Alarm");
+}
+
 inline bool alarm_action_state_matches(const std::string &mode, const std::string &state,
                                        const std::string &arm_mode = "") {
   std::string achieved_state = alarm_action_achieved_state(mode);
@@ -226,6 +239,11 @@ inline bool alarm_action_state_progressed(const std::string &mode, const std::st
 
 inline bool alarm_state_releases_label(const std::string &state) {
   return state == "disarmed" || alarm_state_is_armed(state);
+}
+
+inline void alarm_apply_card_status_icon(AlarmCardCtx *ctx) {
+  if (!ctx || !ctx->icon_lbl || !ctx->show_status_icon) return;
+  lv_label_set_text(ctx->icon_lbl, alarm_state_icon(ctx->state, ctx->arm_mode));
 }
 
 inline std::string alarm_state_control_mode(const std::string &state) {
@@ -276,10 +294,13 @@ inline void alarm_apply_home_state(AlarmCardCtx *ctx, const std::string &state) 
   if (active) lv_obj_add_state(ctx->btn, LV_STATE_CHECKED);
   else lv_obj_clear_state(ctx->btn, LV_STATE_CHECKED);
 
+  alarm_apply_card_status_icon(ctx);
   transient_status_label_show_if_changed(
     ctx->status_label,
     alarm_state_label(state),
-    alarm_state_releases_label(state) && !unavailable && !triggered);
+    ctx->show_status_label
+      ? false
+      : (alarm_state_releases_label(state) && !unavailable && !triggered));
   alarm_clear_pending_action_if_progressed(ctx);
   alarm_control_update_modal(ctx);
 }
@@ -287,6 +308,7 @@ inline void alarm_apply_home_state(AlarmCardCtx *ctx, const std::string &state) 
 inline void alarm_apply_home_arm_mode(AlarmCardCtx *ctx, const std::string &arm_mode) {
   if (!ctx) return;
   ctx->arm_mode = arm_mode;
+  alarm_apply_card_status_icon(ctx);
   alarm_clear_pending_action_if_progressed(ctx);
   alarm_control_update_modal(ctx);
 }
@@ -968,6 +990,8 @@ inline AlarmCardCtx *create_alarm_card_context(
   ctx->options = p.options;
   ctx->btn = slot.btn;
   ctx->icon_lbl = slot.icon_lbl;
+  ctx->show_status_icon = alarm_card_show_status_icon(p);
+  ctx->show_status_label = alarm_card_show_status_label(p);
   ctx->label_font = label_font;
   ctx->pin_label_font = label_font;
   ctx->key_label_font = label_font ? label_font : value_font;
@@ -977,7 +1001,8 @@ inline AlarmCardCtx *create_alarm_card_context(
   ctx->tertiary_color = tertiary_color;
   ctx->width_compensation_percent = width_compensation_percent;
   ctx->grid_cols = cols > 0 ? cols : 1;
-  ctx->status_label = create_transient_status_label(slot.text_lbl, ctx->label);
+  ctx->status_label = create_transient_status_label(
+    slot.text_lbl, ctx->show_status_label ? "--" : ctx->label);
   alarm_set_card_state_colors(ctx, ctx->on_color);
   if (!build_default_page) return ctx;
 

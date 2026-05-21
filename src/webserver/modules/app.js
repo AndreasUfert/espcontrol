@@ -1256,6 +1256,8 @@ if (typeof globalThis !== "undefined" && globalThis.__ESPCONTROL_TEST_HOOKS__) {
     actionCardStatePrecision: actionCardStatePrecision,
     actionCardStateDisplayMode: actionCardStateDisplayMode,
     alarmPinRequired: alarmPinRequired,
+    alarmIconDisplayMode: alarmIconDisplayMode,
+    alarmLabelDisplayMode: alarmLabelDisplayMode,
     alarmVisibleActions: alarmVisibleActions,
     normalizeAlarmOptions: normalizeAlarmOptions,
     buttonTypePickerKeysForExperimental: function (enabled, isSub, selectedTypeKey) {
