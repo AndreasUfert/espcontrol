@@ -57,11 +57,10 @@ jobs:
         run: |
           CACHE_ROOT="${HOME}/.cache/espcontrol-actions/esphome"
           PLATFORMIO_CACHE="${CACHE_ROOT}/shared"
-          BUILD_CACHE="${CACHE_ROOT}/release/${{ matrix.slug }}"
+          BUILD_CACHE="${CACHE_ROOT}/release/${{ github.run_id }}-${{ github.run_attempt }}/${{ matrix.slug }}"
           mkdir -p "${PLATFORMIO_CACHE}" "${BUILD_CACHE}" builds
           rm -rf .esphome
           rm -rf builds/.esphome
-          rm -rf "${BUILD_CACHE}/build"
           echo "PLATFORMIO_CACHE=${PLATFORMIO_CACHE}" >> "$GITHUB_ENV"
           echo "BUILD_CACHE=${BUILD_CACHE}" >> "$GITHUB_ENV"
 
