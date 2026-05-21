@@ -334,7 +334,7 @@
         "display": {
           "colorCorrection": {
             "redPercent": 130,
-            "greenPercent": 105,
+            "greenPercent": 100,
             "bluePercent": 104
           },
           "wrapTallLabels": false
