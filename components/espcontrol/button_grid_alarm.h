@@ -565,7 +565,6 @@ inline void alarm_pin_open_modal(AlarmActionCtx *action) {
   control_modal_style_overlay(ui.overlay);
   ui.panel = lv_obj_create(ui.overlay);
   control_modal_style_panel(ui.panel, radius);
-  lv_obj_set_style_bg_color(ui.panel, lv_color_hex(DARK_OVERLAY), LV_PART_MAIN);
   control_modal_apply_panel_layout(ui.overlay, ui.panel, layout, radius);
 
   ui.back_btn = control_modal_create_round_button(
@@ -732,7 +731,6 @@ inline void alarm_control_open_modal(AlarmCardCtx *ctx) {
   control_modal_style_overlay(ui.overlay);
   ui.panel = lv_obj_create(ui.overlay);
   control_modal_style_panel(ui.panel, radius);
-  lv_obj_set_style_bg_color(ui.panel, lv_color_hex(DARK_OVERLAY), LV_PART_MAIN);
   control_modal_apply_panel_layout(ui.overlay, ui.panel, layout, radius);
 
   ui.back_btn = control_modal_create_round_button(
