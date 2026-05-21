@@ -88,7 +88,6 @@ jobs:
     runs-on: self-hosted
     strategy:
       fail-fast: false
-      max-parallel: 1
       matrix:
         slug:
           - guition-esp32-p4-jc1060p470
@@ -101,7 +100,10 @@ jobs:
         run: rm -rf "${GITHUB_WORKSPACE}/.esphome" || sudo rm -rf "${GITHUB_WORKSPACE}/.esphome"
 
       - uses: actions/checkout@v6
+        with:
+          path: espcontrol-${{ matrix.slug }}
       - run: git sparse-checkout disable || true
+        working-directory: espcontrol-${{ matrix.slug }}
 
       - name: Select Docker command
         run: |
@@ -115,6 +117,7 @@ jobs:
           fi
 
       - name: Prepare local ESPHome cache
+        working-directory: espcontrol-${{ matrix.slug }}
         run: |
           CACHE_ROOT="${HOME}/.cache/espcontrol-actions/esphome"
           PLATFORMIO_CACHE="${CACHE_ROOT}/shared"
@@ -126,6 +129,7 @@ jobs:
           echo "BUILD_CACHE=${BUILD_CACHE}" >> "$GITHUB_ENV"
 
       - name: Compile firmware
+        working-directory: espcontrol-${{ matrix.slug }}
         run: >-
           ${DOCKER} run --rm
           --user "$(id -u):$(id -g)"
