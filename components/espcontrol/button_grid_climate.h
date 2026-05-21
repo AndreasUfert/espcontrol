@@ -15,6 +15,7 @@ constexpr int CLIMATE_DEFAULT_STEP_TENTHS = 5;
 constexpr uint32_t CLIMATE_TEMP_DEBOUNCE_MS = 450;
 constexpr int CLIMATE_MODAL_ARC_SIZE_PERCENT = 94;
 constexpr lv_coord_t CLIMATE_MODAL_ARC_UP_REF_PX = 16;
+constexpr int CLIMATE_OPTION_ROW_WIDTH_PERCENT = 88;
 constexpr lv_coord_t CLIMATE_MODAL_OFF_TEXT_DOWN_REF_PX = 24;
 
 struct ClimateControlCtx {
@@ -791,7 +792,7 @@ inline lv_obj_t *climate_create_option_chip(lv_obj_t *parent, const char *icon,
   lv_obj_set_size(btn, 240, 94);
   lv_obj_set_flex_grow(btn, 1);
   apply_width_compensation(btn, width_compensation_percent);
-  lv_obj_set_style_radius(btn, 22, LV_PART_MAIN);
+  lv_obj_set_style_radius(btn, 47, LV_PART_MAIN);
   lv_obj_set_style_bg_color(btn, lv_color_hex(DARK_BACKGROUND_SECONDARY), LV_PART_MAIN);
   lv_obj_set_style_bg_opa(btn, LV_OPA_COVER, LV_PART_MAIN);
   lv_obj_set_style_border_width(btn, 0, LV_PART_MAIN);
@@ -1164,6 +1165,8 @@ inline void climate_control_layout_modal(ClimateControlCtx *ctx) {
   lv_coord_t title_center_y = value_center_y -
     (value_h / 2 + layout.title_gap + title_h / 2);
   lv_coord_t chip_h = layout.short_side < 520 ? 72 : 94;
+  lv_coord_t chip_gap = control_modal_scaled_px(24, layout.short_side);
+  if (chip_gap < 16) chip_gap = 16;
 
   control_modal_apply_panel_layout(ui.overlay, ui.panel, layout,
     control_modal_card_radius(ctx->btn));
@@ -1197,9 +1200,17 @@ inline void climate_control_layout_modal(ClimateControlCtx *ctx) {
   control_modal_apply_step_buttons_layout(ui.minus_btn, ui.plus_btn, controls_layout);
   lv_obj_align(ui.low_btn, LV_ALIGN_CENTER, -46, controls_center_y - layout.btn_size / 2 - 24);
   lv_obj_align(ui.high_btn, LV_ALIGN_CENTER, 46, controls_center_y - layout.btn_size / 2 - 24);
+  lv_obj_set_width(ui.chips, lv_pct(CLIMATE_OPTION_ROW_WIDTH_PERCENT));
   lv_obj_set_height(ui.chips, chip_h);
-  if (ui.mode_chip) lv_obj_set_height(ui.mode_chip, chip_h);
-  if (ui.preset_chip) lv_obj_set_height(ui.preset_chip, chip_h);
+  lv_obj_set_style_pad_column(ui.chips, chip_gap, LV_PART_MAIN);
+  if (ui.mode_chip) {
+    lv_obj_set_height(ui.mode_chip, chip_h);
+    lv_obj_set_style_radius(ui.mode_chip, chip_h / 2, LV_PART_MAIN);
+  }
+  if (ui.preset_chip) {
+    lv_obj_set_height(ui.preset_chip, chip_h);
+    lv_obj_set_style_radius(ui.preset_chip, chip_h / 2, LV_PART_MAIN);
+  }
   lv_obj_align(ui.chips, LV_ALIGN_BOTTOM_MID, 0, -layout.inset);
   if (ui.menu_view) {
     lv_obj_set_size(ui.menu_view, layout.panel_w, layout.panel_h);
@@ -1210,6 +1221,8 @@ inline void climate_control_layout_modal(ClimateControlCtx *ctx) {
     lv_coord_t tile_h = layout.short_side < 520 ? 86 : 94;
     lv_obj_set_size(ui.menu_mode_btn, tile_w, tile_h);
     lv_obj_set_size(ui.menu_preset_btn, tile_w, tile_h);
+    lv_obj_set_style_radius(ui.menu_mode_btn, tile_h / 2, LV_PART_MAIN);
+    lv_obj_set_style_radius(ui.menu_preset_btn, tile_h / 2, LV_PART_MAIN);
     apply_width_compensation(ui.menu_mode_btn, ctx->width_compensation_percent);
     apply_width_compensation(ui.menu_preset_btn, ctx->width_compensation_percent);
     lv_obj_align(ui.menu_mode_btn, LV_ALIGN_CENTER, 0, -(tile_h + menu_gap) / 2);
@@ -1482,11 +1495,11 @@ inline void climate_control_open_modal(ClimateControlCtx *ctx) {
   }, LV_EVENT_CLICKED, nullptr);
 
   ui.chips = lv_obj_create(ui.panel);
-  lv_obj_set_width(ui.chips, lv_pct(96));
+  lv_obj_set_width(ui.chips, lv_pct(CLIMATE_OPTION_ROW_WIDTH_PERCENT));
   lv_obj_set_style_bg_opa(ui.chips, LV_OPA_TRANSP, LV_PART_MAIN);
   lv_obj_set_style_border_width(ui.chips, 0, LV_PART_MAIN);
   lv_obj_set_style_pad_all(ui.chips, 0, LV_PART_MAIN);
-  lv_obj_set_style_pad_column(ui.chips, 8, LV_PART_MAIN);
+  lv_obj_set_style_pad_column(ui.chips, 24, LV_PART_MAIN);
   lv_obj_set_layout(ui.chips, LV_LAYOUT_FLEX);
   lv_obj_set_style_flex_flow(ui.chips, LV_FLEX_FLOW_ROW, LV_PART_MAIN);
   lv_obj_set_style_flex_main_place(ui.chips, LV_FLEX_ALIGN_CENTER, LV_PART_MAIN);
