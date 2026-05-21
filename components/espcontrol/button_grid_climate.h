@@ -791,7 +791,7 @@ inline lv_obj_t *climate_create_option_chip(lv_obj_t *parent, const char *icon,
                                             int width_compensation_percent) {
   lv_obj_t *btn = lv_btn_create(parent);
   lv_obj_set_size(btn, 240, 94);
-  lv_obj_set_flex_grow(btn, 1);
+  lv_obj_set_flex_grow(btn, 0);
   apply_width_compensation(btn, width_compensation_percent);
   lv_obj_set_style_radius(btn, 47, LV_PART_MAIN);
   lv_obj_set_style_bg_color(btn, lv_color_hex(DARK_BACKGROUND_SECONDARY), LV_PART_MAIN);
@@ -1209,12 +1209,13 @@ inline void climate_control_layout_modal(ClimateControlCtx *ctx) {
   lv_obj_set_width(ui.chips, lv_pct(CLIMATE_OPTION_ROW_WIDTH_PERCENT));
   lv_obj_set_height(ui.chips, chip_h);
   lv_obj_set_style_pad_column(ui.chips, chip_gap, LV_PART_MAIN);
+  lv_coord_t option_chip_w = layout.short_side < 520 ? 180 : 240;
   if (ui.mode_chip) {
-    lv_obj_set_height(ui.mode_chip, chip_h);
+    lv_obj_set_size(ui.mode_chip, option_chip_w, chip_h);
     lv_obj_set_style_radius(ui.mode_chip, chip_h / 2, LV_PART_MAIN);
   }
   if (ui.preset_chip) {
-    lv_obj_set_height(ui.preset_chip, chip_h);
+    lv_obj_set_size(ui.preset_chip, option_chip_w, chip_h);
     lv_obj_set_style_radius(ui.preset_chip, chip_h / 2, LV_PART_MAIN);
   }
   lv_obj_align(ui.chips, LV_ALIGN_BOTTOM_MID, 0, -layout.inset);
