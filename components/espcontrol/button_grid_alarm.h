@@ -694,7 +694,7 @@ inline lv_coord_t alarm_control_mode_button_radius(const ControlModalLayout &lay
   if (control_modal_is_jc4880p443_size(layout)) {
     lv_coord_t compact_radius = control_modal_scaled_px(10, layout.short_side);
     if (compact_radius < 8) compact_radius = 8;
-    if (radius > compact_radius) radius = compact_radius;
+    if (radius > compact_radius) radius = (radius + compact_radius) / 2;
   }
   return radius;
 }
@@ -705,7 +705,7 @@ inline lv_coord_t alarm_control_rail_radius(const ControlModalLayout &layout,
   if (control_modal_is_jc4880p443_size(layout)) {
     lv_coord_t radius = control_modal_scaled_px(14, layout.short_side);
     if (radius < control_radius) radius = control_radius;
-    return radius;
+    return (control_radius + button_inset + radius) / 2;
   }
   return control_radius + button_inset;
 }
