@@ -1228,8 +1228,9 @@ inline void climate_control_layout_modal(ClimateControlCtx *ctx) {
   lv_coord_t title_center_y = value_center_y -
     (value_h / 2 + layout.title_gap + title_h / 2);
   bool roomy_landscape = layout.panel_w >= 900 && layout.panel_h <= 520;
+  bool medium_landscape = layout.panel_w >= 760 && layout.panel_h <= 520;
   lv_coord_t chip_h = layout.short_side < 520
-    ? (roomy_landscape ? 76 : 72)
+    ? (roomy_landscape ? 76 : (medium_landscape ? 94 : 72))
     : 94;
   lv_coord_t chip_gap = control_modal_scaled_px(24, layout.short_side);
   if (chip_gap < 16) chip_gap = 16;
@@ -1270,7 +1271,7 @@ inline void climate_control_layout_modal(ClimateControlCtx *ctx) {
   lv_obj_set_height(ui.chips, chip_h);
   lv_obj_set_style_pad_column(ui.chips, chip_gap, LV_PART_MAIN);
   lv_coord_t option_chip_w = compensated_width(
-    layout.short_side < 520 ? (roomy_landscape ? 224 : 180) : 240,
+    layout.short_side < 520 ? (roomy_landscape ? 224 : (medium_landscape ? 240 : 180)) : 240,
     ctx->width_compensation_percent);
   if (ui.mode_chip) {
     lv_obj_set_size(ui.mode_chip, option_chip_w, chip_h);
