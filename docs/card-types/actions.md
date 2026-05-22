@@ -1,14 +1,14 @@
 ---
 title: Action Cards
 description:
-  How to use action cards on your EspControl panel to run Home Assistant scenes, scripts, automations, buttons, and helpers.
+  How to use action cards on your EspControl panel to run Home Assistant scenes, scripts, automations, buttons, vacuums, and helpers.
 ---
 
 # Action
 
 An Action card is a simple one-tap shortcut. It sends a selected Home Assistant action when you tap it, but it does not show an on/off state.
 
-Use Action cards for shortcuts such as running a scene, starting a script, triggering an automation, pressing a Home Assistant button entity, or changing a helper.
+Use Action cards for shortcuts such as running a scene, starting a script, triggering an automation, pressing a Home Assistant button entity, starting a vacuum, or changing a helper.
 
 ## Setting Up an Action Card
 
@@ -44,6 +44,7 @@ Action cards do not currently pass script variables or extra data. If a script n
 | **Run Script** | `script.goodnight` | None |
 | **Trigger Automation** | `automation.goodnight` | None |
 | **Press Button** | `button.restart_router` | None |
+| **Start Vacuum** | `vacuum.k11_vacuum_784c` | None |
 | **Press Input Button** | `input_button.doorbell` | None |
 | **Toggle Helper** | `input_boolean.guest_mode` | None |
 | **Set Number Helper** | `input_number.target_level` | Value |
