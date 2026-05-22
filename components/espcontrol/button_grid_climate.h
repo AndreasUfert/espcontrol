@@ -18,6 +18,7 @@ constexpr lv_coord_t CLIMATE_MODAL_ARC_UP_REF_PX = 30;
 constexpr lv_coord_t CLIMATE_MODAL_SQUARE_ARC_UP_REF_PX = 24;
 constexpr lv_coord_t CLIMATE_MODAL_STEP_BUTTONS_UP_REF_PX = 42;
 constexpr lv_coord_t CLIMATE_MODAL_SQUARE_STEP_BUTTONS_UP_REF_PX = 18;
+constexpr lv_coord_t CLIMATE_MODAL_4848_STEP_BUTTONS_UP_REF_PX = 30;
 constexpr lv_coord_t CLIMATE_MODAL_SQUARE_LABELS_DOWN_REF_PX = 18;
 constexpr lv_coord_t CLIMATE_MODAL_STEP_BUTTON_GAP_REF_PX = 16;
 constexpr uint16_t CLIMATE_MODAL_STEP_ICON_ZOOM = 214;
@@ -426,6 +427,18 @@ inline void climate_apply_background_arc_width(lv_obj_t *arc, const ControlModal
 inline bool climate_control_uses_square_modal_tuning(const ControlModalLayout &layout) {
   return (layout.sw == 480 && layout.sh == 480) ||
          (layout.sw == 720 && layout.sh == 720);
+}
+
+inline bool climate_control_uses_4848_modal_tuning(const ControlModalLayout &layout) {
+  return layout.sw == 480 && layout.sh == 480;
+}
+
+inline lv_coord_t climate_control_step_buttons_up_ref(const ControlModalLayout &layout) {
+  if (climate_control_uses_4848_modal_tuning(layout))
+    return CLIMATE_MODAL_4848_STEP_BUTTONS_UP_REF_PX;
+  if (climate_control_uses_square_modal_tuning(layout))
+    return CLIMATE_MODAL_SQUARE_STEP_BUTTONS_UP_REF_PX;
+  return CLIMATE_MODAL_STEP_BUTTONS_UP_REF_PX;
 }
 
 inline ControlModalLayout climate_control_calc_layout(ClimateControlCtx *ctx) {
@@ -1225,9 +1238,7 @@ inline void climate_control_layout_modal(ClimateControlCtx *ctx) {
   lv_coord_t value_center_y = layout.value_center_y -
     control_modal_scaled_px(22, layout.short_side) +
     control_modal_scaled_px(labels_down_ref, layout.short_side);
-  lv_coord_t step_buttons_up_ref = climate_control_uses_square_modal_tuning(layout)
-    ? CLIMATE_MODAL_SQUARE_STEP_BUTTONS_UP_REF_PX
-    : CLIMATE_MODAL_STEP_BUTTONS_UP_REF_PX;
+  lv_coord_t step_buttons_up_ref = climate_control_step_buttons_up_ref(layout);
   lv_coord_t controls_center_y = layout.controls_center_y -
     control_modal_scaled_px(step_buttons_up_ref, layout.short_side);
   lv_coord_t title_center_y = value_center_y -
