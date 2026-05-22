@@ -16,6 +16,7 @@ constexpr uint32_t CLIMATE_TEMP_DEBOUNCE_MS = 450;
 constexpr int CLIMATE_MODAL_ARC_SIZE_PERCENT = 88;
 constexpr lv_coord_t CLIMATE_MODAL_ARC_UP_REF_PX = 30;
 constexpr lv_coord_t CLIMATE_MODAL_STEP_BUTTONS_UP_REF_PX = 42;
+constexpr lv_coord_t CLIMATE_MODAL_SQUARE_STEP_BUTTONS_UP_REF_PX = 18;
 constexpr lv_coord_t CLIMATE_MODAL_STEP_BUTTON_GAP_REF_PX = 16;
 constexpr uint16_t CLIMATE_MODAL_STEP_ICON_ZOOM = 214;
 constexpr int CLIMATE_OPTION_ROW_WIDTH_PERCENT = 88;
@@ -418,6 +419,11 @@ inline void climate_apply_background_arc_width(lv_obj_t *arc, const ControlModal
   lv_coord_t extra = control_modal_scaled_px(4, layout.short_side);
   if (extra < 2) extra = 2;
   lv_obj_set_style_arc_width(arc, layout.arc_stroke + extra, LV_PART_MAIN);
+}
+
+inline bool climate_control_uses_square_step_button_offset(const ControlModalLayout &layout) {
+  return (layout.sw == 480 && layout.sh == 480) ||
+         (layout.sw == 720 && layout.sh == 720);
 }
 
 inline ControlModalLayout climate_control_calc_layout(ClimateControlCtx *ctx) {
@@ -1210,8 +1216,11 @@ inline void climate_control_layout_modal(ClimateControlCtx *ctx) {
   lv_coord_t value_h = ui.target_row ? lv_obj_get_height(ui.target_row) : 0;
   lv_coord_t value_center_y = layout.value_center_y -
     control_modal_scaled_px(22, layout.short_side);
+  lv_coord_t step_buttons_up_ref = climate_control_uses_square_step_button_offset(layout)
+    ? CLIMATE_MODAL_SQUARE_STEP_BUTTONS_UP_REF_PX
+    : CLIMATE_MODAL_STEP_BUTTONS_UP_REF_PX;
   lv_coord_t controls_center_y = layout.controls_center_y -
-    control_modal_scaled_px(CLIMATE_MODAL_STEP_BUTTONS_UP_REF_PX, layout.short_side);
+    control_modal_scaled_px(step_buttons_up_ref, layout.short_side);
   lv_coord_t title_center_y = value_center_y -
     (value_h / 2 + layout.title_gap + title_h / 2);
   bool roomy_landscape = layout.panel_w >= 900 && layout.panel_h <= 520;
