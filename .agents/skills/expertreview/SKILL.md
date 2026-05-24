@@ -15,6 +15,9 @@ description: >-
 Review the codebase as a senior product-minded engineer. Produce a ranked list
 of recommendations to improve maintainability, consistency, component reuse,
 quality, and upgrade safety without changing the current end-user experience.
+Recommendations should be direct and appropriately bold: if the structure of
+the project needs a large change to reduce long-term risk, say so clearly
+instead of only suggesting small local fixes.
 
 Default to review only. Do not implement code changes, alter behavior, close
 issues, or start a large refactor unless the user explicitly asks.
@@ -33,6 +36,13 @@ plain language while still being precise about risk, impact, and effort.
   project patterns over one-off implementations.
 - Reduce duplication when it lowers future maintenance risk. Do not recommend
   abstraction for its own sake.
+- Be willing to recommend large structural changes when the evidence shows that
+  incremental fixes would leave the same maintenance or upgrade risk in place.
+- Do not soften important recommendations just because they are disruptive.
+  Label them clearly, explain why they are worth doing, and separate the
+  recommendation from the rollout plan.
+- Always pair large or high-risk recommendations with a practical mitigation
+  plan so the user can see how the work can be controlled.
 - Separate user-facing polish suggestions from internal quality improvements.
 - Rank work by practical importance, not by what is easiest to spot.
 
@@ -89,12 +99,36 @@ For each significant recommendation, gather concrete evidence:
 - Explain what pattern or risk was observed.
 - Confirm whether the recommendation preserves the current user experience.
 - Describe how existing users would migrate cleanly.
+- Identify the main risks of making the change and how to reduce them.
 - Estimate the work in small, medium, or large terms.
 
 Run lightweight checks only when they help validate the review. Avoid expensive
 or invasive checks unless the user asks for deeper confidence.
 
-### 5. Prioritize
+### 5. Add Risk Controls for Large Changes
+
+For every medium, large, or structurally significant recommendation, include
+steps to mitigate and manage the risk of doing the work. The risk controls
+should be practical and staged, such as:
+
+- Split the work into reviewable phases with a clear stopping point after each
+  phase.
+- Preserve old behavior behind compatibility layers, defaults, feature flags, or
+  adapter functions while the new structure is introduced.
+- Add characterization tests or generated-output comparisons before moving code,
+  so current behavior is captured before refactoring starts.
+- Migrate one representative path first, verify it, then repeat the pattern for
+  the remaining paths.
+- Keep user-facing output, saved settings, generated firmware/configuration, and
+  public interfaces stable until a deliberate migration step is ready.
+- Define rollback points, manual test steps, and release checks before changing
+  high-impact areas.
+- Document any user-visible migration path in plain language.
+
+Do not use risk as a reason to avoid recommending necessary structural work.
+Instead, explain how to make the work safer.
+
+### 6. Prioritize
 
 Rank recommendations using this order:
 
@@ -118,10 +152,12 @@ Then provide ranked recommendations:
 ```text
 1. <Recommendation title>
    Importance: Critical / High / Medium / Low
+   Recommendation strength: Strong / Moderate / Optional
    Why it matters: <plain-English reason>
    Evidence: <files, patterns, or examples reviewed>
    User experience impact: <no change / optional consistency improvement / needs careful handling>
    Migration approach: <how existing users upgrade cleanly>
+   Risk management: <specific steps to reduce rollout, regression, and migration risk>
    Work required: Small / Medium / Large, with the main tasks
    Suggested first step: <practical next action>
 ```
