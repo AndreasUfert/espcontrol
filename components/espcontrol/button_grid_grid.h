@@ -1579,8 +1579,8 @@ inline void grid_phase3(
   }
 
   if (indoor_on && !indoor_entity.empty()) {
-    esphome::api::global_api_server->subscribe_home_assistant_state(
-      indoor_entity, {},
+    ha_subscribe_state(
+      indoor_entity,
       std::function<void(esphome::StringRef)>(
         [indoor_temp_ptr, outdoor_temp_ptr, temp_label](esphome::StringRef state) {
           float val = 0.0f;
@@ -1606,8 +1606,8 @@ inline void grid_phase3(
   }
 
   if (outdoor_on && !outdoor_entity.empty()) {
-    esphome::api::global_api_server->subscribe_home_assistant_state(
-      outdoor_entity, {},
+    ha_subscribe_state(
+      outdoor_entity,
       std::function<void(esphome::StringRef)>(
         [indoor_temp_ptr, outdoor_temp_ptr, temp_label](esphome::StringRef state) {
           float val = 0.0f;
@@ -1633,8 +1633,8 @@ inline void grid_phase3(
   }
 
   if (!presence_entity.empty()) {
-    esphome::api::global_api_server->subscribe_home_assistant_state(
-      presence_entity, {},
+    ha_subscribe_state(
+      presence_entity,
       std::function<void(esphome::StringRef)>(
         [presence_detected_ptr, wake_callback, sleep_callback](esphome::StringRef state) {
           if (state == "on") {
@@ -1650,8 +1650,8 @@ inline void grid_phase3(
   }
 
   if (!media_player_entity.empty() && media_player_playing_ptr) {
-    esphome::api::global_api_server->subscribe_home_assistant_state(
-      media_player_entity, {},
+    ha_subscribe_state(
+      media_player_entity,
       std::function<void(esphome::StringRef)>(
         [media_player_playing_ptr](esphome::StringRef state) {
           *media_player_playing_ptr = state == "playing";

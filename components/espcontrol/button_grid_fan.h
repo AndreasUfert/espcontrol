@@ -380,8 +380,8 @@ inline FanCardCtx *create_fan_card_context(
 inline void subscribe_fan_card_state(FanCardCtx *ctx) {
   if (!ctx || ctx->entity_id.empty()) return;
   auto refresh = [ctx]() { fan_refresh_card(ctx); };
-  esphome::api::global_api_server->subscribe_home_assistant_state(
-    ctx->entity_id, {},
+  ha_subscribe_state(
+    ctx->entity_id,
     std::function<void(esphome::StringRef)>(
       [ctx, refresh](esphome::StringRef state) {
         ctx->state = fan_lower(fan_trim(string_ref_limited(state, HA_SHORT_STATE_MAX_LEN)));
@@ -391,7 +391,7 @@ inline void subscribe_fan_card_state(FanCardCtx *ctx) {
         fan_preset_close_if_unsupported(ctx);
       })
   );
-  esphome::api::global_api_server->subscribe_home_assistant_state(
+  ha_subscribe_attribute(
     ctx->entity_id, std::string("friendly_name"),
     std::function<void(esphome::StringRef)>(
       [ctx](esphome::StringRef value) {
@@ -401,7 +401,7 @@ inline void subscribe_fan_card_state(FanCardCtx *ctx) {
         }
       })
   );
-  esphome::api::global_api_server->subscribe_home_assistant_state(
+  ha_subscribe_attribute(
     ctx->entity_id, std::string("oscillating"),
     std::function<void(esphome::StringRef)>(
       [ctx, refresh](esphome::StringRef value) {
@@ -412,7 +412,7 @@ inline void subscribe_fan_card_state(FanCardCtx *ctx) {
         refresh();
       })
   );
-  esphome::api::global_api_server->subscribe_home_assistant_state(
+  ha_subscribe_attribute(
     ctx->entity_id, std::string("direction"),
     std::function<void(esphome::StringRef)>(
       [ctx, refresh](esphome::StringRef value) {
@@ -421,7 +421,7 @@ inline void subscribe_fan_card_state(FanCardCtx *ctx) {
         refresh();
       })
   );
-  esphome::api::global_api_server->subscribe_home_assistant_state(
+  ha_subscribe_attribute(
     ctx->entity_id, std::string("preset_mode"),
     std::function<void(esphome::StringRef)>(
       [ctx, refresh](esphome::StringRef value) {
@@ -429,7 +429,7 @@ inline void subscribe_fan_card_state(FanCardCtx *ctx) {
         refresh();
       })
   );
-  esphome::api::global_api_server->subscribe_home_assistant_state(
+  ha_subscribe_attribute(
     ctx->entity_id, std::string("preset_modes"),
     std::function<void(esphome::StringRef)>(
       [ctx, refresh](esphome::StringRef value) {

@@ -42,8 +42,8 @@ inline void subscribe_sensor_value(lv_obj_t *sensor_lbl, const std::string &sens
                                    uint32_t on_color = DEFAULT_SLIDER_COLOR,
                                    uint32_t sensor_color = DEFAULT_TERTIARY_COLOR) {
   std::string display_unit = trim_display_unit(unit);
-  esphome::api::global_api_server->subscribe_home_assistant_state(
-    sensor_id, {},
+  ha_subscribe_state(
+    sensor_id,
     std::function<void(esphome::StringRef)>(
       [sensor_lbl, precision, unit_lbl, display_unit, availability_obj,
        active_color, on_color, sensor_color](esphome::StringRef state) {
@@ -69,8 +69,8 @@ inline void subscribe_sensor_value(lv_obj_t *sensor_lbl, const std::string &sens
 }
 
 inline void subscribe_toggle_text_sensor_value(ToggleTextSensorCtx *ctx, const std::string &sensor_id) {
-  esphome::api::global_api_server->subscribe_home_assistant_state(
-    sensor_id, {},
+  ha_subscribe_state(
+    sensor_id,
     std::function<void(esphome::StringRef)>([ctx](esphome::StringRef state) {
       if (!ctx) return;
       ctx->sensor_text = text_sensor_display_text(state);
@@ -84,8 +84,8 @@ inline void subscribe_text_sensor_value(lv_obj_t *text_lbl, const std::string &s
                                         bool active_color = false,
                                         uint32_t on_color = DEFAULT_SLIDER_COLOR,
                                         uint32_t sensor_color = DEFAULT_TERTIARY_COLOR) {
-  esphome::api::global_api_server->subscribe_home_assistant_state(
-    sensor_id, {},
+  ha_subscribe_state(
+    sensor_id,
     std::function<void(esphome::StringRef)>(
       [text_lbl, availability_obj, active_color, on_color, sensor_color](esphome::StringRef state) {
       bool unavailable = ha_state_unavailable_ref(state);
@@ -105,8 +105,8 @@ inline void subscribe_door_window_state(lv_obj_t *btn_ptr, lv_obj_t *icon_lbl,
                                         bool active_color,
                                         uint32_t on_color,
                                         uint32_t sensor_color) {
-  esphome::api::global_api_server->subscribe_home_assistant_state(
-    sensor_id, {},
+  ha_subscribe_state(
+    sensor_id,
     std::function<void(esphome::StringRef)>(
       [btn_ptr, icon_lbl, closed_icon, open_icon, active_color, on_color, sensor_color](esphome::StringRef state) {
         bool unavailable = ha_state_unavailable_ref(state);
@@ -122,8 +122,8 @@ inline void subscribe_door_window_state(lv_obj_t *btn_ptr, lv_obj_t *icon_lbl,
 }
 
 inline void subscribe_weather_state(lv_obj_t *icon_lbl, lv_obj_t *text_lbl, const std::string &entity_id) {
-  esphome::api::global_api_server->subscribe_home_assistant_state(
-    entity_id, {},
+  ha_subscribe_state(
+    entity_id,
     std::function<void(esphome::StringRef)>([icon_lbl, text_lbl](esphome::StringRef state) {
       std::string state_text = string_ref_limited(state, HA_SHORT_STATE_MAX_LEN);
       lv_label_set_text(icon_lbl, weather_icon_for_state(state_text));
@@ -137,8 +137,8 @@ inline void subscribe_garage_state(lv_obj_t *btn_ptr, lv_obj_t *icon_lbl,
                                    const char *closed_icon, const char *open_icon,
                                    const std::string &entity_id,
                                    bool persistent_status = false) {
-  esphome::api::global_api_server->subscribe_home_assistant_state(
-    entity_id, {},
+  ha_subscribe_state(
+    entity_id,
     std::function<void(esphome::StringRef)>(
       [btn_ptr, icon_lbl, status_label, closed_icon, open_icon, persistent_status](esphome::StringRef state) {
         std::string state_text = string_ref_limited(state, HA_SHORT_STATE_MAX_LEN);
@@ -159,8 +159,8 @@ inline void subscribe_cover_toggle_state(lv_obj_t *btn_ptr, lv_obj_t *icon_lbl,
                                          TransientStatusLabel *status_label,
                                          const char *closed_icon, const char *open_icon,
                                          const std::string &entity_id) {
-  esphome::api::global_api_server->subscribe_home_assistant_state(
-    entity_id, {},
+  ha_subscribe_state(
+    entity_id,
     std::function<void(esphome::StringRef)>(
       [btn_ptr, icon_lbl, status_label, closed_icon, open_icon](esphome::StringRef state) {
         std::string state_text = string_ref_limited(state, HA_SHORT_STATE_MAX_LEN);
@@ -181,8 +181,8 @@ inline void subscribe_lock_state(lv_obj_t *btn_ptr, lv_obj_t *icon_lbl,
                                  const char *locked_icon, const char *unlocked_icon,
                                  LockCardCtx *ctx) {
   if (!ctx) return;
-  esphome::api::global_api_server->subscribe_home_assistant_state(
-    ctx->entity_id, {},
+  ha_subscribe_state(
+    ctx->entity_id,
     std::function<void(esphome::StringRef)>(
       [btn_ptr, icon_lbl, status_label, locked_icon, unlocked_icon, ctx](esphome::StringRef state) {
         std::string state_text = string_ref_limited(state, HA_SHORT_STATE_MAX_LEN);
@@ -203,7 +203,7 @@ inline void subscribe_lock_state(lv_obj_t *btn_ptr, lv_obj_t *icon_lbl,
 // Subscribe to an entity's friendly_name attribute and use it as the button label
 inline void subscribe_friendly_name(TransientStatusLabel *status_label,
                                     const std::string &entity_id) {
-  esphome::api::global_api_server->subscribe_home_assistant_state(
+  ha_subscribe_attribute(
     entity_id, std::string("friendly_name"),
     std::function<void(esphome::StringRef)>([status_label](esphome::StringRef name) {
       transient_status_label_set_steady(status_label, string_ref_limited(name, HA_FRIENDLY_NAME_MAX_LEN));
@@ -213,7 +213,7 @@ inline void subscribe_friendly_name(TransientStatusLabel *status_label,
 
 inline void subscribe_friendly_name(ToggleTextSensorCtx *ctx,
                                     const std::string &entity_id) {
-  esphome::api::global_api_server->subscribe_home_assistant_state(
+  ha_subscribe_attribute(
     entity_id, std::string("friendly_name"),
     std::function<void(esphome::StringRef)>([ctx](esphome::StringRef name) {
       if (!ctx) return;
@@ -224,7 +224,7 @@ inline void subscribe_friendly_name(ToggleTextSensorCtx *ctx,
 }
 
 inline void subscribe_friendly_name(lv_obj_t *text_lbl, const std::string &entity_id) {
-  esphome::api::global_api_server->subscribe_home_assistant_state(
+  ha_subscribe_attribute(
     entity_id, std::string("friendly_name"),
     std::function<void(esphome::StringRef)>([text_lbl](esphome::StringRef name) {
       lv_label_set_text_limited(text_lbl, name, HA_FRIENDLY_NAME_MAX_LEN);
@@ -241,8 +241,8 @@ inline void subscribe_toggle_state(lv_obj_t *btn_ptr, lv_obj_t *icon_lbl,
                                    ToggleTextSensorCtx *text_sensor_ctx,
                                    const std::string &entity_id,
                                    bool disable_interaction = true) {
-  esphome::api::global_api_server->subscribe_home_assistant_state(
-    entity_id, {},
+  ha_subscribe_state(
+    entity_id,
     std::function<void(esphome::StringRef)>(
       [btn_ptr, icon_lbl, sensor_ctr, slot_has_sensor, slot_sensor_text_mode,
        slot_has_icon_on, slot_icon_off, slot_icon_on, text_sensor_ctx,
@@ -281,8 +281,8 @@ inline void subscribe_control_availability(lv_obj_t *visual_obj, lv_obj_t *input
                                            const std::string &entity_id,
                                            bool disable_interaction = true) {
   if (entity_id.empty()) return;
-  esphome::api::global_api_server->subscribe_home_assistant_state(
-    entity_id, {},
+  ha_subscribe_state(
+    entity_id,
     std::function<void(esphome::StringRef)>(
       [visual_obj, input_obj, disable_interaction](esphome::StringRef state) {
         apply_control_availability(
@@ -351,8 +351,8 @@ inline void apply_action_card_display_value(ActionCardStateCtx *ctx,
 inline void subscribe_action_card_target_availability(ActionCardStateCtx *ctx,
                                                       const std::string &entity_id) {
   if (!ctx || entity_id.empty()) return;
-  esphome::api::global_api_server->subscribe_home_assistant_state(
-    entity_id, {},
+  ha_subscribe_state(
+    entity_id,
     std::function<void(esphome::StringRef)>([ctx](esphome::StringRef state) {
       ctx->action_available = !ha_state_unavailable_ref(state);
       apply_action_card_availability(ctx);
@@ -364,8 +364,8 @@ inline void subscribe_action_card_display_state(ActionCardStateCtx *ctx,
                                                 const std::string &entity_id) {
   if (!ctx || entity_id.empty()) return;
   ctx->has_state_entity = true;
-  esphome::api::global_api_server->subscribe_home_assistant_state(
-    entity_id, {},
+  ha_subscribe_state(
+    entity_id,
     std::function<void(esphome::StringRef)>([ctx](esphome::StringRef state) {
       bool unavailable = ha_state_unavailable_ref(state);
       ctx->state_available = !unavailable;

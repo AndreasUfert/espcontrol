@@ -355,8 +355,8 @@ inline void subscribe_slider_state(lv_obj_t *btn_ptr, lv_obj_t *icon_lbl,
   lv_coord_t rad = sctx ? sctx->radius : 0;
   bool is_cover = is_cover_entity(entity_id);
   bool is_fan = is_fan_entity(entity_id);
-  esphome::api::global_api_server->subscribe_home_assistant_state(
-    entity_id, {},
+  ha_subscribe_state(
+    entity_id,
     std::function<void(esphome::StringRef)>(
       [slider, btn_ptr, fill, horiz, inv, rad, icon_lbl, has_icon_on, icon_off, icon_on, sctx](esphome::StringRef state) {
         bool unavailable = ha_state_unavailable_ref(state);
@@ -372,7 +372,7 @@ inline void subscribe_slider_state(lv_obj_t *btn_ptr, lv_obj_t *icon_lbl,
       })
   );
   if (is_cover) {
-    esphome::api::global_api_server->subscribe_home_assistant_state(
+    ha_subscribe_attribute(
       entity_id, std::string(cover_tilt ? "current_tilt_position" : "current_position"),
       std::function<void(esphome::StringRef)>(
         [slider, btn_ptr, fill, horiz, inv, rad, icon_lbl, has_icon_on, icon_off, icon_on](esphome::StringRef val) {
@@ -391,7 +391,7 @@ inline void subscribe_slider_state(lv_obj_t *btn_ptr, lv_obj_t *icon_lbl,
         })
     );
   } else if (is_fan) {
-    esphome::api::global_api_server->subscribe_home_assistant_state(
+    ha_subscribe_attribute(
       entity_id, std::string("percentage"),
       std::function<void(esphome::StringRef)>(
         [slider, btn_ptr, fill, horiz, inv, rad](esphome::StringRef val) {
@@ -407,7 +407,7 @@ inline void subscribe_slider_state(lv_obj_t *btn_ptr, lv_obj_t *icon_lbl,
         })
     );
   } else {
-    esphome::api::global_api_server->subscribe_home_assistant_state(
+    ha_subscribe_attribute(
       entity_id, std::string("brightness"),
       std::function<void(esphome::StringRef)>(
         [slider, btn_ptr, fill, horiz, inv, rad](esphome::StringRef val) {
@@ -456,7 +456,7 @@ inline void subscribe_friendly_name_for_light_temp(lv_obj_t *text_lbl,
                                                     SliderCtx *ctx,
                                                     const std::string &entity_id) {
   if (entity_id.empty() || !text_lbl) return;
-  esphome::api::global_api_server->subscribe_home_assistant_state(
+  ha_subscribe_attribute(
     entity_id, std::string("friendly_name"),
     std::function<void(esphome::StringRef)>(
       [text_lbl, ctx](esphome::StringRef name) {
@@ -495,8 +495,8 @@ inline void subscribe_light_temp_state(lv_obj_t *btn_ptr, lv_obj_t *slider,
   SliderCtx *sctx = (SliderCtx *)lv_obj_get_user_data(slider);
   // Track on/off so kelvin updates can be ignored once the light is known off
   // while still handling the initial case where HA sends color_temp before state.
-  esphome::api::global_api_server->subscribe_home_assistant_state(
-    entity_id, {},
+  ha_subscribe_state(
+    entity_id,
     std::function<void(esphome::StringRef)>(
       [slider, btn_ptr, kelvin_color, sctx](esphome::StringRef state) {
         bool unavailable = ha_state_unavailable_ref(state);
@@ -517,7 +517,7 @@ inline void subscribe_light_temp_state(lv_obj_t *btn_ptr, lv_obj_t *slider,
         }
       })
   );
-  esphome::api::global_api_server->subscribe_home_assistant_state(
+  ha_subscribe_attribute(
     entity_id, std::string("color_temp_kelvin"),
     std::function<void(esphome::StringRef)>(
       [slider, btn_ptr, kelvin_color, sctx](esphome::StringRef val) {

@@ -309,9 +309,9 @@ inline OptionSelectCtx *create_option_select_context(
 }
 
 inline void subscribe_option_select_state(OptionSelectCtx *ctx) {
-  if (!ctx || ctx->entity_id.empty() || esphome::api::global_api_server == nullptr) return;
-  esphome::api::global_api_server->subscribe_home_assistant_state(
-    ctx->entity_id, {},
+  if (!ctx || ctx->entity_id.empty()) return;
+  ha_subscribe_state(
+    ctx->entity_id,
     std::function<void(esphome::StringRef)>([ctx](esphome::StringRef state) {
       std::string state_text = string_ref_limited(state, HA_STATE_TEXT_MAX_LEN);
       bool unavailable = ha_state_unavailable_ref(state);
@@ -323,7 +323,7 @@ inline void subscribe_option_select_state(OptionSelectCtx *ctx) {
       if (ui.active == ctx && !ctx->available) option_select_hide_modal();
     })
   );
-  esphome::api::global_api_server->subscribe_home_assistant_state(
+  ha_subscribe_attribute(
     ctx->entity_id, std::string("options"),
     std::function<void(esphome::StringRef)>([ctx](esphome::StringRef options) {
       ctx->options = option_select_parse_options(
@@ -333,11 +333,8 @@ inline void subscribe_option_select_state(OptionSelectCtx *ctx) {
 }
 
 inline void subscribe_option_select_friendly_name(OptionSelectCtx *ctx) {
-  if (!ctx || ctx->entity_id.empty() || !ctx->configured_label.empty() ||
-      esphome::api::global_api_server == nullptr) {
-    return;
-  }
-  esphome::api::global_api_server->subscribe_home_assistant_state(
+  if (!ctx || ctx->entity_id.empty() || !ctx->configured_label.empty()) return;
+  ha_subscribe_attribute(
     ctx->entity_id, std::string("friendly_name"),
     std::function<void(esphome::StringRef)>([ctx](esphome::StringRef name) {
       ctx->friendly_name = string_ref_limited(name, HA_FRIENDLY_NAME_MAX_LEN);

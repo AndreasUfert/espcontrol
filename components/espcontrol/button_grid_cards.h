@@ -252,8 +252,8 @@ inline void subscribe_calendar_date_source(const std::string &entity_id) {
     if (existing == source) return;
   }
   subscribed.push_back(source);
-  esphome::api::global_api_server->subscribe_home_assistant_state(
-    source, {},
+  ha_subscribe_state(
+    source,
     std::function<void(esphome::StringRef)>([](esphome::StringRef state) {
       update_calendar_cards_from_date_text(string_ref_limited(state, 16));
     })

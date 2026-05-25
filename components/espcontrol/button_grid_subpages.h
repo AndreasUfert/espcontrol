@@ -373,8 +373,8 @@ inline void subscribe_subpage_parent_indicator(
     int parent_idx, bool *child_was_on,
     bool has_alt_icon, const char *off_glyph, const char *on_glyph,
     int *sp_on_count) {
-  esphome::api::global_api_server->subscribe_home_assistant_state(
-    entity_id, {},
+  ha_subscribe_state(
+    entity_id,
     std::function<void(esphome::StringRef)>(
       [parent_btn, parent_icon, parent_idx, child_was_on,
        has_alt_icon, off_glyph, on_glyph, sp_on_count](esphome::StringRef state) {
