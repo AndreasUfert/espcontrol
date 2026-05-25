@@ -18,13 +18,15 @@ function normalizeButtonConfig(b) {
     }
   }
   if (b && b.type === "weather_forecast") {
-    b.type = "weather";
-    b.precision = "tomorrow";
+    var weatherAlias = cardContractMigrationAlias(b.type);
+    b.type = weatherAlias && weatherAlias.type || "weather";
+    b.precision = weatherAlias && weatherAlias.precision || "tomorrow";
     if (b.label === "Weather") b.label = "";
   }
   if (b && b.type === "text_sensor") {
-    b.type = "sensor";
-    b.precision = "text";
+    var textSensorAlias = cardContractMigrationAlias(b.type);
+    b.type = textSensorAlias && textSensorAlias.type || "sensor";
+    b.precision = textSensorAlias && textSensorAlias.precision || "text";
     b.entity = "";
     b.label = "";
     b.unit = "";
@@ -235,6 +237,38 @@ function setConfigOptionValue(options, name, value) {
   return out.join(",");
 }
 
+function cardContractOptionSpec(type, name) {
+  var options = cardContractOptions(type);
+  for (var i = 0; i < options.length; i++) {
+    if (options[i].name === name) return options[i];
+  }
+  return null;
+}
+
+function cardContractOptionSupportedFor(type, name, context) {
+  var spec = cardContractOptionSpec(type, name);
+  if (!spec) return false;
+  var rule = spec.supportedWhen || {};
+  if (rule.never) return false;
+  context = context || {};
+  var precision = context.precision || "";
+  if (rule.precision && rule.precision.indexOf(precision) < 0) return false;
+  if (rule.precisionNot && rule.precisionNot.indexOf(precision) >= 0) return false;
+  return true;
+}
+
+function cardContractOptionDefaultValue(type, name, fallback) {
+  var spec = cardContractOptionSpec(type, name);
+  return spec && typeof spec.defaultValue === "string" ? spec.defaultValue : fallback;
+}
+
+function switchConfirmationModeStorage() {
+  var spec = cardContractOptionSpec("", "confirmation_mode");
+  return spec && spec.storage && spec.storage.length >= 2
+    ? spec.storage
+    : [SWITCH_CONFIRM_OFF_OPTION, SWITCH_CONFIRM_ON_OPTION];
+}
+
 function cardLargeNumbersSupported(b) {
   if (!b) return false;
   if (typeof BUTTON_TYPES !== "undefined") {
@@ -275,8 +309,13 @@ function setSensorActiveColorEnabled(b, enabled) {
 
 function normalizeSensorOptions(options, precision) {
   var out = "";
-  if (precision !== "text" && configOptionEnabled(options, SENSOR_LARGE_NUMBERS_OPTION)) {
+  if (configOptionEnabled(options, SENSOR_LARGE_NUMBERS_OPTION) &&
+      cardContractOptionSupportedFor("sensor", SENSOR_LARGE_NUMBERS_OPTION, { precision: precision })) {
     out = setConfigOption(out, SENSOR_LARGE_NUMBERS_OPTION, true);
+  }
+  if (configOptionEnabled(options, SENSOR_ACTIVE_COLOR_OPTION) &&
+      cardContractOptionSupportedFor("sensor", SENSOR_ACTIVE_COLOR_OPTION, { precision: precision })) {
+    out = setConfigOption(out, SENSOR_ACTIVE_COLOR_OPTION, true);
   }
   return out;
 }
@@ -319,8 +358,9 @@ function switchConfirmationEnabled(b) {
 
 function switchConfirmationMode(b) {
   var options = b && b.options;
-  var confirmOff = configOptionEnabled(options, SWITCH_CONFIRM_OFF_OPTION);
-  var confirmOn = configOptionEnabled(options, SWITCH_CONFIRM_ON_OPTION);
+  var storage = switchConfirmationModeStorage();
+  var confirmOff = configOptionEnabled(options, storage[0]);
+  var confirmOn = configOptionEnabled(options, storage[1]);
   if (confirmOff && confirmOn) return "both";
   if (confirmOn) return "on";
   if (confirmOff) return "off";
@@ -328,9 +368,10 @@ function switchConfirmationMode(b) {
 }
 
 function switchConfirmationDefaultMessageForMode(mode) {
-  if (mode === "on") return SWITCH_CONFIRM_ON_DEFAULT_MESSAGE;
-  if (mode === "both") return SWITCH_CONFIRM_BOTH_DEFAULT_MESSAGE;
-  return SWITCH_CONFIRM_DEFAULT_MESSAGE;
+  var spec = cardContractOptionSpec("", SWITCH_CONFIRM_MESSAGE_OPTION);
+  var defaults = spec && spec.defaultValueByMode || {};
+  if (mode && defaults[mode]) return defaults[mode];
+  return cardContractOptionDefaultValue("", SWITCH_CONFIRM_MESSAGE_OPTION, SWITCH_CONFIRM_DEFAULT_MESSAGE);
 }
 
 function switchConfirmationMessage(b) {
@@ -340,30 +381,31 @@ function switchConfirmationMessage(b) {
 
 function switchConfirmationYesText(b) {
   return configOptionValue(b && b.options, SWITCH_CONFIRM_YES_OPTION) ||
-    SWITCH_CONFIRM_DEFAULT_YES;
+    cardContractOptionDefaultValue("", SWITCH_CONFIRM_YES_OPTION, SWITCH_CONFIRM_DEFAULT_YES);
 }
 
 function switchConfirmationNoText(b) {
   return configOptionValue(b && b.options, SWITCH_CONFIRM_NO_OPTION) ||
-    SWITCH_CONFIRM_DEFAULT_NO;
+    cardContractOptionDefaultValue("", SWITCH_CONFIRM_NO_OPTION, SWITCH_CONFIRM_DEFAULT_NO);
 }
 
 function normalizeSwitchConfirmationOptions(options) {
   var mode = switchConfirmationMode({ options: options });
   if (!mode) return "";
   var out = "";
-  out = setConfigOption(out, SWITCH_CONFIRM_OFF_OPTION, mode === "off" || mode === "both");
-  out = setConfigOption(out, SWITCH_CONFIRM_ON_OPTION, mode === "on" || mode === "both");
+  var storage = switchConfirmationModeStorage();
+  out = setConfigOption(out, storage[0], mode === "off" || mode === "both");
+  out = setConfigOption(out, storage[1], mode === "on" || mode === "both");
   var msg = configOptionValue(options, SWITCH_CONFIRM_MESSAGE_OPTION);
   var yes = configOptionValue(options, SWITCH_CONFIRM_YES_OPTION);
   var no = configOptionValue(options, SWITCH_CONFIRM_NO_OPTION);
   if (msg && msg !== switchConfirmationDefaultMessageForMode(mode)) {
     out = setConfigOptionValue(out, SWITCH_CONFIRM_MESSAGE_OPTION, msg);
   }
-  if (yes && yes !== SWITCH_CONFIRM_DEFAULT_YES) {
+  if (yes && yes !== cardContractOptionDefaultValue("", SWITCH_CONFIRM_YES_OPTION, SWITCH_CONFIRM_DEFAULT_YES)) {
     out = setConfigOptionValue(out, SWITCH_CONFIRM_YES_OPTION, yes);
   }
-  if (no && no !== SWITCH_CONFIRM_DEFAULT_NO) {
+  if (no && no !== cardContractOptionDefaultValue("", SWITCH_CONFIRM_NO_OPTION, SWITCH_CONFIRM_DEFAULT_NO)) {
     out = setConfigOptionValue(out, SWITCH_CONFIRM_NO_OPTION, no);
   }
   return out;
@@ -374,16 +416,17 @@ function setSwitchConfirmationOptions(b, mode, message, yesText, noText) {
   mode = mode === true ? "off" : mode;
   mode = mode === "on" || mode === "both" || mode === "off" ? mode : "";
   var out = "";
-  out = setConfigOption(out, SWITCH_CONFIRM_OFF_OPTION, mode === "off" || mode === "both");
-  out = setConfigOption(out, SWITCH_CONFIRM_ON_OPTION, mode === "on" || mode === "both");
+  var storage = switchConfirmationModeStorage();
+  out = setConfigOption(out, storage[0], mode === "off" || mode === "both");
+  out = setConfigOption(out, storage[1], mode === "on" || mode === "both");
   if (mode) {
     if (message && message !== switchConfirmationDefaultMessageForMode(mode)) {
       out = setConfigOptionValue(out, SWITCH_CONFIRM_MESSAGE_OPTION, message);
     }
-    if (yesText && yesText !== SWITCH_CONFIRM_DEFAULT_YES) {
+    if (yesText && yesText !== cardContractOptionDefaultValue("", SWITCH_CONFIRM_YES_OPTION, SWITCH_CONFIRM_DEFAULT_YES)) {
       out = setConfigOptionValue(out, SWITCH_CONFIRM_YES_OPTION, yesText);
     }
-    if (noText && noText !== SWITCH_CONFIRM_DEFAULT_NO) {
+    if (noText && noText !== cardContractOptionDefaultValue("", SWITCH_CONFIRM_NO_OPTION, SWITCH_CONFIRM_DEFAULT_NO)) {
       out = setConfigOptionValue(out, SWITCH_CONFIRM_NO_OPTION, noText);
     }
   }

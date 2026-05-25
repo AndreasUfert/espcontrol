@@ -286,12 +286,31 @@ assert.deepStrictEqual(
   ["text"],
   "sensor large-number option spec excludes text sensor mode"
 );
+assert.strictEqual(
+  hooks.cardContractOptionSupportedFor("sensor", "large_numbers", { precision: "" }),
+  true,
+  "sensor large-number option supports numeric mode"
+);
+assert.strictEqual(
+  hooks.cardContractOptionSupportedFor("sensor", "large_numbers", { precision: "text" }),
+  false,
+  "sensor large-number option blocks text mode"
+);
 assert.strictEqual(sensorOptionByName.active_color.hidden, true, "sensor active-colour option spec remains hidden");
 assert.strictEqual(sensorOptionByName.active_color.migration, "drop", "sensor active-colour option spec documents cleanup");
+assert.strictEqual(
+  hooks.cardContractOptionSupportedFor("sensor", "active_color", { precision: "text" }),
+  false,
+  "sensor active-colour option cleanup is spec-backed"
+);
 assert.deepStrictEqual(Object.assign({}, hooks.cardContractMigrationAlias("weather_forecast")), {
   type: "weather",
   precision: "tomorrow",
 }, "generated contract exposes migration aliases");
+assert.deepStrictEqual(Object.assign({}, hooks.cardContractMigrationAlias("text_sensor")), {
+  type: "sensor",
+  precision: "text",
+}, "generated contract exposes legacy text sensor migration alias");
 assert.strictEqual(hooks.previewHtmlValue({ labelHtml: "" }, "labelHtml", "fallback"), "", "empty preview label suppresses fallback");
 assert.strictEqual(hooks.previewHtmlValue({}, "labelHtml", "fallback"), "fallback", "missing preview label uses fallback");
 assert.strictEqual(hooks.normalizeTemperatureUnit("fahrenheit"), "°F", "fahrenheit unit normalization");
