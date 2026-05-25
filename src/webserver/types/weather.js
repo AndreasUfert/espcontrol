@@ -47,8 +47,18 @@ function weatherCardDefaultForecastLabel(b) {
   return b.precision === "today" ? "Today" : "Tomorrow";
 }
 
+function weatherModeOptionValues() {
+  var spec = cardContractOptionSpec("weather", "weather_mode");
+  return spec && spec.values ? spec.values.slice() : ["", "today", "tomorrow"];
+}
+
+function normalizeWeatherCardMode(mode) {
+  mode = String(mode || "");
+  return weatherModeOptionValues().indexOf(mode) >= 0 ? mode : "";
+}
+
 function weatherCardIsForecastMode(b) {
-  return !!b && (b.precision === "today" || b.precision === "tomorrow");
+  return !!b && cardContractOptionSupportedFor("weather", "large_numbers", { precision: b.precision });
 }
 
 registerButtonType("weather", {
@@ -67,7 +77,7 @@ registerButtonType("weather", {
     b.sensor = "";
     b.unit = "";
     b.options = "";
-    if (b.precision !== "today" && b.precision !== "tomorrow") b.precision = "";
+    b.precision = normalizeWeatherCardMode(b.precision);
   },
   renderSettings: function (panel, b, slot, helpers) {
     var modeField = helpers.renderCardModeSelector(panel, b, helpers, WEATHER_CARD_METADATA);

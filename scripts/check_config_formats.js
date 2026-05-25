@@ -267,6 +267,30 @@ assertButtonTypeSpecBacked("push", "push card");
 assertButtonTypeSpecBacked("internal", "internal relay card");
 assertButtonTypeSpecBacked("garage", "garage card");
 assertButtonTypeSpecBacked("lock", "lock card");
+assert.deepStrictEqual(
+  Array.from(hooks.dateTimeModeOptionValues()),
+  ["datetime", "", "timezone"],
+  "date/time mode options are spec-backed"
+);
+assert.strictEqual(hooks.normalizeDateTimeCardMode("timezone"), "timezone", "date/time world clock mode is allowed by spec");
+assert.strictEqual(hooks.normalizeDateTimeCardMode("bad"), "", "date/time invalid mode falls back to date mode");
+assert.deepStrictEqual(
+  Array.from(hooks.weatherModeOptionValues()),
+  ["", "today", "tomorrow"],
+  "weather mode options are spec-backed"
+);
+assert.strictEqual(hooks.normalizeWeatherCardMode("today"), "today", "weather today mode is allowed by spec");
+assert.strictEqual(hooks.normalizeWeatherCardMode("bad"), "", "weather invalid mode falls back to current conditions");
+assert.strictEqual(
+  hooks.cardContractOptionSupportedFor("weather", "large_numbers", { precision: "today" }),
+  true,
+  "weather large-number option supports forecast modes"
+);
+assert.strictEqual(
+  hooks.cardContractOptionSupportedFor("weather", "large_numbers", { precision: "" }),
+  false,
+  "weather large-number option blocks current conditions"
+);
 const coverOptionSpecs = hooks.cardContractOptions("cover");
 const coverOptionByName = Object.fromEntries(coverOptionSpecs.map((option) => [option.name, option]));
 assert.deepStrictEqual(

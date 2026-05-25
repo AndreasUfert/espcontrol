@@ -29,7 +29,18 @@ function defaultTimezoneCardEntity() {
   return (typeof state !== "undefined" && state.timezone) || "UTC (GMT+0)";
 }
 
+function dateTimeModeOptionValues() {
+  var spec = cardContractOptionSpec("calendar", "date_time_mode");
+  return spec && spec.values ? spec.values.slice() : ["datetime", "", "timezone"];
+}
+
+function normalizeDateTimeCardMode(mode) {
+  mode = String(mode || "");
+  return dateTimeModeOptionValues().indexOf(mode) >= 0 ? mode : "";
+}
+
 function setDateTimeCardMode(b, mode, helpers) {
+  mode = normalizeDateTimeCardMode(mode);
   if (b.type !== "timezone" && mode !== "timezone") {
     b.precision = mode === "datetime" ? "datetime" : "";
     helpers.saveField("precision", b.precision);

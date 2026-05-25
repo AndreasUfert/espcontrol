@@ -136,6 +136,24 @@ var CARD_CONTRACT_CARDS = {
     "domains": [
       "sensor"
     ],
+    "options": [
+      {
+        "name": "date_time_mode",
+        "label": "Type",
+        "kind": "choice",
+        "values": [
+          "datetime",
+          "",
+          "timezone"
+        ],
+        "defaultValue": ""
+      },
+      {
+        "name": "large_numbers",
+        "label": "Large Date / Time Numbers",
+        "kind": "flag"
+      }
+    ],
     "default": {
       "entity": "sensor.date",
       "label": "",
@@ -583,6 +601,24 @@ var CARD_CONTRACT_CARDS = {
     "label": "Date & Time",
     "allowInSubpage": true,
     "domains": [],
+    "options": [
+      {
+        "name": "date_time_mode",
+        "label": "Type",
+        "kind": "choice",
+        "values": [
+          "datetime",
+          "",
+          "timezone"
+        ],
+        "defaultValue": "timezone"
+      },
+      {
+        "name": "large_numbers",
+        "label": "Large Date / Time Numbers",
+        "kind": "flag"
+      }
+    ],
     "default": {
       "entity": "UTC (GMT+0)",
       "label": "",
@@ -600,6 +636,30 @@ var CARD_CONTRACT_CARDS = {
     "allowInSubpage": true,
     "domains": [
       "weather"
+    ],
+    "options": [
+      {
+        "name": "weather_mode",
+        "label": "Type",
+        "kind": "choice",
+        "values": [
+          "",
+          "today",
+          "tomorrow"
+        ],
+        "defaultValue": ""
+      },
+      {
+        "name": "large_numbers",
+        "label": "Large Temperature Numbers",
+        "kind": "flag",
+        "supportedWhen": {
+          "precision": [
+            "today",
+            "tomorrow"
+          ]
+        }
+      }
     ],
     "default": {
       "entity": "",
