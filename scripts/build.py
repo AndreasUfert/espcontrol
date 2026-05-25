@@ -6,6 +6,7 @@ Combines icon synchronization and www.js generation into a single tool.
 Usage:
     python scripts/build.py               # run all generators
     python scripts/build.py --check       # exit 1 if any output is stale
+    python scripts/build.py devices       # sync public device capabilities only
     python scripts/build.py icons         # sync icons only
     python scripts/build.py model         # build generated web model only
     python scripts/build.py www           # build www.js only
@@ -19,7 +20,7 @@ import sys
 import urllib.request
 from pathlib import Path
 
-from device_profiles import load_device_profiles, web_config
+from device_profiles import load_device_profiles, public_device_capabilities, web_config
 
 ROOT = Path(__file__).resolve().parent.parent
 MDI_VERSION = "7.4.47"
@@ -35,6 +36,7 @@ ENTITY_NAMES_JS = ROOT / "src" / "webserver" / "modules" / "entity_catalog.js"
 CARD_CONTRACT_JSON = ROOT / "common" / "config" / "card_contract.json"
 CARD_CONTRACT_JS = ROOT / "src" / "webserver" / "modules" / "card_contract_generated.js"
 CARD_CONTRACT_H = ROOT / "components" / "espcontrol" / "button_grid_contract_generated.h"
+DEVICE_CAPABILITIES_JSON = ROOT / "docs" / "public" / "device-profiles.json"
 
 
 class BuildError(RuntimeError):
@@ -671,6 +673,38 @@ def sync_card_contract(check_only=False):
     return dirty
 
 
+# ===========================================================================
+# Public device capability generation
+# ===========================================================================
+
+def gen_device_capabilities_json():
+    return json.dumps(public_device_capabilities(), indent=2) + "\n"
+
+
+def sync_device_capabilities(check_only=False):
+    generated = gen_device_capabilities_json()
+    dirty = []
+    if not DEVICE_CAPABILITIES_JSON.exists() or DEVICE_CAPABILITIES_JSON.read_text() != generated:
+        dirty.append(DEVICE_CAPABILITIES_JSON.relative_to(ROOT))
+
+    if check_only:
+        if dirty:
+            print("Device capability output is out of sync. Run 'python scripts/build.py devices' to fix:")
+            for rel in dirty:
+                print(f"  {rel}")
+        return dirty
+
+    if dirty:
+        DEVICE_CAPABILITIES_JSON.parent.mkdir(parents=True, exist_ok=True)
+        DEVICE_CAPABILITIES_JSON.write_text(generated)
+        print(f"  updated {DEVICE_CAPABILITIES_JSON.relative_to(ROOT)}")
+    return dirty
+
+
+# ===========================================================================
+# Icon sync
+# ===========================================================================
+
 def icon_items(data):
     return [data["fallback"], *data.get("structural", []), *data["icons"]]
 
@@ -1118,15 +1152,19 @@ def main():
             if cmd == "all":
                 entity_dirty = sync_entity_names(check_only=check_only)
                 contract_dirty = sync_card_contract(check_only=check_only)
+                device_dirty = sync_device_capabilities(check_only=check_only)
                 icon_dirty = sync_icons(check_only=check_only)
                 model_dirty = sync_web_model(check_only=check_only)
                 www_dirty = build_www(check_only=check_only)
-                if check_only and (entity_dirty or contract_dirty or icon_dirty or model_dirty or www_dirty):
+                if check_only and (entity_dirty or contract_dirty or device_dirty or icon_dirty or model_dirty or www_dirty):
                     exit_code = 1
-                elif not entity_dirty and not contract_dirty and not icon_dirty and not model_dirty and not www_dirty:
+                elif not entity_dirty and not contract_dirty and not device_dirty and not icon_dirty and not model_dirty and not www_dirty:
                     print("All outputs are up to date.")
                 else:
-                    total = len(entity_dirty) + len(contract_dirty) + len(icon_dirty) + len(model_dirty) + len(www_dirty)
+                    total = (
+                        len(entity_dirty) + len(contract_dirty) + len(device_dirty) +
+                        len(icon_dirty) + len(model_dirty) + len(www_dirty)
+                    )
                     print(f"Updated {total} target(s).")
             elif cmd == "entities":
                 dirty = sync_entity_names(check_only=check_only)
@@ -1152,6 +1190,14 @@ def main():
                     print("Card contract outputs are in sync.")
                 else:
                     print(f"Synced {len(dirty)} card contract output(s).")
+            elif cmd == "devices":
+                dirty = sync_device_capabilities(check_only=check_only)
+                if check_only and dirty:
+                    exit_code = 1
+                elif not dirty:
+                    print("Device capability output is in sync.")
+                else:
+                    print(f"Synced {len(dirty)} device capability output(s).")
             elif cmd == "model":
                 dirty = sync_web_model(check_only=check_only)
                 if check_only and dirty:
@@ -1170,7 +1216,7 @@ def main():
                     print(f"Built {len(dirty)} file(s).")
             else:
                 print(f"Unknown command: {cmd}")
-                print("Usage: python scripts/build.py [all|entities|contract|icons|model|www] [--check]")
+                print("Usage: python scripts/build.py [all|entities|contract|devices|icons|model|www] [--check]")
                 exit_code = 1
     except BuildError as exc:
         print(exc)

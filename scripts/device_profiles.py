@@ -120,6 +120,18 @@ def validate_layout(slug: str, device: dict[str, Any], errors: list[str]) -> Non
             )
 
 
+def validate_public(slug: str, device: dict[str, Any], errors: list[str]) -> None:
+    public = require_object(slug, errors, device.get("public"), "public")
+    if public is None:
+        return
+    for key in ("name", "docsPath", "screenSize", "resolution", "orientation"):
+        if not isinstance(public.get(key), str) or not public.get(key):
+            errors.append(device_error(slug, f"public.{key} must be a non-empty string"))
+    docs_path = public.get("docsPath")
+    if isinstance(docs_path, str) and not docs_path.startswith("/screens/"):
+        errors.append(device_error(slug, "public.docsPath must start with /screens/"))
+
+
 def validate_build(slug: str, firmware: dict[str, Any] | None, errors: list[str]) -> None:
     if firmware is None:
         return
@@ -390,6 +402,7 @@ def validate_manifest_data(data: Any, shared_font_ids: set[str] | None = None) -
         if not isinstance(device, dict):
             errors.append(device_error(slug, "device entry must be an object"))
             continue
+        validate_public(slug, device, errors)
         validate_layout(slug, device, errors)
         validate_fonts(slug, device, shared_font_ids, errors)
         validate_display(slug, device, errors)
@@ -406,6 +419,7 @@ def normalized_device_profile(slug: str, device: dict[str, Any], settings: dict[
     return {
         "slug": slug,
         "slots": device["slots"],
+        "public": copy.deepcopy(device["public"]),
         "layout": copy.deepcopy(device["layout"]),
         "rotation": copy.deepcopy(device.get("rotation") or {}),
         "internalRelays": copy.deepcopy(device.get("internalRelays") or []),
@@ -512,3 +526,36 @@ def slot_device(profile: dict[str, Any]) -> dict[str, Any]:
 
 def slot_devices(path: Path = DEVICE_MANIFEST) -> list[dict[str, Any]]:
     return [slot_device(profile) for profile in load_device_profiles(path).values()]
+
+
+def public_device_capability(profile: dict[str, Any]) -> dict[str, Any]:
+    package = profile["firmware"]["package"]
+    return {
+        "slug": profile["slug"],
+        "installSlug": profile["slug"],
+        "name": profile["public"]["name"],
+        "docsPath": profile["public"]["docsPath"],
+        "screenSize": profile["public"]["screenSize"],
+        "resolution": profile["public"]["resolution"],
+        "orientation": profile["public"]["orientation"],
+        "slots": profile["slots"],
+        "grid": {
+            "rows": profile["layout"]["rows"],
+            "cols": profile["layout"]["cols"],
+        },
+        "chipFamily": profile["firmware"]["build"]["chip"],
+        "relays": len(profile["internalRelays"]),
+        "rotation": bool((profile.get("rotation") or {}).get("enabled")),
+        "ethernetManualInstall": bool(package.get("ethernetSelectable")),
+    }
+
+
+def public_device_capabilities(path: Path = DEVICE_MANIFEST) -> dict[str, Any]:
+    profiles = load_device_profiles(path)
+    return {
+        "generatedFrom": "devices/manifest.json",
+        "devices": [
+            public_device_capability(profile)
+            for profile in profiles.values()
+        ],
+    }

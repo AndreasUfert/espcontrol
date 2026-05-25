@@ -112,7 +112,15 @@ export interface PanelSettings {
 }
 
 export interface DeviceProfile {
+  slug?: string;
   slots: number;
+  public?: {
+    name: string;
+    docsPath: string;
+    screenSize: string;
+    resolution: string;
+    orientation: string;
+  };
   layout: {
     cols: number;
     rows: number;
@@ -125,7 +133,13 @@ export interface DeviceProfile {
     displayOffset?: number;
     rotateWidthCompensation?: boolean;
   };
+  internalRelays?: readonly {
+    key: string;
+    label: string;
+  }[];
   web: {
+    dragMode: "swap" | "displace";
+    dragAnimation: boolean;
     screen: {
       width: string;
       aspect: string;
@@ -138,6 +152,12 @@ export interface DeviceProfile {
         aspect: string;
       };
     };
+    topbar?: Readonly<Record<string, string | number>>;
+    grid?: Readonly<Record<string, string | number>>;
+    btn?: Readonly<Record<string, number>>;
+    emptyCell?: Readonly<Record<string, number>>;
+    sensorBadge?: Readonly<Record<string, number>>;
+    subpageBadge?: Readonly<Record<string, number>>;
   };
   firmware: {
     build: {
@@ -151,6 +171,11 @@ export interface DeviceProfile {
       deviceFontPackageKey?: string;
       networkCoprocessor?: boolean;
       ethernetSelectable?: boolean;
+      improvSerial?: boolean;
+      backlightPwmFrequency?: {
+        wifi: string;
+        ethernet: string;
+      };
     };
   };
 }

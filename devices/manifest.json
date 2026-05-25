@@ -5,6 +5,13 @@
   "devices": {
     "guition-esp32-p4-jc1060p470": {
       "slots": 15,
+      "public": {
+        "name": "Guition JC1060P470",
+        "docsPath": "/screens/jc1060p470",
+        "screenSize": "7 inches",
+        "resolution": "1024 x 600",
+        "orientation": "Landscape"
+      },
       "layout": {
         "cols": 5,
         "rows": 3,
@@ -131,6 +138,13 @@
     },
     "guition-esp32-p4-jc4880p443": {
       "slots": 6,
+      "public": {
+        "name": "Guition JC4880P443",
+        "docsPath": "/screens/jc4880p443",
+        "screenSize": "4.3 inches",
+        "resolution": "480 x 800",
+        "orientation": "Portrait"
+      },
       "layout": {
         "cols": 2,
         "rows": 3,
@@ -249,6 +263,13 @@
     },
     "guition-esp32-p4-jc8012p4a1": {
       "slots": 20,
+      "public": {
+        "name": "Guition JC8012P4A1",
+        "docsPath": "/screens/jc8012p4a1",
+        "screenSize": "10.1 inches",
+        "resolution": "1280 x 800",
+        "orientation": "Landscape"
+      },
       "layout": {
         "cols": 5,
         "rows": 4,
@@ -365,6 +386,13 @@
     },
     "esp32-p4-86": {
       "slots": 9,
+      "public": {
+        "name": "ESP32-P4 86 Panel",
+        "docsPath": "/screens/p4-86",
+        "screenSize": "4 inches",
+        "resolution": "720 x 720",
+        "orientation": "Square"
+      },
       "layout": {
         "cols": 3,
         "rows": 3,
@@ -493,6 +521,13 @@
     },
     "guition-esp32-s3-4848s040": {
       "slots": 9,
+      "public": {
+        "name": "Guition 4848S040",
+        "docsPath": "/screens/4848s040",
+        "screenSize": "4 inches",
+        "resolution": "480 x 480",
+        "orientation": "Square"
+      },
       "layout": {
         "cols": 3,
         "rows": 3,
