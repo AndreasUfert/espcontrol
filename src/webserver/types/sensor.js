@@ -36,6 +36,7 @@ registerButtonType("sensor", {
   label: "Sensor",
   allowInSubpage: true,
   hideLabel: true,
+  defaultConfig: function () { return cardContractDefaultConfig("sensor"); },
   cardMetadata: SENSOR_CARD_METADATA,
   onSelect: function (b) {
     b.entity = "";

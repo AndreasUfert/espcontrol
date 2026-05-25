@@ -228,6 +228,16 @@ assert.deepStrictEqual(buttonShape(hooks.cardContractDefaultConfig("climate")), 
   precision: "",
   options: "",
 }), "generated contract exposes card defaults");
+assert.deepStrictEqual(
+  buttonShape(hooks.buttonTypeDefaultConfig("")),
+  buttonShape(hooks.cardContractDefaultConfig("")),
+  "switch card type default is spec-backed"
+);
+assert.deepStrictEqual(
+  buttonShape(hooks.buttonTypeDefaultConfig("sensor")),
+  buttonShape(hooks.cardContractDefaultConfig("sensor")),
+  "sensor card type default is spec-backed"
+);
 assert.deepStrictEqual(Object.assign({}, hooks.cardContractMigrationAlias("weather_forecast")), {
   type: "weather",
   precision: "tomorrow",

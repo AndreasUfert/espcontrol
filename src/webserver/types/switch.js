@@ -113,6 +113,7 @@ var LIGHT_SWITCH_CARD_METADATA = {
 registerButtonType("", {
   label: "Switch",
   allowInSubpage: true,
+  defaultConfig: function () { return cardContractDefaultConfig(""); },
   cardMetadata: SWITCH_CARD_METADATA,
   renderSettings: function (panel, b, slot, helpers) {
     var showSensor = !!b.sensor;
@@ -269,6 +270,7 @@ registerButtonType("light_switch", {
   allowInSubpage: true,
   hideLabel: true,
   pickerKey: "light_brightness",
+  defaultConfig: function () { return cardContractDefaultConfig("light_switch"); },
   isAvailable: function () {
     return false;
   },

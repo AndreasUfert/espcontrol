@@ -62,6 +62,12 @@ if (typeof globalThis !== "undefined" && globalThis.__ESPCONTROL_TEST_HOOKS__) {
       }
       return missing.sort();
     },
+    buttonTypeDefaultConfig: function (type) {
+      var typeDef = BUTTON_TYPES[type || ""];
+      var config = typeDef && typeDef.defaultConfig;
+      if (typeof config === "function") config = config();
+      return config ? EspControlModel.cloneCardConfig(config) : null;
+    },
     parseSubpageConfig: parseSubpageConfig,
     serializeSubpageConfig: serializeSubpageConfig,
     buildSubpageGrid: buildSubpageGrid,
