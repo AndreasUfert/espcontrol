@@ -391,6 +391,27 @@ var CARD_CONTRACT_CARDS = {
     "label": "Internal Switches",
     "allowInSubpage": true,
     "domains": [],
+    "options": [
+      {
+        "name": "internal_mode",
+        "label": "Mode",
+        "kind": "choice",
+        "values": [
+          "switch",
+          "push"
+        ],
+        "defaultValue": "switch"
+      }
+    ],
+    "behavior": {
+      "internalRelay": {
+        "defaultIcons": {
+          "switch": "Lightbulb Outline",
+          "push": "Gesture Tap"
+        },
+        "defaultIconOn": "Lightbulb"
+      }
+    },
     "default": {
       "entity": "",
       "label": "",
@@ -544,6 +565,12 @@ var CARD_CONTRACT_CARDS = {
     "label": "Trigger",
     "allowInSubpage": true,
     "domains": [],
+    "behavior": {
+      "pushAction": {
+        "defaultIcon": "Gesture Tap",
+        "defaultIconOn": "Auto"
+      }
+    },
     "default": {
       "entity": "",
       "label": "",

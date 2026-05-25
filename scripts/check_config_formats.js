@@ -307,6 +307,18 @@ assert.deepStrictEqual(
 );
 assert.strictEqual(hooks.normalizeLockMode("unlock"), "unlock", "lock unlock mode is allowed by spec");
 assert.strictEqual(hooks.normalizeLockMode("bad"), "", "lock invalid mode falls back to toggle");
+assert.strictEqual(hooks.pushDefaultIcon(), "Gesture Tap", "push default icon is spec-backed");
+assert.strictEqual(hooks.pushDefaultIconOn(), "Auto", "push on icon cleanup is spec-backed");
+assert.deepStrictEqual(
+  Array.from(hooks.internalRelayModeOptionValues()),
+  ["switch", "push"],
+  "internal relay mode options are spec-backed"
+);
+assert.strictEqual(hooks.normalizeInternalRelayMode("push"), "push", "internal relay push mode is allowed by spec");
+assert.strictEqual(hooks.normalizeInternalRelayMode("bad"), "switch", "internal relay invalid mode falls back to switch");
+assert.strictEqual(hooks.internalRelayDefaultIcon("switch"), "Lightbulb Outline", "internal relay switch icon is spec-backed");
+assert.strictEqual(hooks.internalRelayDefaultIcon("push"), "Gesture Tap", "internal relay push icon is spec-backed");
+assert.strictEqual(hooks.internalRelayDefaultOnIcon(), "Lightbulb", "internal relay on icon is spec-backed");
 const coverOptionSpecs = hooks.cardContractOptions("cover");
 const coverOptionByName = Object.fromEntries(coverOptionSpecs.map((option) => [option.name, option]));
 assert.deepStrictEqual(

@@ -50,6 +50,14 @@ export interface CardTypeSpec {
       step: number;
       legacySensorValues?: readonly string[];
     };
+    pushAction?: {
+      defaultIcon: string;
+      defaultIconOn: string;
+    };
+    internalRelay?: {
+      defaultIcons: Readonly<Record<string, string>>;
+      defaultIconOn: string;
+    };
   };
 }
 

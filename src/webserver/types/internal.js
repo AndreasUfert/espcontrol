@@ -3,12 +3,28 @@ function internalRelayOptions() {
   return (CFG.features && CFG.features.internalRelays) || [];
 }
 
+function internalRelaySpec() {
+  var card = cardContractCard("internal");
+  return card && card.behavior && card.behavior.internalRelay || {};
+}
+
+function internalRelayModeOptionValues() {
+  var spec = cardContractOptionSpec("internal", "internal_mode");
+  return spec && spec.values ? spec.values.slice() : ["switch", "push"];
+}
+
+function normalizeInternalRelayMode(mode) {
+  mode = String(mode || "");
+  return internalRelayModeOptionValues().indexOf(mode) >= 0 ? mode : "switch";
+}
+
 function internalRelayDefaultIcon(mode) {
-  return mode === "push" ? "Gesture Tap" : "Lightbulb Outline";
+  var icons = internalRelaySpec().defaultIcons || {};
+  return icons[normalizeInternalRelayMode(mode)] || (mode === "push" ? "Gesture Tap" : "Lightbulb Outline");
 }
 
 function internalRelayDefaultOnIcon() {
-  return "Lightbulb";
+  return internalRelaySpec().defaultIconOn || "Lightbulb";
 }
 
 function internalRelayUsesDefaultIcon(mode, icon) {
@@ -21,7 +37,7 @@ function internalRelayUsesDefaultOnIcon(icon) {
 }
 
 function internalRelayMode(b) {
-  return b.sensor === "push" ? "push" : "switch";
+  return normalizeInternalRelayMode(b && b.sensor === "push" ? "push" : "switch");
 }
 
 function internalRelayLabelFor(key) {
