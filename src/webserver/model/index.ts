@@ -44,6 +44,7 @@ export {
 
 export {
   MONTH_NAME_DEFAULTS,
+  normalizeBackupPanelSettings,
   normalizeBackupScreenSettings,
   normalizeClockBrightness,
   normalizeHour,
@@ -63,6 +64,8 @@ export {
 } from "./settings";
 
 export type {
+  BackupPanelSettingsCurrent,
+  BackupPanelSettingsState,
   BackupScreenSettingsState,
 } from "./settings";
 

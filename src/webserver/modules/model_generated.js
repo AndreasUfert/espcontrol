@@ -44,6 +44,7 @@ var EspControlModel = (() => {
     isBackOrderToken: () => isBackOrderToken,
     legacyButtonConfigSafe: () => legacyButtonConfigSafe,
     markSpannedCells: () => markSpannedCells,
+    normalizeBackupPanelSettings: () => normalizeBackupPanelSettings,
     normalizeBackupScreenSettings: () => normalizeBackupScreenSettings,
     normalizeClockBrightness: () => normalizeClockBrightness,
     normalizeHour: () => normalizeHour,
@@ -640,6 +641,67 @@ var EspControlModel = (() => {
       scheduleClockBrightness: normalizeScheduleClockBrightness(
         objectValue(screenSettings, "schedule_clock_brightness") != null ? screenSettings.schedule_clock_brightness : current.scheduleClockBrightness
       )
+    };
+  }
+  function normalizeScreensaverMode(value) {
+    const mode = String(value || "disabled");
+    return mode === "sensor" || mode === "timer" || mode === "disabled" ? mode : "disabled";
+  }
+  function normalizeScreenRotationValue(value, options) {
+    const rotation = String(value == null ? "" : value);
+    return options.indexOf(rotation) !== -1 ? rotation : "0";
+  }
+  function normalizeBackupPanelSettings(settings, current) {
+    const hasNtpServer1 = objectValue(settings, "ntp_server_1") !== void 0;
+    const hasNtpServer2 = objectValue(settings, "ntp_server_2") !== void 0;
+    const hasNtpServer3 = objectValue(settings, "ntp_server_3") !== void 0;
+    const hasMonthNames = objectValue(settings, "month_names") !== void 0;
+    const hasDeveloperExperimentalFeatures = objectValue(settings, "developer_experimental_features") !== void 0;
+    const clockFormat = current.clockFormatOptions.indexOf(String(settings.clock_format || "")) !== -1 ? String(settings.clock_format) : current.clockFormat;
+    const screensaverAction = normalizeScreensaverAction(
+      objectValue(settings, "screensaver_action") != null ? settings.screensaver_action : settings.clock_screensaver ? "clock" : "off"
+    );
+    const clockBrightnessDay = normalizeClockBrightness(
+      objectValue(settings, "clock_brightness_day") != null ? settings.clock_brightness_day : settings.clock_brightness,
+      35
+    );
+    const clockBrightnessNight = normalizeClockBrightness(
+      objectValue(settings, "clock_brightness_night") != null ? settings.clock_brightness_night : settings.clock_brightness,
+      clockBrightnessDay
+    );
+    return {
+      indoorTempEnable: !!settings.indoor_temp_enable,
+      outdoorTempEnable: !!settings.outdoor_temp_enable,
+      indoorTempEntity: String(settings.indoor_temp_entity || ""),
+      outdoorTempEntity: String(settings.outdoor_temp_entity || ""),
+      clockBar: objectValue(settings, "clock_bar") != null ? !!settings.clock_bar : false,
+      networkStatusIcon: objectValue(settings, "network_status_icon") != null ? !!settings.network_status_icon : true,
+      temperatureDegreeSymbol: objectValue(settings, "temperature_degree_symbol") != null ? !!settings.temperature_degree_symbol : true,
+      timezone: String(settings.timezone || current.timezone),
+      temperatureUnit: normalizeTemperatureUnit(settings.temperature_unit),
+      clockFormat,
+      hasNtpServer1,
+      hasNtpServer2,
+      hasNtpServer3,
+      hasMonthNames,
+      hasDeveloperExperimentalFeatures,
+      developerExperimentalFeatures: hasDeveloperExperimentalFeatures ? !!settings.developer_experimental_features : current.developerExperimentalFeatures,
+      ntpServer1: hasNtpServer1 ? normalizeNtpServer(settings.ntp_server_1, current.ntpDefaults[0] || "") : current.ntpServer1,
+      ntpServer2: hasNtpServer2 ? normalizeNtpServer(settings.ntp_server_2, current.ntpDefaults[1] || "") : current.ntpServer2,
+      ntpServer3: hasNtpServer3 ? normalizeNtpServer(settings.ntp_server_3, current.ntpDefaults[2] || "") : current.ntpServer3,
+      monthNames: hasMonthNames ? normalizeMonthNames(settings.month_names) : normalizeMonthNames(current.monthNames),
+      screensaverMode: normalizeScreensaverMode(settings.screensaver_mode),
+      presenceSensorEntity: String(settings.presence_sensor_entity || ""),
+      mediaPlayerSleepPrevention: !!settings.media_player_sleep_prevention,
+      mediaPlayerSleepPreventionEntity: String(settings.media_player_sleep_prevention_entity || ""),
+      screensaverAction,
+      clockScreensaver: screensaverAction === "clock",
+      clockBrightnessDay,
+      clockBrightnessNight,
+      screensaverDimmedBrightness: normalizeScreensaverDimmedBrightness(settings.screensaver_dimmed_brightness),
+      screensaverTimeout: settings.screensaver_timeout || 300,
+      homeScreenTimeout: objectValue(settings, "home_screen_timeout") != null ? settings.home_screen_timeout : 60,
+      screenRotation: normalizeScreenRotationValue(settings.screen_rotation, current.screenRotationOptions)
     };
   }
   return __toCommonJS(index_exports);

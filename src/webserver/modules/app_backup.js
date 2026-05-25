@@ -146,41 +146,39 @@ function importConfig() {
 
       if (backupPlan.settings) {
         var s = backupPlan.settings;
+        var importedSettings = EspControlModel.normalizeBackupPanelSettings(s, {
+          timezone: state.timezone,
+          clockFormat: state.clockFormat,
+          clockFormatOptions: state.clockFormatOptions,
+          developerExperimentalFeatures: state.developerExperimentalFeatures,
+          ntpDefaults: NTP_SERVER_DEFAULTS,
+          ntpServer1: state.ntpServer1,
+          ntpServer2: state.ntpServer2,
+          ntpServer3: state.ntpServer3,
+          monthNames: state.monthNames,
+          screenRotationOptions: allScreenRotationOptions(),
+        });
 
-        postSwitch(entityName("indoor_temp_enable"), !!s.indoor_temp_enable);
-        postSwitch(entityName("outdoor_temp_enable"), !!s.outdoor_temp_enable);
-        postText(entityName("indoor_temp_entity"), s.indoor_temp_entity || "");
-        postText(entityName("outdoor_temp_entity"), s.outdoor_temp_entity || "");
-        postClockBar(s.clock_bar != null ? !!s.clock_bar : false);
-        postNetworkStatusIcon(s.network_status_icon != null ? !!s.network_status_icon : true);
-        postTemperatureDegreeSymbol(s.temperature_degree_symbol != null ? !!s.temperature_degree_symbol : true);
-        var importedTimezone = s.timezone || state.timezone;
-        var importedTemperatureUnit = normalizeTemperatureUnit(s.temperature_unit);
-        var importedClockFormat =
-          state.clockFormatOptions.indexOf(s.clock_format) !== -1
-            ? s.clock_format
-            : state.clockFormat;
-        var hasNtpServer1 = Object.prototype.hasOwnProperty.call(s, "ntp_server_1");
-        var hasNtpServer2 = Object.prototype.hasOwnProperty.call(s, "ntp_server_2");
-        var hasNtpServer3 = Object.prototype.hasOwnProperty.call(s, "ntp_server_3");
-        var hasMonthNames = Object.prototype.hasOwnProperty.call(s, "month_names");
-        var hasDeveloperExperimentalFeatures =
-          Object.prototype.hasOwnProperty.call(s, "developer_experimental_features");
-        var importedDeveloperExperimentalFeatures = hasDeveloperExperimentalFeatures
-          ? !!s.developer_experimental_features
-          : state.developerExperimentalFeatures;
-        var importedNtpServer1 = hasNtpServer1
-          ? normalizeNtpServer(s.ntp_server_1, NTP_SERVER_DEFAULTS[0])
-          : state.ntpServer1;
-        var importedNtpServer2 = hasNtpServer2
-          ? normalizeNtpServer(s.ntp_server_2, NTP_SERVER_DEFAULTS[1])
-          : state.ntpServer2;
-        var importedNtpServer3 = hasNtpServer3
-          ? normalizeNtpServer(s.ntp_server_3, NTP_SERVER_DEFAULTS[2])
-          : state.ntpServer3;
-        var importedMonthNames = hasMonthNames
-          ? normalizeMonthNames(s.month_names)
-          : state.monthNames;
+        postSwitch(entityName("indoor_temp_enable"), importedSettings.indoorTempEnable);
+        postSwitch(entityName("outdoor_temp_enable"), importedSettings.outdoorTempEnable);
+        postText(entityName("indoor_temp_entity"), importedSettings.indoorTempEntity);
+        postText(entityName("outdoor_temp_entity"), importedSettings.outdoorTempEntity);
+        postClockBar(importedSettings.clockBar);
+        postNetworkStatusIcon(importedSettings.networkStatusIcon);
+        postTemperatureDegreeSymbol(importedSettings.temperatureDegreeSymbol);
+        var importedTimezone = importedSettings.timezone;
+        var importedTemperatureUnit = importedSettings.temperatureUnit;
+        var importedClockFormat = importedSettings.clockFormat;
+        var hasNtpServer1 = importedSettings.hasNtpServer1;
+        var hasNtpServer2 = importedSettings.hasNtpServer2;
+        var hasNtpServer3 = importedSettings.hasNtpServer3;
+        var hasMonthNames = importedSettings.hasMonthNames;
+        var hasDeveloperExperimentalFeatures = importedSettings.hasDeveloperExperimentalFeatures;
+        var importedDeveloperExperimentalFeatures = importedSettings.developerExperimentalFeatures;
+        var importedNtpServer1 = importedSettings.ntpServer1;
+        var importedNtpServer2 = importedSettings.ntpServer2;
+        var importedNtpServer3 = importedSettings.ntpServer3;
+        var importedMonthNames = importedSettings.monthNames;
         if (s.timezone) postSelect(entityName("screen_timezone"), importedTimezone);
         postSelect(entityName("screen_temperature_unit"), importedTemperatureUnit);
         if (s.clock_format) postSelect(entityName("screen_clock_format"), importedClockFormat);
@@ -196,48 +194,35 @@ function importConfig() {
         if (hasMonthNames) {
           postText(entityName("screen_month_names"), serializeMonthNames(importedMonthNames));
         }
-        var importedScreensaverMode = s.screensaver_mode || "disabled";
-        if (importedScreensaverMode !== "sensor" &&
-            importedScreensaverMode !== "timer" &&
-            importedScreensaverMode !== "disabled") {
-          importedScreensaverMode = "disabled";
-        }
+        var importedScreensaverMode = importedSettings.screensaverMode;
         postText(entityName("screensaver_mode"), importedScreensaverMode);
-        postText(entityName("presence_sensor_entity"), s.presence_sensor_entity || "");
-        postSwitch(entityName("screen_saver_media_player_sleep_prevention"), !!s.media_player_sleep_prevention);
-        postText(entityName("media_player_sleep_prevention_entity"), s.media_player_sleep_prevention_entity || "");
-        var importedScreensaverAction = normalizeScreensaverAction(
-          s.screensaver_action != null
-            ? s.screensaver_action
-            : (s.clock_screensaver ? "clock" : "off"));
-        var importedScreensaverDimmedBrightness = normalizeScreensaverDimmedBrightness(
-          s.screensaver_dimmed_brightness);
-        var importedClockBrightnessDay = normalizeClockBrightness(
-          s.clock_brightness_day != null ? s.clock_brightness_day : s.clock_brightness,
-          35);
-        var importedClockBrightnessNight = normalizeClockBrightness(
-          s.clock_brightness_night != null ? s.clock_brightness_night : s.clock_brightness,
-          importedClockBrightnessDay);
+        postText(entityName("presence_sensor_entity"), importedSettings.presenceSensorEntity);
+        postSwitch(entityName("screen_saver_media_player_sleep_prevention"), importedSettings.mediaPlayerSleepPrevention);
+        postText(entityName("media_player_sleep_prevention_entity"), importedSettings.mediaPlayerSleepPreventionEntity);
+        var importedScreensaverAction = importedSettings.screensaverAction;
+        var importedScreensaverDimmedBrightness = importedSettings.screensaverDimmedBrightness;
+        var importedClockBrightnessDay = importedSettings.clockBrightnessDay;
+        var importedClockBrightnessNight = importedSettings.clockBrightnessNight;
         postScreensaverAction(importedScreensaverAction);
         postSwitch(entityName("screen_saver_clock"), importedScreensaverAction === "clock");
         postClockBrightnessDay(importedClockBrightnessDay);
         postClockBrightnessNight(importedClockBrightnessNight);
         postScreensaverDimmedBrightness(importedScreensaverDimmedBrightness);
-        postScreensaverTimeout(s.screensaver_timeout || 300);
-        postNumber(entityName("home_screen_timeout"), s.home_screen_timeout != null ? s.home_screen_timeout : 60);
-        var importedScreenRotation = normalizeScreenRotation(s.screen_rotation);
+        postScreensaverTimeout(importedSettings.screensaverTimeout);
+        postNumber(entityName("home_screen_timeout"), importedSettings.homeScreenTimeout);
+        var importedScreenRotation = importedSettings.screenRotation;
         if (CFG.features && CFG.features.screenRotation) postSelect(entityName("screen_rotation"), importedScreenRotation);
         if (hasDeveloperExperimentalFeatures) {
           postDeveloperExperimentalFeatures(importedDeveloperExperimentalFeatures);
         }
-        state._indoorOn = !!s.indoor_temp_enable;
-        state._outdoorOn = !!s.outdoor_temp_enable;
-        state.indoorEntity = s.indoor_temp_entity || "";
-        state.outdoorEntity = s.outdoor_temp_entity || "";
+        state._indoorOn = importedSettings.indoorTempEnable;
+        state._outdoorOn = importedSettings.outdoorTempEnable;
+        state.indoorEntity = importedSettings.indoorTempEntity;
+        state.outdoorEntity = importedSettings.outdoorTempEntity;
         state.temperatureUnit = importedTemperatureUnit;
-        state.clockBarOn = s.clock_bar != null ? !!s.clock_bar : false;
-        state.networkStatusOn = s.network_status_icon != null ? !!s.network_status_icon : true;
-        state.temperatureDegreeSymbolOn = s.temperature_degree_symbol != null ? !!s.temperature_degree_symbol : true;
+        state.clockBarOn = importedSettings.clockBar;
+        state.networkStatusOn = importedSettings.networkStatusIcon;
+        state.temperatureDegreeSymbolOn = importedSettings.temperatureDegreeSymbol;
         state.timezone = importedTimezone;
         state.clockFormat = importedClockFormat;
         state.ntpServer1 = importedNtpServer1;
@@ -248,17 +233,17 @@ function importConfig() {
         state.customNtpServers = hasCustomNtpServers();
         state.screensaverMode = importedScreensaverMode;
         state._screensaverModeReceived = true;
-        state.presenceEntity = s.presence_sensor_entity || "";
-        state.mediaPlayerSleepPreventionOn = !!s.media_player_sleep_prevention;
-        state.mediaPlayerSleepPreventionEntity = s.media_player_sleep_prevention_entity || "";
+        state.presenceEntity = importedSettings.presenceSensorEntity;
+        state.mediaPlayerSleepPreventionOn = importedSettings.mediaPlayerSleepPrevention;
+        state.mediaPlayerSleepPreventionEntity = importedSettings.mediaPlayerSleepPreventionEntity;
         state.screensaverAction = importedScreensaverAction;
         state._screensaverActionReceived = true;
         state.clockScreensaverOn = importedScreensaverAction === "clock";
         state.clockBrightnessDay = importedClockBrightnessDay;
         state.clockBrightnessNight = importedClockBrightnessNight;
         state.screensaverDimmedBrightness = importedScreensaverDimmedBrightness;
-        state.screensaverTimeout = s.screensaver_timeout || 300;
-        state.homeScreenTimeout = s.home_screen_timeout != null ? s.home_screen_timeout : 60;
+        state.screensaverTimeout = importedSettings.screensaverTimeout;
+        state.homeScreenTimeout = importedSettings.homeScreenTimeout;
         state.screenRotation = importedScreenRotation;
         if (hasDeveloperExperimentalFeatures) {
           state.developerExperimentalFeatures = importedDeveloperExperimentalFeatures;
