@@ -28,3 +28,5 @@ packages:
     url: https://github.com/jtenniswood/espcontrol/
     file: devices/guition-esp32-s3-4848s040/packages.yaml
     refresh: 1s
+    vars:
+      provisioning_package_suffix: "_deployed"

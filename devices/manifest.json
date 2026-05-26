@@ -646,7 +646,8 @@
             "clock_cy": "\"240\""
           },
           "deviceFontPackageKey": "fonts_device",
-          "improvSerial": true
+          "improvSerial": true,
+          "provisioningSelectable": true
         }
       }
     }

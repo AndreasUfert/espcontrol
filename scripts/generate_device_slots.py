@@ -72,20 +72,34 @@ def package_file_text(device: dict) -> str:
     firmware_update_suffix = (
         "${firmware_update_package_suffix}" if package.get("ethernetSelectable") else ""
     )
-
+    provisioning_suffix = (
+        "${provisioning_package_suffix}" if package.get("provisioningSelectable") else ""
+    )
     lines = [
         PACKAGE_HEADER.rstrip(),
         "",
-        "substitutions:",
-        *package_substitution_lines(device),
-        "",
-        "packages:",
-        "  # ---------------------------------------------------------------------------",
-        "  # Device, assets, and LVGL base",
-        "  # ---------------------------------------------------------------------------",
-        include_line("entity_names", "!include ../../common/config/entity_names.yaml"),
-        include_line("device", "!include device/device.yaml"),
     ]
+    if package.get("provisioningSelectable"):
+        lines.extend(
+            [
+                "defaults:",
+                '  provisioning_package_suffix: ""',
+                "",
+            ]
+        )
+    lines.extend(
+        [
+            "substitutions:",
+            *package_substitution_lines(device),
+            "",
+            "packages:",
+            "  # ---------------------------------------------------------------------------",
+            "  # Device, assets, and LVGL base",
+            "  # ---------------------------------------------------------------------------",
+            include_line("entity_names", "!include ../../common/config/entity_names.yaml"),
+            include_line("device", "!include device/device.yaml"),
+        ]
+    )
     if package.get("networkCoprocessor"):
         lines.append(
             include_line(
@@ -114,12 +128,17 @@ def package_file_text(device: dict) -> str:
             "  # ---------------------------------------------------------------------------",
             include_line(
                 "connectivity",
-                f"!include ../../common/addon/connectivity{network_suffix}.yaml",
+                f"!include ../../common/addon/connectivity{network_suffix}{provisioning_suffix}.yaml",
             ),
         ]
     )
     if package.get("improvSerial"):
-        lines.append(include_line("improv_serial", "!include ../../common/addon/improv_serial.yaml"))
+        lines.append(
+            include_line(
+                "improv_serial",
+                f"!include ../../common/addon/improv_serial{provisioning_suffix}.yaml",
+            )
+        )
     lines.extend(
         [
             include_line("time_sync", "!include ../../common/addon/time.yaml"),

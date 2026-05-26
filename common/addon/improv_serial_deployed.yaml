@@ -1,0 +1,9 @@
+# =============================================================================
+# IMPROV SERIAL DEPLOYED - intentionally disabled
+# =============================================================================
+# Deployed S3 OTA builds already have saved WiFi credentials, so serial WiFi
+# provisioning is omitted to reduce firmware overhead.
+# =============================================================================
+
+substitutions:
+  improv_serial: "disabled"
