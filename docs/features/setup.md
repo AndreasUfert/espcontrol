@@ -51,6 +51,8 @@ For cards that use Home Assistant, enter the entity name from Home Assistant in 
 
 Some card names group several related controls together. **Lights** contains Switch, Brightness, and Colour Temperature options. **Action** contains scene, script, helper, and Option Select actions. **Date & Time** contains Date, Time & Date, and World Clock options.
 
+For the generated list of current card domains, subpage support, grouping, and options, see the [Card Capability Reference](/generated/cards/capabilities).
+
 Most cards also let you choose an icon and set a label. If the label is left blank, the panel uses the friendly name from Home Assistant when it can.
 
 ### Active Switch Display
