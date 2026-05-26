@@ -54,6 +54,7 @@ struct AlarmPinModalUi {
   lv_obj_t *back_btn = nullptr;
   lv_obj_t *pin_lbl = nullptr;
   AlarmActionCtx *active = nullptr;
+  AlarmActionCtx active_action;
   std::string pin;
 };
 
@@ -80,6 +81,13 @@ struct AlarmToastUi {
   lv_timer_t *timer = nullptr;
 };
 
+struct AlarmDeferredAction {
+  AlarmActionCtx action;
+  std::string code;
+  lv_timer_t *timer = nullptr;
+  bool submit_pin = false;
+};
+
 inline AlarmControlModalUi &alarm_control_modal_ui() {
   static AlarmControlModalUi ui;
   return ui;
@@ -93,6 +101,11 @@ inline AlarmPinModalUi &alarm_pin_modal_ui() {
 inline AlarmToastUi &alarm_toast_ui() {
   static AlarmToastUi ui;
   return ui;
+}
+
+inline AlarmDeferredAction &alarm_deferred_action() {
+  static AlarmDeferredAction action;
+  return action;
 }
 
 inline bool alarm_card_context_valid(AlarmCardCtx *ctx) {
@@ -721,10 +734,44 @@ inline void alarm_pin_hide_modal() {
 }
 
 inline void alarm_action_activate(AlarmActionCtx *action);
+inline void alarm_run_deferred_action_cb(lv_timer_t *timer) {
+  AlarmDeferredAction &deferred = alarm_deferred_action();
+  if (deferred.timer == timer) deferred.timer = nullptr;
+  AlarmActionCtx action = deferred.action;
+  std::string code = deferred.code;
+  bool submit_pin = deferred.submit_pin;
+  deferred.action = AlarmActionCtx();
+  deferred.code.clear();
+  deferred.submit_pin = false;
+  lv_timer_del(timer);
+
+  if (!alarm_action_context_valid(&action)) return;
+  if (submit_pin) {
+    alarm_pin_hide_modal();
+    send_alarm_action(&action, code);
+    return;
+  }
+  alarm_action_activate(&action);
+}
+
+inline void alarm_defer_action(AlarmActionCtx *action,
+                               const std::string &code = "",
+                               bool submit_pin = false) {
+  if (!alarm_action_context_valid(action)) return;
+  AlarmDeferredAction &deferred = alarm_deferred_action();
+  if (deferred.timer) {
+    lv_timer_del(deferred.timer);
+    deferred.timer = nullptr;
+  }
+  deferred.action = *action;
+  deferred.code = code;
+  deferred.submit_pin = submit_pin;
+  deferred.timer = lv_timer_create(alarm_run_deferred_action_cb, 1, nullptr);
+}
 
 inline void alarm_control_mode_cb(lv_event_t *e) {
   AlarmActionCtx *action = static_cast<AlarmActionCtx *>(lv_event_get_user_data(e));
-  alarm_action_activate(action);
+  alarm_defer_action(action);
 }
 
 inline void alarm_pin_update_display() {
@@ -743,8 +790,7 @@ inline void alarm_pin_submit() {
   if (!ui.active || ui.pin.empty()) return;
   AlarmActionCtx *action = ui.active;
   std::string code = ui.pin;
-  alarm_pin_hide_modal();
-  send_alarm_action(action, code);
+  alarm_defer_action(action, code, true);
 }
 
 inline lv_obj_t *alarm_create_key_button(lv_obj_t *parent, lv_coord_t width,
@@ -845,7 +891,8 @@ inline void alarm_pin_open_modal(AlarmActionCtx *action) {
     "\U000F0141", false, alarm_pin_hide_modal);
 
   AlarmPinModalUi &ui = alarm_pin_modal_ui();
-  ui.active = action;
+  ui.active_action = *action;
+  ui.active = &ui.active_action;
   ui.pin.clear();
   ui.overlay = shell.overlay;
   ui.panel = shell.panel;
