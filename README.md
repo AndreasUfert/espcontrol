@@ -103,6 +103,9 @@ Use `npm run check:product` as the focused product preflight when changing share
 card behavior, web setup behavior, device metadata, generated outputs, backup compatibility,
 or release-facing metadata.
 
+See [Product Source Map](product/README.md) for the files that should be edited by hand
+and the generated outputs that should be rebuilt instead of manually changed.
+
 ## License
 
 EspControl is licensed under the [PolyForm Noncommercial License 1.0.0](LICENSE).
