@@ -23,8 +23,11 @@ jobs:
       - uses: actions/checkout@v6
         with:
           sparse-checkout: |
+            common/assets/*.yaml
             devices/manifest.json
+            devices/*/device/fonts.yaml
             scripts/device_matrix.py
+            scripts/device_profiles.py
           sparse-checkout-cone-mode: false
 
       - name: Generate device matrix
