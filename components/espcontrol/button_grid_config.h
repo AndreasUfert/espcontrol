@@ -119,6 +119,26 @@ inline std::string decode_compact_field(const std::string &value) {
   return out;
 }
 
+inline char compact_hex_char(uint8_t value) {
+  return value < 10 ? static_cast<char>('0' + value)
+                    : static_cast<char>('A' + value - 10);
+}
+
+inline std::string encode_compact_field(const std::string &value) {
+  std::string out;
+  out.reserve(value.size());
+  for (unsigned char ch : value) {
+    if (ch == '%' || ch == ',' || ch == ';' || ch == '|' || ch == ':') {
+      out.push_back('%');
+      out.push_back(compact_hex_char((ch >> 4) & 0x0F));
+      out.push_back(compact_hex_char(ch & 0x0F));
+    } else {
+      out.push_back(static_cast<char>(ch));
+    }
+  }
+  return out;
+}
+
 // Structured view of a button config string: entity;label;icon;icon_on;sensor;unit;type;precision;options
 struct ParsedCfg {
   std::string entity;      // 0  HA entity_id, internal relay key, or timezone option
@@ -307,6 +327,22 @@ inline std::string alarm_card_options_normalized(const std::string &options) {
   return out;
 }
 
+inline std::string normalize_webhook_method(const std::string &value) {
+  std::string method;
+  method.reserve(value.size());
+  for (char ch : value) {
+    method.push_back(static_cast<char>(std::toupper(static_cast<unsigned char>(ch))));
+  }
+  if (method == "POST" || method == "PUT" || method == "PATCH" ||
+      method == "DELETE") return method;
+  return "GET";
+}
+
+inline std::string webhook_card_options_normalized(const std::string &options) {
+  std::string headers = cfg_option_value(options, "webhook_headers");
+  return headers.empty() ? std::string() : "webhook_headers=" + encode_compact_field(headers);
+}
+
 inline ParsedCfg normalize_parsed_cfg(ParsedCfg p) {
   // Slider cards used to store "h" here for horizontal layout. Sliders are
   // now always vertical, so treat any saved slider sensor value as legacy.
@@ -383,6 +419,14 @@ inline ParsedCfg normalize_parsed_cfg(ParsedCfg p) {
     }
     p.options = alarm_card_options_normalized(p.options);
   }
+  if (p.type == "webhook") {
+    p.sensor = normalize_webhook_method(p.sensor);
+    if (p.sensor == "GET" || p.sensor == "DELETE") p.unit.clear();
+    p.precision.clear();
+    p.icon_on.clear();
+    if (p.icon.empty() || p.icon == "Auto") p.icon = "Flash";
+    p.options = webhook_card_options_normalized(p.options);
+  }
   if (p.type == "light_switch") {
     p.sensor.clear();
     p.unit.clear();
@@ -414,7 +458,7 @@ inline ParsedCfg normalize_parsed_cfg(ParsedCfg p) {
     if (p.icon_on.empty() || p.icon_on == "Auto") p.icon_on = door_window_open_icon_name(p.precision);
     p.options = door_window_card_options_normalized(p.options);
   }
-  if (!p.type.empty() && p.type != "action" && p.type != "alarm" && p.type != "alarm_action" && p.type != "climate" && p.type != "garage" && p.type != "sensor" && p.type != "door_window" && !fan_card_type(p.type) && !card_large_numbers_supported(p)) {
+  if (!p.type.empty() && p.type != "action" && p.type != "alarm" && p.type != "alarm_action" && p.type != "climate" && p.type != "garage" && p.type != "webhook" && p.type != "sensor" && p.type != "door_window" && !fan_card_type(p.type) && !card_large_numbers_supported(p)) {
     p.options.clear();
   }
   if (p.type == "sensor") {
@@ -477,6 +521,10 @@ inline bool action_card_state_display_enabled(const ParsedCfg &p) {
 inline bool action_card_state_text_mode(const ParsedCfg &p) {
   return action_card_state_display_enabled(p) &&
          action_card_state_precision(p) == "text";
+}
+
+inline std::string webhook_card_headers(const ParsedCfg &p) {
+  return p.type == "webhook" ? cfg_option_value(p.options, "webhook_headers") : "";
 }
 
 inline bool action_card_state_numeric_mode(const ParsedCfg &p) {

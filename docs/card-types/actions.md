@@ -82,7 +82,7 @@ If you want a shortcut that does several things, create a scene or script in Hom
 
 Use a script for locks that require a PIN or code. EspControl does not store lock codes on the panel.
 
-Use an [Action](/card-types/actions) card when the panel should directly run something that already exists in Home Assistant. Use a [Trigger](/card-types/buttons) card when you want the panel to fire a custom event that a Home Assistant automation responds to.
+Use an [Action](/card-types/actions) card when the panel should directly run something that already exists in Home Assistant. Use a [Webhook](/card-types/webhooks) card when the panel should call a URL directly without Home Assistant. Use a [Trigger](/card-types/buttons) card when you want the panel to fire a custom event that a Home Assistant automation responds to.
 
 Use the dedicated card types for richer controls:
 

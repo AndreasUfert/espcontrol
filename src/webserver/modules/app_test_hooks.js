@@ -53,6 +53,8 @@ if (typeof globalThis !== "undefined" && globalThis.__ESPCONTROL_TEST_HOOKS__) {
     normalizeLockMode: normalizeLockMode,
     pushDefaultIcon: pushDefaultIcon,
     pushDefaultIconOn: pushDefaultIconOn,
+    webhookMethod: webhookMethod,
+    webhookHeaders: webhookHeaders,
     internalRelayModeOptionValues: internalRelayModeOptionValues,
     normalizeInternalRelayMode: normalizeInternalRelayMode,
     internalRelayDefaultIcon: internalRelayDefaultIcon,

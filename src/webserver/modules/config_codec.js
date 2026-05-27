@@ -88,6 +88,9 @@ function normalizeButtonConfig(b) {
     }
     b.options = normalizeAlarmOptions(b.options);
   }
+  if (b && b.type === "webhook") {
+    if (typeof normalizeWebhookConfig === "function") normalizeWebhookConfig(b);
+  }
   if (b && b.type === "light_switch") {
     b.sensor = "";
     b.unit = "";
@@ -122,7 +125,7 @@ function normalizeButtonConfig(b) {
     if (!b.icon || b.icon === "Auto") b.icon = doorWindowClosedIcon(b.precision);
     if (!b.icon_on || b.icon_on === "Auto") b.icon_on = doorWindowOpenIcon(b.precision);
     b.options = normalizeDoorWindowOptions(b.options);
-  } else if (b && b.type !== "action" && b.type !== "alarm" && b.type !== "alarm_action" && b.type !== "climate" && b.type !== "garage" && !cardLargeNumbersSupported(b)) {
+  } else if (b && b.type !== "action" && b.type !== "alarm" && b.type !== "alarm_action" && b.type !== "climate" && b.type !== "garage" && b.type !== "webhook" && !cardLargeNumbersSupported(b)) {
     b.options = "";
   }
   return b;
@@ -777,13 +780,21 @@ function buttonConfigFields(b) {
     options = normalizeGarageOptions(options, sensor);
   } else if (type === "climate") {
     options = normalizeClimateOptions(options);
+  } else if (type === "webhook" && typeof normalizeWebhookConfig === "function") {
+    var webhookButton = EspControlModel.cloneCardConfig(b || {});
+    normalizeWebhookConfig(webhookButton);
+    sensor = webhookButton.sensor;
+    unit = webhookButton.unit;
+    iconOn = webhookButton.icon_on || "Auto";
+    precision = webhookButton.precision || "";
+    options = webhookButton.options || "";
   } else if (type === "sensor") {
     options = normalizeSensorOptions(options, precision);
   } else if (type === "door_window") {
     options = normalizeDoorWindowOptions(options);
   } else if (isActionOptionSelect || isFanCardType(type)) {
     options = "";
-  } else if (type !== "action" && type !== "alarm_action" && type !== "garage" && !cardLargeNumbersSupported({ type: type, precision: precision })) {
+  } else if (type !== "action" && type !== "alarm_action" && type !== "garage" && type !== "webhook" && !cardLargeNumbersSupported({ type: type, precision: precision })) {
     options = "";
   }
   if (type === "door_window") {

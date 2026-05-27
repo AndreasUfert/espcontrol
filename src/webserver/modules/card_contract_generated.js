@@ -786,6 +786,30 @@ var CARD_CONTRACT_CARDS = {
       "options": ""
     }
   },
+  "webhook": {
+    "label": "Webhook",
+    "allowInSubpage": true,
+    "domains": [],
+    "options": [
+      {
+        "name": "webhook_headers",
+        "label": "Headers",
+        "kind": "text",
+        "defaultValue": ""
+      }
+    ],
+    "default": {
+      "entity": "",
+      "label": "",
+      "icon": "Flash",
+      "icon_on": "Auto",
+      "sensor": "GET",
+      "unit": "",
+      "type": "webhook",
+      "precision": "",
+      "options": ""
+    }
+  },
   "sensor": {
     "label": "Sensor",
     "allowInSubpage": true,
@@ -1012,6 +1036,7 @@ var CARD_CONTRACT_SUBPAGE_TYPE_CODES = {
   "media": "M",
   "climate": "H",
   "push": "P",
+  "webhook": "WH",
   "internal": "I",
   "subpage": "G"
 };
@@ -1041,6 +1066,7 @@ var CARD_CONTRACT_SUBPAGE_TYPES_BY_CODE = {
   "M": "media",
   "H": "climate",
   "P": "push",
+  "WH": "webhook",
   "I": "internal",
   "G": "subpage"
 };

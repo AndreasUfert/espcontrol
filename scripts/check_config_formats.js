@@ -76,6 +76,7 @@ function subpageTypeFromCode(code) {
     K: "lock",
     M: "media",
     H: "climate",
+    WH: "webhook",
     P: "push",
     I: "internal",
     G: "subpage",
@@ -266,6 +267,7 @@ assertButtonTypeSpecBacked("calendar", "calendar card");
 assertButtonTypeSpecBacked("timezone", "timezone card");
 assertButtonTypeSpecBacked("weather", "weather card");
 assertButtonTypeSpecBacked("push", "push card");
+assertButtonTypeSpecBacked("webhook", "webhook card");
 assertButtonTypeSpecBacked("internal", "internal relay card");
 assertButtonTypeSpecBacked("garage", "garage card");
 assertButtonTypeSpecBacked("lock", "lock card");
@@ -315,6 +317,8 @@ assert.strictEqual(hooks.normalizeLockMode("unlock"), "unlock", "lock unlock mod
 assert.strictEqual(hooks.normalizeLockMode("bad"), "", "lock invalid mode falls back to toggle");
 assert.strictEqual(hooks.pushDefaultIcon(), "Gesture Tap", "push default icon is spec-backed");
 assert.strictEqual(hooks.pushDefaultIconOn(), "Auto", "push on icon cleanup is spec-backed");
+assert.strictEqual(hooks.webhookMethod("post"), "POST", "webhook method normalizes to uppercase");
+assert.strictEqual(hooks.webhookMethod("bad"), "GET", "webhook invalid method falls back to GET");
 assert.deepStrictEqual(
   Array.from(hooks.internalRelayModeOptionValues()),
   ["switch", "push"],
@@ -693,6 +697,18 @@ assertButtonRoundTrip(hooks, "internal relay push button", {
   unit: "",
   type: "internal",
   precision: "",
+}, false);
+
+assertButtonRoundTrip(hooks, "webhook post json", {
+  entity: "https://maker.ifttt.com/trigger/door/json/with/key/test",
+  label: "Door Alert",
+  icon: "Flash",
+  icon_on: "Auto",
+  sensor: "POST",
+  unit: "{\"value1\":\"Front door\"}",
+  type: "webhook",
+  precision: "",
+  options: "webhook_headers=Content-Type%3A application/json%3B Authorization%3A Bearer token",
 }, false);
 
 assertButtonRoundTrip(hooks, "garage label button", {
