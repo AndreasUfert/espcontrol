@@ -587,7 +587,9 @@ inline void todo_card_open_modal(TodoCardCtx *ctx) {
   lv_obj_set_style_text_color(ui.title_lbl, lv_color_hex(DARK_TEXT_MUTED), LV_PART_MAIN);
   lv_obj_align(ui.title_lbl, LV_ALIGN_TOP_MID, 0, title_y - layout.back_size / 2);
 
-  ui.list = control_modal_create_scroll_list(ui.panel, list_w, list_h, 0);
+  lv_coord_t row_gap = control_modal_scaled_px(8, layout.short_side);
+  if (row_gap < 6) row_gap = 6;
+  ui.list = control_modal_create_scroll_list(ui.panel, list_w, list_h, row_gap);
   lv_obj_align(ui.list, LV_ALIGN_TOP_LEFT, layout.inset + list_pad, list_y);
 
   lv_obj_move_foreground(ui.overlay);
