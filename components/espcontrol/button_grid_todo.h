@@ -440,12 +440,16 @@ inline void todo_modal_render_items(TodoCardCtx *ctx, const std::vector<TodoItem
   }
 
   ControlModalLayout layout = control_modal_calc_layout(ctx->width_compensation_percent);
-  lv_coord_t row_h = control_modal_scaled_px(40, layout.short_side);
-  if (row_h < 30) row_h = 30;
   lv_coord_t checkbox_size = ctx->label_font && ctx->label_font->line_height > 0
     ? ctx->label_font->line_height
     : control_modal_scaled_px(15, layout.short_side);
   if (checkbox_size < 14) checkbox_size = 14;
+  lv_coord_t row_pad = control_modal_scaled_px(6, layout.short_side);
+  if (row_pad < 4) row_pad = 4;
+  lv_coord_t row_h = checkbox_size + row_pad;
+  if (ctx->label_font && ctx->label_font->line_height + row_pad > row_h) {
+    row_h = ctx->label_font->line_height + row_pad;
+  }
   lv_coord_t item_gap = control_modal_scaled_px(18, layout.short_side);
   if (item_gap < 12) item_gap = 12;
   lv_coord_t content_w = ui.list ? lv_obj_get_width(ui.list) : layout.panel_w;
@@ -699,8 +703,8 @@ inline void todo_card_open_modal(TodoCardCtx *ctx) {
   lv_obj_set_style_text_color(ui.title_lbl, lv_color_hex(DARK_TEXT_MUTED), LV_PART_MAIN);
   lv_obj_align(ui.title_lbl, LV_ALIGN_TOP_MID, 0, title_y - layout.back_size / 2);
 
-  lv_coord_t row_gap = control_modal_scaled_px(8, layout.short_side);
-  if (row_gap < 6) row_gap = 6;
+  lv_coord_t row_gap = control_modal_scaled_px(3, layout.short_side);
+  if (row_gap < 2) row_gap = 2;
   ui.list = control_modal_create_scroll_list(ui.panel, list_w, list_h, row_gap);
   lv_obj_align(ui.list, LV_ALIGN_TOP_LEFT, layout.inset + list_pad, list_y);
 
