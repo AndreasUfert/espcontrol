@@ -195,6 +195,7 @@ var CSS =
   "border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:.875rem;" +
   "font-family:inherit;box-sizing:border-box;outline:none;" +
   "transition:border-color .25s,box-shadow .25s}" +
+  ".sp-input[type=number]{color-scheme:dark}" +
   ".sp-input:focus,.sp-select:focus{border-color:var(--accent);" +
   "box-shadow:0 0 0 3px var(--accent-soft)}" +
   ".sp-input.sp-input-error,.sp-select.sp-input-error{border-color:var(--danger);" +
