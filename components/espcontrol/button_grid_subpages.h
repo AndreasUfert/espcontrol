@@ -122,7 +122,7 @@ inline SubpageBtn normalize_subpage_btn(SubpageBtn b) {
     if (b.sensor == "GET" || b.sensor == "DELETE") b.unit.clear();
     b.precision.clear();
     b.icon_on.clear();
-    if (b.icon.empty() || b.icon == "Auto") b.icon = "Flash";
+    if (b.icon.empty()) b.icon = "Auto";
     b.options = webhook_card_options_normalized(b.options);
   }
   if (b.type == "todo") {

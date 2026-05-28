@@ -32,7 +32,7 @@ function normalizeWebhookConfig(b) {
   b.icon_on = "Auto";
   b.precision = "";
   if (b.sensor === "GET" || b.sensor === "DELETE") b.unit = "";
-  if (!b.icon || b.icon === "Auto") b.icon = "Flash";
+  if (!b.icon) b.icon = "Auto";
   var headers = webhookHeaders(b);
   b.options = headers ? setConfigOptionValue("", WEBHOOK_HEADERS_OPTION, headers) : "";
 }
@@ -52,7 +52,7 @@ var WEBHOOK_CARD_METADATA = {
     pickerIdSuffix: "webhook-icon-picker",
     idSuffix: "webhook-icon",
     field: "icon",
-    fallback: "Flash",
+    fallback: "Auto",
   },
   preview: {
     badge: "webhook",
@@ -72,7 +72,7 @@ registerButtonType("webhook", {
     b.entity = "";
     b.sensor = "GET";
     b.unit = "";
-    b.icon = "Flash";
+    b.icon = "Auto";
     b.icon_on = "Auto";
     b.precision = "";
     b.options = "";

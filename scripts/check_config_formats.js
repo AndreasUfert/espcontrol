@@ -722,7 +722,7 @@ assertButtonRoundTrip(hooks, "internal relay push button", {
 assertButtonRoundTrip(hooks, "webhook post json", {
   entity: "https://maker.ifttt.com/trigger/door/json/with/key/test",
   label: "Door Alert",
-  icon: "Flash",
+  icon: "Auto",
   icon_on: "Auto",
   sensor: "POST",
   unit: "{\"value1\":\"Front door\"}",
@@ -2316,13 +2316,13 @@ assert.deepStrictEqual(subpageShape(hooks.parseSubpageConfig("~1,B|A,scene.movie
   ],
 }, "compact action subpage state entity parse");
 
-assert.deepStrictEqual(subpageShape(hooks.parseSubpageConfig("~1,B|WH,https%3A//webhook-test.net/abc,Door%20Alert,Flash,,POST,%7B%22value%22%3Atrue%7D,,webhook_headers=Content-Type%253A%20application/json")), {
+assert.deepStrictEqual(subpageShape(hooks.parseSubpageConfig("~1,B|WH,https%3A//webhook-test.net/abc,Door%20Alert,,,POST,%7B%22value%22%3Atrue%7D,,webhook_headers=Content-Type%253A%20application/json")), {
   order: ["1", "B"],
   buttons: [
     buttonShape({
       entity: "https://webhook-test.net/abc",
       label: "Door Alert",
-      icon: "Flash",
+      icon: "Auto",
       icon_on: "Auto",
       sensor: "POST",
       unit: "{\"value\":true}",

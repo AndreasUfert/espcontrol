@@ -869,7 +869,7 @@ var CARD_CONTRACT_CARDS = {
     "default": {
       "entity": "",
       "label": "",
-      "icon": "Flash",
+      "icon": "Auto",
       "icon_on": "Auto",
       "sensor": "GET",
       "unit": "",

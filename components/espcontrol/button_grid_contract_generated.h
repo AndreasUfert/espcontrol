@@ -265,7 +265,7 @@ inline const char *card_contract_default_icon_name(const std::string &type) {
   if (type == "media") return "Auto";
   if (type == "option_select") return "Flash";
   if (type == "push") return "Gesture Tap";
-  if (type == "webhook") return "Flash";
+  if (type == "webhook") return "Auto";
   if (type == "todo") return "Check";
   if (type == "sensor") return "Auto";
   if (type == "slider") return "Auto";
