@@ -239,6 +239,7 @@ inline std::string todo_item_action_key(const TodoItem &item) {
 }
 
 inline void todo_modal_hide() {
+  todo_cancel_pending_request("modal closed");
   TodoModalUi &ui = todo_modal_ui();
   control_modal_delete_overlay(ControlModalKind::TODO_LIST, ui.overlay);
   ui = TodoModalUi();
