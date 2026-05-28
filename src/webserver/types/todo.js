@@ -138,7 +138,7 @@ registerButtonType("todo", {
       iconHtml: statusMode === "icon"
         ? '<span class="sp-btn-icon mdi mdi-' + iconSlug(b.icon || "Check") + '"></span>'
         : statusMode === "top_task"
-        ? cardSensorPreviewHtml(b, helpers, "Buy milk", null, "sp-todo-task-preview")
+        ? cardSensorPreviewHtml(b, helpers, "Buy milk", null, "sp-todo-task-preview", "sp-media-now-title")
         : cardSensorPreviewHtml(b, helpers, "3", ""),
       labelHtml: cardBadgeLabelHtml(helpers, label, TODO_CARD_METADATA.preview.badge),
     };
