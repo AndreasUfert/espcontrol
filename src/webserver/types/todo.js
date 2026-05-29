@@ -57,6 +57,10 @@ registerButtonType("todo", {
   pickerKey: function () { return cardContractPickerKey("todo"); },
   experimental: function () { return cardContractExperimental("todo"); },
   hidden: function () { return cardContractHidden("todo"); },
+  isAvailable: function () {
+    var disabled = (CFG && CFG.disabledCardTypes) || [];
+    return disabled.indexOf("todo") < 0;
+  },
   showSelectedWhenExperimentalHidden: false,
   hideLabel: true,
   defaultConfig: function () { return cardContractDefaultConfig("todo"); },

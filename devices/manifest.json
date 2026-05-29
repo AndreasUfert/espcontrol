@@ -560,6 +560,9 @@
         }
       ],
       "web": {
+        "disabledCardTypes": [
+          "todo"
+        ],
         "dragMode": "displace",
         "dragAnimation": true,
         "screen": {

@@ -4,6 +4,63 @@
 
 // Home Assistant todo card controls.
 
+#if defined(ESPCONTROL_DISABLE_TODO) && ESPCONTROL_DISABLE_TODO
+
+struct TodoCardCtx {};
+
+inline bool todo_card_context_valid(TodoCardCtx *ctx) {
+  (void) ctx;
+  return false;
+}
+
+inline void setup_todo_card(BtnSlot &s, const ParsedCfg &p, uint32_t secondary_color) {
+  lv_obj_set_style_bg_color(s.btn, lv_color_hex(secondary_color),
+    static_cast<lv_style_selector_t>(LV_PART_MAIN) | static_cast<lv_style_selector_t>(LV_STATE_DEFAULT));
+  lv_obj_clear_flag(s.icon_lbl, LV_OBJ_FLAG_HIDDEN);
+  lv_obj_add_flag(s.sensor_container, LV_OBJ_FLAG_HIDDEN);
+  lv_label_set_text(s.icon_lbl,
+    (!p.icon.empty() && p.icon != "Auto") ? find_icon(p.icon.c_str()) : find_icon("Check"));
+  lv_label_set_text(s.text_lbl, p.label.empty() ? "Todo" : p.label.c_str());
+}
+
+inline void todo_cancel_pending_request(const char *reason, bool keep_modal_waiting = true) {
+  (void) reason;
+  (void) keep_modal_waiting;
+}
+
+inline void todo_reload_active_modal() {}
+inline void todo_retry_waiting_modal() {}
+inline void todo_card_open_modal(TodoCardCtx *ctx) { (void) ctx; }
+
+inline TodoCardCtx *create_todo_card_context(
+    BtnSlot &s,
+    const ParsedCfg &p,
+    uint32_t accent_color,
+    uint32_t secondary_color,
+    const lv_font_t *value_font,
+    const lv_font_t *label_font,
+    const lv_font_t *list_font,
+    const lv_font_t *icon_font,
+    int width_compensation_percent,
+    bool top_task_limit_two_lines = false) {
+  (void) s;
+  (void) p;
+  (void) accent_color;
+  (void) secondary_color;
+  (void) value_font;
+  (void) label_font;
+  (void) list_font;
+  (void) icon_font;
+  (void) width_compensation_percent;
+  (void) top_task_limit_two_lines;
+  return nullptr;
+}
+
+inline void subscribe_todo_state(TodoCardCtx *ctx) { (void) ctx; }
+inline void subscribe_todo_friendly_name(TodoCardCtx *ctx) { (void) ctx; }
+
+#else
+
 constexpr uint32_t TODO_CARD_CTX_MAGIC = 0x544F444F;  // TODO
 constexpr int TODO_MAX_ITEMS = 8;
 constexpr size_t TODO_RESPONSE_TEXT_MAX_LEN = 1536;
@@ -714,3 +771,5 @@ inline void subscribe_todo_friendly_name(TodoCardCtx *ctx) {
     })
   );
 }
+
+#endif
