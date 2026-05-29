@@ -593,7 +593,9 @@ inline void todo_card_open_modal(TodoCardCtx *ctx) {
     ui.panel, todo_lite_card_label(ctx), content_w - layout.back_size - gap,
     ctx->list_font, ctx->width_compensation_percent);
   lv_obj_set_style_text_color(ui.title_lbl, lv_color_hex(DARK_TEXT_MUTED), LV_PART_MAIN);
-  lv_obj_align(ui.title_lbl, LV_ALIGN_TOP_MID, 0, title_y - layout.back_size / 2);
+  lv_obj_update_layout(ui.title_lbl);
+  lv_obj_align(ui.title_lbl, LV_ALIGN_TOP_MID, 0,
+    title_y - lv_obj_get_height(ui.title_lbl) / 2);
 
   lv_coord_t row_gap = control_modal_scaled_px(14, layout.short_side);
   if (row_gap < 8) row_gap = 8;
@@ -1311,7 +1313,9 @@ inline void todo_card_open_modal(TodoCardCtx *ctx) {
     ui.panel, todo_card_label(ctx), content_w - layout.back_size - gap,
     ctx->list_font, ctx->width_compensation_percent);
   lv_obj_set_style_text_color(ui.title_lbl, lv_color_hex(DARK_TEXT_MUTED), LV_PART_MAIN);
-  lv_obj_align(ui.title_lbl, LV_ALIGN_TOP_MID, 0, title_y - layout.back_size / 2);
+  lv_obj_update_layout(ui.title_lbl);
+  lv_obj_align(ui.title_lbl, LV_ALIGN_TOP_MID, 0,
+    title_y - lv_obj_get_height(ui.title_lbl) / 2);
 
   lv_coord_t row_gap = control_modal_scaled_px(
     control_modal_uses_compact_portrait_tuning(layout) ? 18 : 10,
