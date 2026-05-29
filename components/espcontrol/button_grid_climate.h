@@ -27,6 +27,7 @@ constexpr lv_coord_t CLIMATE_MODAL_4848_LABELS_DOWN_REF_PX = 12;
 constexpr lv_coord_t CLIMATE_MODAL_4848_OPTION_CHIP_H_REF_PX = 58;
 constexpr lv_coord_t CLIMATE_MODAL_4848_OPTION_CHIP_W_REF_PX = 160;
 constexpr lv_coord_t CLIMATE_MODAL_4848_OPTION_CHIP_GAP_REF_PX = 12;
+constexpr lv_coord_t CLIMATE_MODAL_WIDE_LANDSCAPE_OPTION_CHIP_H_PX = 76;
 constexpr lv_coord_t CLIMATE_MODAL_STEP_BUTTON_GAP_REF_PX = 16;
 constexpr uint16_t CLIMATE_MODAL_STEP_ICON_ZOOM = 214;
 constexpr int CLIMATE_OPTION_ROW_WIDTH_PERCENT = 88;
@@ -496,6 +497,12 @@ inline void climate_apply_jc4880p443_bottom_chip_padding(lv_obj_t *chip, bool op
   if (option_chip) lv_obj_set_style_pad_column(chip, 24, LV_PART_MAIN);
 }
 
+inline void climate_apply_wide_landscape_bottom_chip_padding(lv_obj_t *chip) {
+  if (!chip) return;
+  lv_obj_set_style_pad_top(chip, 8, LV_PART_MAIN);
+  lv_obj_set_style_pad_bottom(chip, 8, LV_PART_MAIN);
+}
+
 inline ControlModalLayout climate_control_calc_layout(ClimateControlCtx *ctx) {
   ControlModalLayout layout = control_modal_calc_layout(ctx ? ctx->width_compensation_percent : 100);
   int arc_size_percent = control_modal_uses_compact_portrait_tuning(layout)
@@ -934,7 +941,7 @@ inline lv_obj_t *climate_create_option_chip(lv_obj_t *parent, const char *icon,
 
   lv_obj_t *text_col = lv_obj_create(btn);
   lv_obj_add_flag(text_col, LV_OBJ_FLAG_SCROLL_CHAIN_HOR);
-  lv_obj_set_size(text_col, LV_SIZE_CONTENT, LV_SIZE_CONTENT);
+  lv_obj_set_size(text_col, LV_SIZE_CONTENT, lv_pct(100));
   lv_obj_set_style_bg_opa(text_col, LV_OPA_TRANSP, LV_PART_MAIN);
   lv_obj_set_style_border_width(text_col, 0, LV_PART_MAIN);
   lv_obj_set_style_pad_all(text_col, 0, LV_PART_MAIN);
@@ -1300,8 +1307,10 @@ inline void climate_control_layout_modal(ClimateControlCtx *ctx) {
   bool medium_landscape = layout.panel_w >= 760 && layout.panel_h <= 520;
   lv_coord_t chip_h = tune_4848
     ? control_modal_scaled_px(CLIMATE_MODAL_4848_OPTION_CHIP_H_REF_PX, layout.short_side)
+    : roomy_landscape
+    ? CLIMATE_MODAL_WIDE_LANDSCAPE_OPTION_CHIP_H_PX
     : layout.short_side < 520
-    ? (roomy_landscape ? 76 : (medium_landscape ? 94 : 72))
+    ? (medium_landscape ? 94 : 72)
     : 94;
   lv_coord_t chip_gap = control_modal_scaled_px(tune_4848 ? CLIMATE_MODAL_4848_OPTION_CHIP_GAP_REF_PX : 24,
     layout.short_side);
@@ -1355,6 +1364,7 @@ inline void climate_control_layout_modal(ClimateControlCtx *ctx) {
     lv_obj_set_style_radius(chip, chip_h / 2, LV_PART_MAIN);
     if (tune_jc4880p443) climate_apply_jc4880p443_bottom_chip_padding(chip, true);
     if (tune_4848) climate_apply_4848_bottom_chip_padding(chip, true);
+    if (roomy_landscape) climate_apply_wide_landscape_bottom_chip_padding(chip);
   };
   layout_option_chip(ui.mode_chip);
   layout_option_chip(ui.preset_chip);
