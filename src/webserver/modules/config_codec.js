@@ -325,12 +325,12 @@ function subpagePresetDefaults(kind) {
   return null;
 }
 
-function applySubpagePresetConfig(b) {
+function applySubpagePresetConfig(b, forceDisplayDefaults) {
   if (!b) return;
   var defaults = subpagePresetDefaults(subpageKind(b));
   if (!defaults) return;
-  b.label = defaults.label;
-  b.icon = defaults.icon;
+  if (forceDisplayDefaults || !b.label) b.label = defaults.label;
+  if (forceDisplayDefaults || !b.icon || b.icon === "Auto") b.icon = defaults.icon;
   b.icon_on = "Auto";
   b.sensor = "indicator";
   b.unit = "";

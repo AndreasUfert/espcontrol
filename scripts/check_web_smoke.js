@@ -768,6 +768,17 @@ assert(subpagePresencePreview.iconHtml.includes("mdi-account"), "presence subpag
 assert(subpagePresencePreview.labelHtml.includes("Presence"), "presence subpage preset preview uses the Presence label");
 assert(subpagePresencePreview.labelHtml.includes("mdi-chevron-right"), "presence subpage preset preview uses the chevron badge");
 
+const subpageCustomPresetPreview = hooks.buttonTypePreviewFor("subpage", {
+  entity: "climate.living_room",
+  label: "Downstairs",
+  icon: "Home",
+  sensor: "indicator",
+  type: "subpage",
+  options: "subpage_kind=climate",
+});
+assert(subpageCustomPresetPreview.iconHtml.includes("mdi-home"), "custom subpage preset preview uses the configured icon");
+assert(subpageCustomPresetPreview.labelHtml.includes("Downstairs"), "custom subpage preset preview uses the configured label");
+
 const subpageNumericPreview = hooks.buttonTypePreviewFor("subpage", {
   label: "Open Windows",
   icon: "Window Closed",

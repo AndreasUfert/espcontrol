@@ -130,7 +130,7 @@ registerButtonType("subpage", {
         onChange: function (button, cardHelpers) {
           var nextKind = normalizeSubpageKind(this.value);
           button.options = setConfigOptionValue(button.options, SUBPAGE_KIND_OPTION, nextKind);
-          applySubpagePresetConfig(button);
+          applySubpagePresetConfig(button, true);
           button.options = normalizeSubpageOptions(button.options, button.sensor, button.precision);
           cardHelpers.saveField("options", button.options);
           cardHelpers.saveField("label", button.label || "");
@@ -145,6 +145,8 @@ registerButtonType("subpage", {
     });
 
     if (kind === "lights" || kind === "media" || kind === "climate" || kind === "presence") {
+      helpers.renderCardTextField(panel, b, helpers, SUBPAGE_CARD_METADATA.labelField);
+      helpers.renderCardIconPicker(panel, b, helpers, SUBPAGE_CARD_METADATA.icon);
       helpers.renderCardEntityField(panel, b, helpers, {
         entity: kind === "lights"
           ? SUBPAGE_CARD_METADATA.lightsEntity
