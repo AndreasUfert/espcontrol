@@ -904,6 +904,7 @@ inline lv_obj_t *climate_create_option_chip(lv_obj_t *parent, const char *icon,
   lv_obj_t *btn = lv_btn_create(parent);
   lv_obj_set_size(btn, compensated_width(240, width_compensation_percent), 94);
   lv_obj_set_flex_grow(btn, 0);
+  lv_obj_add_flag(btn, LV_OBJ_FLAG_SCROLL_CHAIN_HOR);
   lv_obj_set_style_radius(btn, 47, LV_PART_MAIN);
   lv_obj_set_style_bg_color(btn, lv_color_hex(DARK_BACKGROUND_SECONDARY), LV_PART_MAIN);
   lv_obj_set_style_bg_opa(btn, LV_OPA_COVER, LV_PART_MAIN);
@@ -921,12 +922,14 @@ inline lv_obj_t *climate_create_option_chip(lv_obj_t *parent, const char *icon,
   control_modal_apply_pressed_fill(btn);
 
   lv_obj_t *icon_lbl = lv_label_create(btn);
+  lv_obj_add_flag(icon_lbl, LV_OBJ_FLAG_SCROLL_CHAIN_HOR);
   lv_label_set_text(icon_lbl, icon);
   lv_obj_set_style_text_color(icon_lbl, lv_color_hex(DARK_TEXT_SOFT), LV_PART_MAIN);
   lv_obj_set_style_text_align(icon_lbl, LV_TEXT_ALIGN_CENTER, LV_PART_MAIN);
   if (icon_font) lv_obj_set_style_text_font(icon_lbl, icon_font, LV_PART_MAIN);
 
   lv_obj_t *text_col = lv_obj_create(btn);
+  lv_obj_add_flag(text_col, LV_OBJ_FLAG_SCROLL_CHAIN_HOR);
   lv_obj_set_size(text_col, LV_SIZE_CONTENT, LV_SIZE_CONTENT);
   lv_obj_set_style_bg_opa(text_col, LV_OPA_TRANSP, LV_PART_MAIN);
   lv_obj_set_style_border_width(text_col, 0, LV_PART_MAIN);
@@ -940,6 +943,7 @@ inline lv_obj_t *climate_create_option_chip(lv_obj_t *parent, const char *icon,
   lv_obj_clear_flag(text_col, LV_OBJ_FLAG_SCROLLABLE);
 
   lv_obj_t *title_lbl = lv_label_create(text_col);
+  lv_obj_add_flag(title_lbl, LV_OBJ_FLAG_SCROLL_CHAIN_HOR);
   lv_label_set_text(title_lbl, title);
   lv_label_set_long_mode(title_lbl, LV_LABEL_LONG_CLIP);
   lv_obj_set_style_text_color(title_lbl, lv_color_hex(DARK_TEXT_MUTED), LV_PART_MAIN);
@@ -947,6 +951,7 @@ inline lv_obj_t *climate_create_option_chip(lv_obj_t *parent, const char *icon,
   if (title_font) lv_obj_set_style_text_font(title_lbl, title_font, LV_PART_MAIN);
 
   lv_obj_t *value_lbl = lv_label_create(text_col);
+  lv_obj_add_flag(value_lbl, LV_OBJ_FLAG_SCROLL_CHAIN_HOR);
   lv_label_set_text(value_lbl, "None");
   lv_label_set_long_mode(value_lbl, LV_LABEL_LONG_CLIP);
   lv_obj_set_style_text_color(value_lbl, lv_color_hex(DARK_TEXT_SOFT), LV_PART_MAIN);
@@ -1338,6 +1343,9 @@ inline void climate_control_layout_modal(ClimateControlCtx *ctx) {
   lv_obj_set_width(ui.chips, lv_pct(CLIMATE_OPTION_ROW_WIDTH_PERCENT));
   lv_obj_set_height(ui.chips, chip_h);
   lv_obj_set_style_pad_column(ui.chips, chip_gap, LV_PART_MAIN);
+  lv_obj_add_flag(ui.chips, LV_OBJ_FLAG_SCROLLABLE);
+  lv_obj_set_scroll_dir(ui.chips, LV_DIR_HOR);
+  lv_obj_set_scrollbar_mode(ui.chips, LV_SCROLLBAR_MODE_OFF);
   lv_coord_t option_chip_w = compensated_width(
     tune_4848 ? CLIMATE_MODAL_4848_OPTION_CHIP_W_REF_PX :
       layout.short_side < 520 ? (roomy_landscape ? 224 : (medium_landscape ? 240 : 180)) : 240,
@@ -1362,12 +1370,9 @@ inline void climate_control_layout_modal(ClimateControlCtx *ctx) {
   lv_coord_t chip_content_w = visible_chip_count == 0 ? 0 :
     visible_chip_count * option_chip_w + (visible_chip_count - 1) * chip_gap;
   if (chip_content_w > chip_row_w) {
-    lv_obj_add_flag(ui.chips, LV_OBJ_FLAG_SCROLLABLE);
-    lv_obj_set_scroll_dir(ui.chips, LV_DIR_HOR);
-    lv_obj_set_scrollbar_mode(ui.chips, LV_SCROLLBAR_MODE_OFF);
     lv_obj_set_style_flex_main_place(ui.chips, LV_FLEX_ALIGN_START, LV_PART_MAIN);
   } else {
-    lv_obj_clear_flag(ui.chips, LV_OBJ_FLAG_SCROLLABLE);
+    lv_obj_scroll_to_x(ui.chips, 0, LV_ANIM_OFF);
     lv_obj_set_style_flex_main_place(ui.chips, LV_FLEX_ALIGN_CENTER, LV_PART_MAIN);
   }
   lv_obj_align(ui.chips, LV_ALIGN_BOTTOM_MID, 0, -layout.inset);
