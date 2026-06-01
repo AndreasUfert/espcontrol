@@ -1257,6 +1257,16 @@ inline void apply_weather_forecast_actions_required_for_entity(const std::string
   }
 }
 
+inline bool weather_forecast_error_is_timeout(const std::string &message) {
+  std::string lower;
+  lower.reserve(message.size());
+  for (char ch : message) {
+    lower.push_back(static_cast<char>(std::tolower(static_cast<unsigned char>(ch))));
+  }
+  return lower.find("timeout") != std::string::npos ||
+         lower.find("timed out") != std::string::npos;
+}
+
 inline bool weather_forecast_request_matches(const std::string &entity_id,
                                              const std::string &day,
                                              const std::string &other_entity_id,
@@ -1623,7 +1633,7 @@ inline void request_weather_forecast_entity(const std::string &entity_id,
         std::string error_message = response.get_error_message();
         ESP_LOGW("weather_forecast", "Forecast request failed for %s: %s",
           entity_id.c_str(), error_message.c_str());
-        if (error_message == "timeout") {
+        if (weather_forecast_error_is_timeout(error_message)) {
           apply_weather_forecast_actions_required_for_entity(entity_id);
         } else {
           apply_weather_forecast_unavailable_for_entity(entity_id);

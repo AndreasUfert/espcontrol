@@ -232,6 +232,12 @@ def firmware_weather_request_errors(firmware_dir: Path, root: Path) -> list[str]
         errors.append(f"{rel}: expose a helper to cancel pending forecast callbacks")
     if "WEATHER_FORECAST_RETRY_DELAY_MS" not in text or "weather_forecast_schedule_retry" not in text:
         errors.append(f"{rel}: retry failed weather forecast requests later")
+    if (
+        "weather_forecast_error_is_timeout" not in text
+        or 'find("timed out")' not in text
+        or "apply_weather_forecast_actions_required_for_entity" not in body
+    ):
+        errors.append(f"{rel}: detect Home Assistant forecast timeout errors robustly")
     return errors
 
 
@@ -1102,6 +1108,16 @@ def run_self_test() -> int:
         "  ha_action_send(req);\n"
         "}\n",
         ("retry failed weather forecast requests later",),
+    )
+    expect_weather_request_errors(
+        "missing robust weather timeout detection",
+        "inline void request_weather_forecast_entity() {\n"
+        "  if (!weather_forecast_actions_ready()) return;\n"
+        "  weather_forecast_track_pending(req.call_id);\n"
+        "  weather_forecast_cancel_pending_requests();\n"
+        "  weather_forecast_schedule_retry(entity_id, day, \"failed\");\n"
+        "}\n",
+        ("detect Home Assistant forecast timeout errors robustly",),
     )
     expect_weather_disconnect_errors(
         "missing weather disconnect cleanup",
