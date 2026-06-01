@@ -299,9 +299,11 @@ def test_weather_card_visual_matches_preview() -> None:
         "inline void reset_card_slot_dynamic_children" in grid
         and "lv_obj_del(child);" in grid
         and "lv_obj_set_user_data(s.sensor_container, nullptr);" in grid
+        and "lv_obj_clear_state(s.btn, LV_STATE_CHECKED);" in grid
+        and "lv_obj_clear_state(s.btn, LV_STATE_DISABLED);" in grid
         and setup_match
         and "reset_card_slot_dynamic_children(s);" in setup_match.group(0)
-    ), "weather cards must clear stale slider/media child widgets before rendering"
+    ), "weather cards must clear stale widget children and active states before rendering"
     assert "inline std::string normalize_weather_state" in config, (
         "current weather device cards should normalize equivalent weather state spellings before mapping icons"
     )
