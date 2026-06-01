@@ -166,10 +166,10 @@ def test_generated_yaml(profiles: dict[str, dict]) -> None:
                     and "id: network_status_button\n          align: top_right\n          x: -8\n          y: 0\n          width: 24\n          height: 60" in lvgl
                     and "id: network_status_icon_label\n                text: \"\\U000F0928\"\n                text_font: font_trmnl_mdi_topbar_18_icons" in lvgl
                 ), f"{slug}: top bar network icon must match the generated web preview scale"
-                assert "id: button_${num}_unit_label\n              text: \"\"\n              text_font: font_trmnl_label_14" in (
+                assert "id: button_${num}_unit_label\n              text: \"\"\n              text_font: font_trmnl_label_14\n              text_color: 0x000000\n              pad_bottom: 0" in (
                     tile_path.read_text(encoding="utf-8")
                 ), (
-                    f"{slug}: weather forecast unit label must be visible like the web preview"
+                    f"{slug}: weather forecast unit label must align like the web preview"
                 )
                 tile = tile_path.read_text(encoding="utf-8")
                 assert "radius: 2" in tile and "lv_obj_set_style_radius(slot.btn, 2, LV_PART_MAIN)" in sensors, (
