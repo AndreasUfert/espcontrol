@@ -474,6 +474,9 @@ def test_current_weather_state_updates_availability() -> None:
     assert "apply_control_availability(btn_ptr, btn_ptr, !unavailable, false)" in body, (
         "current weather cards must clear unavailable styling when Home Assistant sends a valid state"
     )
+    assert "apply_control_availability(btn_ptr, btn_ptr, false, false)" in body, (
+        "current weather cards must start unavailable until Home Assistant sends a state"
+    )
     assert "notify_dashboard_content_changed()" in body, (
         "current weather state changes must refresh TRMNL e-paper"
     )

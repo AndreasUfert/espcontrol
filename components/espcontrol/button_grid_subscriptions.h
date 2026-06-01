@@ -197,6 +197,7 @@ inline void subscribe_weather_state(lv_obj_t *icon_lbl, lv_obj_t *text_lbl, cons
   lv_obj_t *btn_ptr = icon_lbl ? lv_obj_get_parent(icon_lbl) : nullptr;
   uint32_t generation = ha_subscription_generation();
   register_ha_control_availability(btn_ptr, btn_ptr, false);
+  apply_control_availability(btn_ptr, btn_ptr, false, false);
   ha_subscribe_state(
     entity_id,
     std::function<void(esphome::StringRef)>([btn_ptr, icon_lbl, text_lbl, entity_id, generation](esphome::StringRef state) {
