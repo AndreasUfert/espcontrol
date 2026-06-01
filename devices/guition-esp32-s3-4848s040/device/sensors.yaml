@@ -45,6 +45,7 @@ script:
           cfg.sp_large_sensor_font = id(font_roboto_thin_110_digits)->get_lv_font();
           cfg.large_sensor_unit_offset_percent = -10;
           cfg.media_title_font = id(font_roboto_light_34_text)->get_lv_font();
+          cfg.option_select_value_font = id(font_roboto_light_39_text)->get_lv_font();
           cfg.volume_number_font = id(font_roboto_thin_96_text)->get_lv_font();
           cfg.volume_label_font = id(font_roboto_regular_22_text)->get_lv_font();
           cfg.climate_card_icon_font = id(font_mdi_33_icons)->get_lv_font();
@@ -117,6 +118,7 @@ esphome:
             cfg.sp_large_sensor_font = id(font_roboto_thin_110_digits)->get_lv_font();
             cfg.large_sensor_unit_offset_percent = -10;
             cfg.media_title_font = id(font_roboto_light_34_text)->get_lv_font();
+            cfg.option_select_value_font = id(font_roboto_light_39_text)->get_lv_font();
             cfg.volume_number_font = id(font_roboto_thin_96_text)->get_lv_font();
             cfg.volume_label_font = id(font_roboto_regular_22_text)->get_lv_font();
             cfg.climate_card_icon_font = id(font_mdi_33_icons)->get_lv_font();
@@ -218,6 +220,7 @@ esphome:
             cfg.sp_large_sensor_font = id(font_roboto_thin_110_digits)->get_lv_font();
             cfg.large_sensor_unit_offset_percent = -10;
             cfg.media_title_font = id(font_roboto_light_34_text)->get_lv_font();
+            cfg.option_select_value_font = id(font_roboto_light_39_text)->get_lv_font();
             cfg.volume_number_font = id(font_roboto_thin_96_text)->get_lv_font();
             cfg.volume_label_font = id(font_roboto_regular_22_text)->get_lv_font();
             cfg.climate_card_icon_font = id(font_mdi_33_icons)->get_lv_font();

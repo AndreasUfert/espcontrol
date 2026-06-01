@@ -29,6 +29,7 @@ struct GridConfig {
   const lv_font_t *sp_large_sensor_font = nullptr;
   int large_sensor_unit_offset_percent = -10;
   const lv_font_t *media_title_font;
+  const lv_font_t *option_select_value_font = nullptr;
   const lv_font_t *volume_number_font;
   const lv_font_t *volume_label_font = nullptr;
   const lv_font_t *climate_card_icon_font = nullptr;
@@ -62,6 +63,7 @@ inline DisplayProfile display_profile_from_grid_config(const GridConfig &cfg) {
   profile.fonts.sensor = cfg.sp_sensor_font;
   profile.fonts.large_sensor = cfg.sp_large_sensor_font;
   profile.fonts.media_title = cfg.media_title_font;
+  profile.fonts.option_select_value = cfg.option_select_value_font;
   profile.fonts.volume_number = cfg.volume_number_font;
   profile.fonts.volume_label = cfg.volume_label_font;
   profile.fonts.climate_card_icon = cfg.climate_card_icon_font;
@@ -285,7 +287,7 @@ inline void setup_card_visual(BtnSlot &s, const ParsedCfg &p,
     if (action_card_option_select(p)) {
       setup_option_select_card(
         s, p, palette.has_sensor_color, palette.sensor_val,
-        display_media_title_font_or(
+        display_option_select_value_font_or(
           display, s.text_lbl ? lv_obj_get_style_text_font(s.text_lbl, LV_PART_MAIN) : nullptr));
       return;
     }
@@ -295,7 +297,7 @@ inline void setup_card_visual(BtnSlot &s, const ParsedCfg &p,
   if (p.type == "option_select") {
     setup_option_select_card(
       s, p, palette.has_sensor_color, palette.sensor_val,
-      display_media_title_font_or(
+      display_option_select_value_font_or(
         display, s.text_lbl ? lv_obj_get_style_text_font(s.text_lbl, LV_PART_MAIN) : nullptr));
     return;
   }

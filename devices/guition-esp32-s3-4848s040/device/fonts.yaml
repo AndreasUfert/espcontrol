@@ -41,6 +41,16 @@ font:
       - "0123456789.-°/%"
       - ":"
 
+  # Option-select values, close to sensor value size with full text coverage
+  - file: "gfonts://Roboto@Light"
+    id: font_roboto_light_39_text
+    size: 39
+    bpp: 4
+    glyphs: !include ../../../common/assets/text_glyphs.yaml
+    extras:
+      - file: "gfonts://Heebo@Light"
+        glyphs: !include ../../../common/assets/hebrew_glyphs.yaml
+
   # Large-card sensor values (2.5x the regular sensor value font)
   - file: "gfonts://Roboto@Thin"
     id: font_roboto_thin_110_digits

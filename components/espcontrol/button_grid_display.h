@@ -10,6 +10,7 @@ struct DisplayFontRoles {
   const lv_font_t *sensor = nullptr;
   const lv_font_t *large_sensor = nullptr;
   const lv_font_t *media_title = nullptr;
+  const lv_font_t *option_select_value = nullptr;
   const lv_font_t *volume_number = nullptr;
   const lv_font_t *volume_label = nullptr;
   const lv_font_t *climate_card_icon = nullptr;
@@ -108,6 +109,12 @@ inline const lv_font_t *display_optional_media_title_font(const DisplayProfile &
 inline const lv_font_t *display_media_title_font_or(
     const DisplayProfile &profile, const lv_font_t *fallback) {
   return profile.fonts.media_title ? profile.fonts.media_title : fallback;
+}
+
+inline const lv_font_t *display_option_select_value_font_or(
+    const DisplayProfile &profile, const lv_font_t *fallback) {
+  if (profile.fonts.option_select_value) return profile.fonts.option_select_value;
+  return display_media_title_font_or(profile, fallback);
 }
 
 inline const lv_font_t *display_switch_confirmation_message_font(const DisplayProfile &profile) {
