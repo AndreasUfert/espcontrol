@@ -299,6 +299,7 @@ def test_temperature_unit_changes_refresh_weather_cards() -> None:
 
 def test_current_weather_state_updates_availability() -> None:
     subscriptions = (ROOT / "components" / "espcontrol" / "button_grid_subscriptions.h").read_text(encoding="utf-8")
+    grid = (ROOT / "components" / "espcontrol" / "button_grid_grid.h").read_text(encoding="utf-8")
     match = re.search(
         r"inline void subscribe_weather_state\([\s\S]*?\n\}",
         subscriptions,
@@ -310,6 +311,12 @@ def test_current_weather_state_updates_availability() -> None:
     )
     assert "notify_dashboard_content_changed()" in body, (
         "current weather state changes must refresh TRMNL e-paper"
+    )
+    assert "uint32_t generation = ha_subscription_generation();" in body and "generation != ha_subscription_generation()" in body, (
+        "current weather callbacks must ignore stale subscriptions after dashboard reconfiguration"
+    )
+    assert "bump_ha_subscription_generation();" in grid, (
+        "dashboard reconfiguration must invalidate stale current weather subscriptions"
     )
 
 

@@ -195,10 +195,12 @@ inline void subscribe_presence_state(lv_obj_t *btn_ptr, lv_obj_t *icon_lbl,
 inline void subscribe_weather_state(lv_obj_t *icon_lbl, lv_obj_t *text_lbl, const std::string &entity_id) {
   ESP_LOGI("weather", "Subscribing to current weather state for %s", entity_id.c_str());
   lv_obj_t *btn_ptr = icon_lbl ? lv_obj_get_parent(icon_lbl) : nullptr;
+  uint32_t generation = ha_subscription_generation();
   register_ha_control_availability(btn_ptr, btn_ptr, false);
   ha_subscribe_state(
     entity_id,
-    std::function<void(esphome::StringRef)>([btn_ptr, icon_lbl, text_lbl, entity_id](esphome::StringRef state) {
+    std::function<void(esphome::StringRef)>([btn_ptr, icon_lbl, text_lbl, entity_id, generation](esphome::StringRef state) {
+      if (generation != ha_subscription_generation()) return;
       std::string state_text = string_ref_limited(state, HA_SHORT_STATE_MAX_LEN);
       bool unavailable = ha_state_unavailable_ref(state);
       apply_control_availability(btn_ptr, btn_ptr, !unavailable, false);
