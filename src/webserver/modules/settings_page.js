@@ -597,6 +597,118 @@ function buildSettingsPage(parent) {
   els.setMediaPlayerSleepPrevention = mediaPlayerInp;
   els.setMediaPlayerSleepPreventionField = mediaPlayerField;
 
+  if (!isEpaperPreview()) {
+    var coverArtToggle = toggleRow(
+      "Cover Art While Playing",
+      "sp-set-ss-cover-art-enable",
+      state.coverArtScreensaverOn);
+    timerPanel.appendChild(coverArtToggle.row);
+    coverArtToggle.input.addEventListener("change", function () {
+      state.coverArtScreensaverOn = this.checked;
+      syncCoverArtScreensaverUi();
+      postSwitch(entityName("screen_saver_cover_art"), state.coverArtScreensaverOn);
+    });
+    els.setCoverArtToggle = coverArtToggle.input;
+
+    var coverArtOptions = condField();
+
+    var coverArtEntityField = document.createElement("div");
+    coverArtEntityField.className = "sp-field";
+    coverArtEntityField.appendChild(fieldLabel("Cover Art Media Player", "sp-set-ss-cover-art-player"));
+    var coverArtEntityInp = entityInput(
+      "sp-set-ss-cover-art-player",
+      state.coverArtMediaPlayerEntity,
+      "e.g. media_player.living_room",
+      ["media_player"]);
+    coverArtEntityField.appendChild(coverArtEntityInp);
+    coverArtOptions.appendChild(coverArtEntityField);
+    bindTextPost(coverArtEntityInp, entityName("screen_saver_cover_art_entity"), {
+      onBlur: function (value) { state.coverArtMediaPlayerEntity = value; },
+    });
+    els.setCoverArtMediaPlayer = coverArtEntityInp;
+
+    var coverArtUrlField = document.createElement("div");
+    coverArtUrlField.className = "sp-field";
+    coverArtUrlField.appendChild(fieldLabel("Home Assistant URL", "sp-set-ss-cover-art-ha-url"));
+    var coverArtUrlInp = textInput(
+      "sp-set-ss-cover-art-ha-url",
+      state.coverArtHomeAssistantUrl,
+      "e.g. http://homeassistant.local:8123");
+    coverArtUrlField.appendChild(coverArtUrlInp);
+    coverArtOptions.appendChild(coverArtUrlField);
+    bindTextPost(coverArtUrlInp, entityName("screen_saver_cover_art_ha_url"), {
+      onBlur: function (value) { state.coverArtHomeAssistantUrl = value; },
+    });
+    els.setCoverArtHomeAssistantUrl = coverArtUrlInp;
+
+    var coverArtDelayField = document.createElement("div");
+    coverArtDelayField.className = "sp-field";
+    coverArtDelayField.appendChild(fieldLabel("Show Cover Art After", "sp-set-ss-cover-art-delay"));
+    var coverArtDelaySelect = document.createElement("select");
+    coverArtDelaySelect.className = "sp-select";
+    coverArtDelaySelect.id = "sp-set-ss-cover-art-delay";
+    [
+      { label: "Immediately", value: 0 },
+      { label: "5 seconds", value: 5 },
+      { label: "10 seconds", value: 10 },
+      { label: "30 seconds", value: 30 },
+      { label: "1 minute", value: 60 },
+      { label: "5 minutes", value: 300 },
+    ].forEach(function (opt) {
+      var o = document.createElement("option");
+      o.value = opt.value;
+      o.textContent = opt.label;
+      coverArtDelaySelect.appendChild(o);
+    });
+    coverArtDelaySelect.addEventListener("change", function () {
+      state.coverArtDelay = parseFloat(this.value) || 0;
+      postNumber(entityName("screen_saver_cover_art_delay"), state.coverArtDelay);
+    });
+    coverArtDelayField.appendChild(coverArtDelaySelect);
+    coverArtOptions.appendChild(coverArtDelayField);
+    els.setCoverArtDelay = coverArtDelaySelect;
+
+    var trackOverlayField = document.createElement("div");
+    trackOverlayField.className = "sp-field";
+    trackOverlayField.appendChild(fieldLabel("Track Overlay Duration", "sp-set-ss-track-overlay"));
+    var trackOverlaySelect = document.createElement("select");
+    trackOverlaySelect.className = "sp-select";
+    trackOverlaySelect.id = "sp-set-ss-track-overlay";
+    [
+      { label: "Hidden", value: 0 },
+      { label: "3 seconds", value: 3 },
+      { label: "5 seconds", value: 5 },
+      { label: "10 seconds", value: 10 },
+      { label: "30 seconds", value: 30 },
+      { label: "1 minute", value: 60 },
+    ].forEach(function (opt) {
+      var o = document.createElement("option");
+      o.value = opt.value;
+      o.textContent = opt.label;
+      trackOverlaySelect.appendChild(o);
+    });
+    trackOverlaySelect.addEventListener("change", function () {
+      state.coverArtTrackOverlayDuration = parseFloat(this.value) || 0;
+      postNumber(entityName("screen_saver_track_overlay_duration"), state.coverArtTrackOverlayDuration);
+    });
+    trackOverlayField.appendChild(trackOverlaySelect);
+    coverArtOptions.appendChild(trackOverlayField);
+    els.setCoverArtTrackOverlayDuration = trackOverlaySelect;
+
+    var coverArtOpenSubpageToggle = toggleRow(
+      "Open Media Subpage While Playing",
+      "sp-set-ss-cover-art-open-media",
+      state.coverArtOpenMediaSubpageOn);
+    coverArtOptions.appendChild(coverArtOpenSubpageToggle.row);
+    coverArtOpenSubpageToggle.input.addEventListener("change", function () {
+      state.coverArtOpenMediaSubpageOn = this.checked;
+      postSwitch(entityName("screen_saver_open_media_subpage"), state.coverArtOpenMediaSubpageOn);
+    });
+    els.setCoverArtOpenMediaSubpageToggle = coverArtOpenSubpageToggle.input;
+    els.setCoverArtOptions = coverArtOptions;
+    timerPanel.appendChild(coverArtOptions);
+  }
+
   ssBody.appendChild(timerPanel);
   els.setSSTimeout = timeoutSelect;
   syncScreensaverTimeoutUi();
@@ -627,6 +739,7 @@ function buildSettingsPage(parent) {
   els.setSensorClockBrightnessField = sensorClockControls.brightnessField;
   syncClockScreensaverControls();
   syncMediaPlayerSleepPreventionUi();
+  syncCoverArtScreensaverUi();
 
   var ssBadge = document.createElement("span");
   ssBadge.setAttribute("aria-label", "Screensaver on");
@@ -898,6 +1011,28 @@ function syncMediaPlayerSleepPreventionUi() {
   }
   if (els.setMediaPlayerSleepPreventionField) {
     els.setMediaPlayerSleepPreventionField.classList.toggle("sp-visible", !!state.mediaPlayerSleepPreventionOn);
+  }
+}
+
+function syncCoverArtScreensaverUi() {
+  if (els.setCoverArtToggle) {
+    els.setCoverArtToggle.checked = !!state.coverArtScreensaverOn;
+  }
+  if (els.setCoverArtOptions) {
+    els.setCoverArtOptions.classList.toggle("sp-visible", !!state.coverArtScreensaverOn);
+  }
+  if (els.setCoverArtDelay) {
+    setSelectValue(els.setCoverArtDelay, state.coverArtDelay, formatDuration(state.coverArtDelay));
+  }
+  if (els.setCoverArtTrackOverlayDuration) {
+    var value = state.coverArtTrackOverlayDuration;
+    setSelectValue(
+      els.setCoverArtTrackOverlayDuration,
+      value,
+      value > 0 ? formatDuration(value) : "Hidden");
+  }
+  if (els.setCoverArtOpenMediaSubpageToggle) {
+    els.setCoverArtOpenMediaSubpageToggle.checked = !!state.coverArtOpenMediaSubpageOn;
   }
 }
 

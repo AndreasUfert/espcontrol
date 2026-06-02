@@ -145,6 +145,60 @@ var ENTITY_CATALOG = {
       "domain": "text",
       "name": "Media Player Sleep Prevention Entity"
     },
+    "screen_saver_cover_art": {
+      "domain": "switch",
+      "name": "Screen Saver: Cover Art",
+      "objectIds": [
+        "screen_saver__cover_art",
+        "screen_saver_cover_art",
+        "screensaver_cover_art"
+      ]
+    },
+    "screen_saver_cover_art_entity": {
+      "domain": "text",
+      "name": "Screen Saver: Cover Art Entity",
+      "objectIds": [
+        "screen_saver__cover_art_entity",
+        "screen_saver_cover_art_entity",
+        "cover_art_media_player_entity"
+      ]
+    },
+    "screen_saver_cover_art_ha_url": {
+      "domain": "text",
+      "name": "Screen Saver: Home Assistant URL",
+      "objectIds": [
+        "screen_saver__home_assistant_url",
+        "screen_saver_cover_art_ha_url",
+        "cover_art_home_assistant_url"
+      ]
+    },
+    "screen_saver_cover_art_delay": {
+      "domain": "number",
+      "name": "Screen Saver: Cover Art Delay",
+      "objectIds": [
+        "screen_saver__cover_art_delay",
+        "screen_saver_cover_art_delay",
+        "cover_art_delay"
+      ]
+    },
+    "screen_saver_track_overlay_duration": {
+      "domain": "number",
+      "name": "Screen Saver: Track Overlay Duration",
+      "objectIds": [
+        "screen_saver__track_overlay_duration",
+        "screen_saver_track_overlay_duration",
+        "track_overlay_duration"
+      ]
+    },
+    "screen_saver_open_media_subpage": {
+      "domain": "switch",
+      "name": "Screen Saver: Open Media Subpage While Playing",
+      "objectIds": [
+        "screen_saver__open_media_subpage",
+        "screen_saver_open_media_subpage",
+        "open_media_subpage_while_playing"
+      ]
+    },
     "screen_saver_daytime_clock_brightness": {
       "domain": "number",
       "name": "Screen Saver: Daytime Clock Brightness",
@@ -407,6 +461,12 @@ var ENTITY_CATALOG = {
       "presence_sensor_entity",
       "screen_saver_media_player_sleep_prevention",
       "media_player_sleep_prevention_entity",
+      "screen_saver_cover_art",
+      "screen_saver_cover_art_entity",
+      "screen_saver_cover_art_ha_url",
+      "screen_saver_cover_art_delay",
+      "screen_saver_track_overlay_duration",
+      "screen_saver_open_media_subpage",
       "screen_saver_daytime_clock_brightness",
       "screen_saver_nighttime_clock_brightness",
       "screen_saver_clock_brightness",

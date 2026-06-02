@@ -33,6 +33,17 @@ substitutions:
   clock_font_size: "160"
   clock_cx: "240"
   clock_cy: "240"
+  cover_art_size: "480"
+  cover_art_x: "0"
+  cover_art_y: "0"
+  cover_art_panel_x: "24"
+  cover_art_panel_y: "304"
+  cover_art_panel_width: "432"
+  cover_art_panel_height: "136"
+  cover_art_panel_opa: "75%"
+  cover_art_title_font: "font_text_title"
+  cover_art_artist_font: "font_text_body"
+  cover_art_square_overlay: "true"
 
 packages:
   # ---------------------------------------------------------------------------
@@ -81,6 +92,7 @@ packages:
   screen_ha_act:   !include ../../common/device/screen_ha_actions.yaml
   screen_setup:    !include ../../common/device/screen_button_setup.yaml
   screen_clock:    !include ../../common/device/screen_clock.yaml
+  screen_art:      !include ../../common/device/screen_cover_art.yaml
   # ---------------------------------------------------------------------------
   # Main page and dynamic sensor subscriptions (after setup screens)
   # ---------------------------------------------------------------------------

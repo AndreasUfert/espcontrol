@@ -1239,7 +1239,10 @@ inline void grid_phase2(
         break;
       }
     }
-    navigation_register_subpage(si + 1, display_order, p.label, sub_scr);
+    navigation_register_subpage(
+      si + 1, display_order,
+      normalize_subpage_kind(cfg_option_value(p.options, "subpage_kind")),
+      p.label, sub_scr);
     lv_obj_set_style_bg_color(sub_scr, lv_obj_get_style_bg_color(main_page_obj, LV_PART_MAIN), LV_PART_MAIN);
     lv_obj_set_style_bg_opa(sub_scr, LV_OPA_COVER, LV_PART_MAIN);
     lv_obj_set_layout(sub_scr, LV_LAYOUT_GRID);

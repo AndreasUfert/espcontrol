@@ -6,6 +6,12 @@ var SSE_ALIAS_GROUPS = {
   temperatureDegreeSymbol: ["switch-screen__temperature_degree_symbol", "switch-screen_temperature_degree_symbol", "switch-temperature_degree_symbol_enabled"],
   subpageChevron: ["switch-screen__subpage_chevron", "switch-screen_subpage_chevron", "switch-subpage_chevrons_enabled"],
   screensaverTimeout: ["number-screensaver_timeout", "number-screen_saver__timeout", "number-screen_saver_timeout"],
+  coverArt: ["switch-screen_saver__cover_art", "switch-screen_saver_cover_art", "switch-screensaver_cover_art"],
+  coverArtEntity: ["text-screen_saver__cover_art_entity", "text-screen_saver_cover_art_entity", "text-cover_art_media_player_entity"],
+  coverArtHomeAssistantUrl: ["text-screen_saver__home_assistant_url", "text-screen_saver_cover_art_ha_url", "text-cover_art_home_assistant_url"],
+  coverArtDelay: ["number-screen_saver__cover_art_delay", "number-screen_saver_cover_art_delay", "number-cover_art_delay"],
+  trackOverlayDuration: ["number-screen_saver__track_overlay_duration", "number-screen_saver_track_overlay_duration", "number-track_overlay_duration"],
+  openMediaSubpage: ["switch-screen_saver__open_media_subpage", "switch-screen_saver_open_media_subpage", "switch-open_media_subpage_while_playing"],
   scheduleWakeTimeout: ["number-screen__schedule_wake_timeout", "number-screen_schedule_wake_timeout", "number-schedule_wake_timeout"],
   scheduleWakeBrightness: ["number-screen__schedule_wake_brightness", "number-screen_schedule_wake_brightness", "number-schedule_wake_brightness"],
   scheduleDimmedBrightness: ["number-screen__schedule_dimmed_brightness", "number-screen_schedule_dimmed_brightness", "number-schedule_dimmed_brightness"],
@@ -144,6 +150,14 @@ function connectEvents() {
       state.mediaPlayerSleepPreventionOn = d.value === true || val === "ON";
       syncMediaPlayerSleepPreventionUi();
     },
+    "switch-screen_saver__cover_art": function (val, d) {
+      state.coverArtScreensaverOn = d.value === true || val === "ON";
+      syncCoverArtScreensaverUi();
+    },
+    "switch-screen_saver__open_media_subpage": function (val, d) {
+      state.coverArtOpenMediaSubpageOn = d.value === true || val === "ON";
+      syncCoverArtScreensaverUi();
+    },
     "number-screen_saver__clock_brightness": function (val) {
       if (state.clockBrightnessSplitReceived) return;
       var brightness = normalizeClockBrightness(val, 35);
@@ -181,6 +195,22 @@ function connectEvents() {
     "text-media_player_sleep_prevention_entity": function (val) {
       state.mediaPlayerSleepPreventionEntity = val;
       syncInput(els.setMediaPlayerSleepPrevention, val);
+    },
+    "text-screen_saver__cover_art_entity": function (val) {
+      state.coverArtMediaPlayerEntity = val;
+      syncInput(els.setCoverArtMediaPlayer, val);
+    },
+    "text-screen_saver__home_assistant_url": function (val) {
+      state.coverArtHomeAssistantUrl = val;
+      syncInput(els.setCoverArtHomeAssistantUrl, val);
+    },
+    "number-screen_saver__cover_art_delay": function (val) {
+      state.coverArtDelay = parseFloat(val) || 0;
+      syncCoverArtScreensaverUi();
+    },
+    "number-screen_saver__track_overlay_duration": function (val) {
+      state.coverArtTrackOverlayDuration = parseFloat(val) || 0;
+      syncCoverArtScreensaverUi();
     },
     "text-screensaver_mode": function (val) {
       state._screensaverModeReceived = true;
@@ -365,6 +395,12 @@ function connectEvents() {
   addSseAliases(sseHandlers, SSE_ALIAS_GROUPS.temperatureDegreeSymbol, sseHandlers["switch-screen__temperature_degree_symbol"]);
   addSseAliases(sseHandlers, SSE_ALIAS_GROUPS.subpageChevron, sseHandlers["switch-screen__subpage_chevron"]);
   addSseAliases(sseHandlers, SSE_ALIAS_GROUPS.screensaverTimeout, sseHandlers["number-screensaver_timeout"]);
+  addSseAliases(sseHandlers, SSE_ALIAS_GROUPS.coverArt, sseHandlers["switch-screen_saver__cover_art"]);
+  addSseAliases(sseHandlers, SSE_ALIAS_GROUPS.coverArtEntity, sseHandlers["text-screen_saver__cover_art_entity"]);
+  addSseAliases(sseHandlers, SSE_ALIAS_GROUPS.coverArtHomeAssistantUrl, sseHandlers["text-screen_saver__home_assistant_url"]);
+  addSseAliases(sseHandlers, SSE_ALIAS_GROUPS.coverArtDelay, sseHandlers["number-screen_saver__cover_art_delay"]);
+  addSseAliases(sseHandlers, SSE_ALIAS_GROUPS.trackOverlayDuration, sseHandlers["number-screen_saver__track_overlay_duration"]);
+  addSseAliases(sseHandlers, SSE_ALIAS_GROUPS.openMediaSubpage, sseHandlers["switch-screen_saver__open_media_subpage"]);
   addSseAliases(sseHandlers, SSE_ALIAS_GROUPS.scheduleWakeTimeout, sseHandlers["number-screen__schedule_wake_timeout"]);
   addSseAliases(sseHandlers, SSE_ALIAS_GROUPS.scheduleWakeBrightness, sseHandlers["number-screen__schedule_wake_brightness"]);
   addSseAliases(sseHandlers, SSE_ALIAS_GROUPS.scheduleDimmedBrightness, sseHandlers["number-screen__schedule_dimmed_brightness"]);

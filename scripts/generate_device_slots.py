@@ -52,7 +52,82 @@ def package_substitution_lines(device: dict) -> list[str]:
                 f'  backlight_pwm_frequency: ${{ "{frequency["ethernet"]}" if network_transport == "ethernet" else "{frequency["wifi"]}" }}',
             ]
         )
+    lines.extend(cover_art_substitution_lines(device))
     return lines
+
+
+def cover_art_substitution_lines(device: dict) -> list[str]:
+    layouts = {
+        "guition-esp32-s3-4848s040": {
+            "cover_art_size": "480",
+            "cover_art_x": "0",
+            "cover_art_y": "0",
+            "cover_art_panel_x": "24",
+            "cover_art_panel_y": "304",
+            "cover_art_panel_width": "432",
+            "cover_art_panel_height": "136",
+            "cover_art_panel_opa": "75%",
+            "cover_art_title_font": "font_text_title",
+            "cover_art_artist_font": "font_text_body",
+            "cover_art_square_overlay": "true",
+        },
+        "esp32-p4-86": {
+            "cover_art_size": "720",
+            "cover_art_x": "0",
+            "cover_art_y": "0",
+            "cover_art_panel_x": "36",
+            "cover_art_panel_y": "456",
+            "cover_art_panel_width": "648",
+            "cover_art_panel_height": "204",
+            "cover_art_panel_opa": "75%",
+            "cover_art_title_font": "font_text_title",
+            "cover_art_artist_font": "font_text_body",
+            "cover_art_square_overlay": "true",
+        },
+        "guition-esp32-p4-jc4880p443": {
+            "cover_art_size": "480",
+            "cover_art_x": "0",
+            "cover_art_y": "0",
+            "cover_art_panel_x": "0",
+            "cover_art_panel_y": "480",
+            "cover_art_panel_width": "480",
+            "cover_art_panel_height": "320",
+            "cover_art_panel_opa": "100%",
+            "cover_art_title_font": "font_text_title",
+            "cover_art_artist_font": "font_text_body",
+            "cover_art_square_overlay": "false",
+        },
+        "guition-esp32-p4-jc8012p4a1": {
+            "cover_art_size": "800",
+            "cover_art_x": "0",
+            "cover_art_y": "0",
+            "cover_art_panel_x": "800",
+            "cover_art_panel_y": "0",
+            "cover_art_panel_width": "480",
+            "cover_art_panel_height": "800",
+            "cover_art_panel_opa": "100%",
+            "cover_art_title_font": "font_text_title",
+            "cover_art_artist_font": "font_text_body",
+            "cover_art_square_overlay": "false",
+        },
+        "guition-esp32-p4-jc1060p470": {
+            "cover_art_size": "600",
+            "cover_art_x": "0",
+            "cover_art_y": "0",
+            "cover_art_panel_x": "600",
+            "cover_art_panel_y": "0",
+            "cover_art_panel_width": "424",
+            "cover_art_panel_height": "600",
+            "cover_art_panel_opa": "100%",
+            "cover_art_title_font": "font_text_title",
+            "cover_art_artist_font": "font_text_body",
+            "cover_art_square_overlay": "false",
+        },
+    }
+    layout = layouts.get(device["slug"])
+    if not layout:
+        return []
+    return [f'  {key}: "{value}"' for key, value in layout.items()]
 
 
 def include_line(key: str, include: str) -> str:
@@ -160,6 +235,7 @@ def package_file_text(device: dict) -> str:
             include_line("screen_ha_act", "!include ../../common/device/screen_ha_actions.yaml"),
             include_line("screen_setup", "!include ../../common/device/screen_button_setup.yaml"),
             include_line("screen_clock", "!include ../../common/device/screen_clock.yaml"),
+            include_line("screen_art", "!include ../../common/device/screen_cover_art.yaml"),
             "  # ---------------------------------------------------------------------------",
             "  # Main page and dynamic sensor subscriptions (after setup screens)",
             "  # ---------------------------------------------------------------------------",

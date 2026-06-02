@@ -34,6 +34,12 @@ function exportConfig() {
       presence_sensor_entity: state.presenceEntity,
       media_player_sleep_prevention: state.mediaPlayerSleepPreventionOn,
       media_player_sleep_prevention_entity: state.mediaPlayerSleepPreventionEntity,
+      cover_art_screensaver: state.coverArtScreensaverOn,
+      cover_art_media_player_entity: state.coverArtMediaPlayerEntity,
+      cover_art_home_assistant_url: state.coverArtHomeAssistantUrl,
+      cover_art_delay: state.coverArtDelay,
+      cover_art_track_overlay_duration: state.coverArtTrackOverlayDuration,
+      cover_art_open_media_subpage: state.coverArtOpenMediaSubpageOn,
       screensaver_action: normalizeScreensaverAction(state.screensaverAction),
       clock_screensaver: state.clockScreensaverOn,
       clock_brightness: state.clockBrightnessDay,
@@ -205,6 +211,12 @@ function importConfig() {
         postText(entityName("presence_sensor_entity"), importedSettings.presenceSensorEntity);
         postSwitch(entityName("screen_saver_media_player_sleep_prevention"), importedSettings.mediaPlayerSleepPrevention);
         postText(entityName("media_player_sleep_prevention_entity"), importedSettings.mediaPlayerSleepPreventionEntity);
+        postSwitch(entityName("screen_saver_cover_art"), importedSettings.coverArtScreensaver);
+        postText(entityName("screen_saver_cover_art_entity"), importedSettings.coverArtMediaPlayerEntity);
+        postText(entityName("screen_saver_cover_art_ha_url"), importedSettings.coverArtHomeAssistantUrl);
+        postNumber(entityName("screen_saver_cover_art_delay"), importedSettings.coverArtDelay);
+        postNumber(entityName("screen_saver_track_overlay_duration"), importedSettings.coverArtTrackOverlayDuration);
+        postSwitch(entityName("screen_saver_open_media_subpage"), importedSettings.coverArtOpenMediaSubpage);
         var importedScreensaverAction = importedSettings.screensaverAction;
         var importedScreensaverDimmedBrightness = importedSettings.screensaverDimmedBrightness;
         var importedClockBrightnessDay = importedSettings.clockBrightnessDay;
@@ -244,6 +256,12 @@ function importConfig() {
         state.presenceEntity = importedSettings.presenceSensorEntity;
         state.mediaPlayerSleepPreventionOn = importedSettings.mediaPlayerSleepPrevention;
         state.mediaPlayerSleepPreventionEntity = importedSettings.mediaPlayerSleepPreventionEntity;
+        state.coverArtScreensaverOn = importedSettings.coverArtScreensaver;
+        state.coverArtMediaPlayerEntity = importedSettings.coverArtMediaPlayerEntity;
+        state.coverArtHomeAssistantUrl = importedSettings.coverArtHomeAssistantUrl;
+        state.coverArtDelay = importedSettings.coverArtDelay;
+        state.coverArtTrackOverlayDuration = importedSettings.coverArtTrackOverlayDuration;
+        state.coverArtOpenMediaSubpageOn = importedSettings.coverArtOpenMediaSubpage;
         state.screensaverAction = importedScreensaverAction;
         state._screensaverActionReceived = true;
         state.clockScreensaverOn = importedScreensaverAction === "clock";
@@ -265,6 +283,9 @@ function importConfig() {
         syncInput(els.setPresence, state.presenceEntity);
         syncInput(els.setMediaPlayerSleepPrevention, state.mediaPlayerSleepPreventionEntity);
         syncMediaPlayerSleepPreventionUi();
+        syncInput(els.setCoverArtMediaPlayer, state.coverArtMediaPlayerEntity);
+        syncInput(els.setCoverArtHomeAssistantUrl, state.coverArtHomeAssistantUrl);
+        syncCoverArtScreensaverUi();
         syncThemeUi();
         if (els.setTimezone) els.setTimezone.value = state.timezone;
         if (els.setClockFormat) els.setClockFormat.value = state.clockFormat;

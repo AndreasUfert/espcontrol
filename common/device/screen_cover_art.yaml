@@ -1,0 +1,390 @@
+# =============================================================================
+# COVER ART SCREENSAVER - Full-screen artwork overlay while media is playing
+# =============================================================================
+
+globals:
+  - id: cover_art_screensaver_active
+    type: bool
+    initial_value: 'false'
+  - id: cover_art_media_playing
+    type: bool
+    initial_value: 'false'
+  - id: cover_art_media_subpage_opened
+    type: bool
+    initial_value: 'false'
+  - id: cover_art_url
+    type: std::string
+    initial_value: '""'
+  - id: cover_art_title
+    type: std::string
+    initial_value: '""'
+  - id: cover_art_artist
+    type: std::string
+    initial_value: '""'
+  - id: cover_art_subscribed_entity
+    type: std::string
+    initial_value: '""'
+
+api:
+  on_client_connected:
+    - delay: 2s
+    - script.execute: cover_art_resubscribe
+
+image:
+  - file: "https://raw.githubusercontent.com/jtenniswood/esphome-media-player/main/common/assets/placeholder.png"
+    id: cover_art_placeholder
+    type: RGB565
+    byte_order: LITTLE_ENDIAN
+
+artwork_image:
+  - url: "https://placehold.co/${cover_art_size}x${cover_art_size}/111111/333333.jpg"
+    id: cover_art_downloaded_image
+    format: AUTO
+    type: RGB565
+    byte_order: LITTLE_ENDIAN
+    placeholder: cover_art_placeholder
+    resize: ${cover_art_size}x${cover_art_size}
+    buffer_size: 65536
+    allow_insecure_local_urls: true
+    on_download_finished:
+      - script.execute: cover_art_apply_downloaded_image
+    on_error:
+      - script.execute: cover_art_download_failed
+
+lvgl:
+  top_layer:
+    widgets:
+      - obj:
+          id: cover_art_screensaver
+          x: 0
+          y: 0
+          width: 100%
+          height: 100%
+          bg_color: 0x000000
+          bg_opa: 100%
+          radius: 0
+          border_width: 0
+          pad_all: 0
+          scrollable: false
+          scrollbar_mode: "off"
+          clickable: true
+          hidden: true
+          on_press:
+            then:
+              - script.execute: screensaver_wake
+          widgets:
+            - obj:
+                id: cover_art_backdrop
+                x: ${cover_art_x}
+                y: ${cover_art_y}
+                width: ${cover_art_size}px
+                height: ${cover_art_size}px
+                bg_color: 0x000000
+                bg_opa: 100%
+                radius: 0
+                border_width: 0
+                pad_all: 0
+                scrollable: false
+                scrollbar_mode: "off"
+                clickable: false
+            - image:
+                id: cover_art_image_widget
+                x: ${cover_art_x}
+                y: ${cover_art_y}
+                width: ${cover_art_size}px
+                height: ${cover_art_size}px
+                src: cover_art_downloaded_image
+                opa: 100%
+            - obj:
+                id: cover_art_track_panel
+                x: ${cover_art_panel_x}
+                y: ${cover_art_panel_y}
+                width: ${cover_art_panel_width}px
+                height: ${cover_art_panel_height}px
+                bg_color: 0x000000
+                bg_opa: ${cover_art_panel_opa}
+                radius: 0
+                border_width: 0
+                pad_top: 24
+                pad_bottom: 24
+                pad_left: 28
+                pad_right: 28
+                scrollable: false
+                scrollbar_mode: "off"
+                clickable: false
+                hidden: true
+                layout:
+                  type: flex
+                  flex_flow: COLUMN
+                  pad_row: 10
+                widgets:
+                  - label:
+                      id: cover_art_title_label
+                      text: "--"
+                      width: 100%
+                      long_mode: wrap
+                      text_font: ${cover_art_title_font}
+                      text_color: 0xFFFFFF
+                      text_align: left
+                  - label:
+                      id: cover_art_artist_label
+                      text: ""
+                      width: 100%
+                      long_mode: dot
+                      text_font: ${cover_art_artist_font}
+                      text_color: 0xFFFFFF
+                      text_opa: 80%
+                      text_align: left
+                      hidden: true
+            - label:
+                id: cover_art_error_label
+                text: "Artwork unavailable"
+                align: center
+                text_font: ${cover_art_artist_font}
+                text_color: 0x888888
+                text_align: center
+                hidden: true
+
+script:
+  - id: cover_art_apply_downloaded_image
+    mode: restart
+    then:
+      - lvgl.image.update:
+          id: cover_art_image_widget
+          src: cover_art_downloaded_image
+      - lvgl.widget.hide: cover_art_error_label
+
+  - id: cover_art_download_failed
+    mode: restart
+    then:
+      - if:
+          condition:
+            lambda: 'return id(cover_art_screensaver_active);'
+          then:
+            - lvgl.widget.show: cover_art_error_label
+
+  - id: cover_art_download
+    mode: restart
+    then:
+      - if:
+          condition:
+            lambda: 'return !id(cover_art_url).empty();'
+          then:
+            - artwork_image.set_url:
+                id: cover_art_downloaded_image
+                url: !lambda 'return id(cover_art_url);'
+
+  - id: cover_art_sync_track_text
+    mode: restart
+    then:
+      - lvgl.label.update:
+          id: cover_art_title_label
+          text: !lambda |-
+            if (id(cover_art_title).empty()) return std::string("--");
+            return id(cover_art_title);
+      - if:
+          condition:
+            lambda: 'return !id(cover_art_artist).empty();'
+          then:
+            - lvgl.label.update:
+                id: cover_art_artist_label
+                text: !lambda 'return id(cover_art_artist);'
+            - lvgl.widget.show: cover_art_artist_label
+          else:
+            - lvgl.widget.hide: cover_art_artist_label
+
+  - id: cover_art_show_track_overlay
+    mode: restart
+    then:
+      - script.execute: cover_art_sync_track_text
+      - lvgl.widget.show: cover_art_track_panel
+      - if:
+          condition:
+            lambda: 'return ${cover_art_square_overlay} && id(cover_art_track_overlay_duration).state > 0;'
+          then:
+            - delay: !lambda 'return (uint32_t)(id(cover_art_track_overlay_duration).state * 1000);'
+            - if:
+                condition:
+                  lambda: 'return id(cover_art_screensaver_active) && ${cover_art_square_overlay};'
+                then:
+                  - lvgl.widget.hide: cover_art_track_panel
+
+  - id: show_cover_art_view
+    mode: restart
+    then:
+      - script.stop: cover_art_delay_timer
+      - script.execute: cover_art_sync_track_text
+      - globals.set:
+          id: display_asleep
+          value: 'true'
+      - globals.set:
+          id: cover_art_screensaver_active
+          value: 'true'
+      - globals.set:
+          id: screensaver_display_off_active
+          value: 'false'
+      - globals.set:
+          id: screensaver_dimmed_active
+          value: 'false'
+      - lvgl.resume:
+      - script.execute: hide_clock_view
+      - lvgl.widget.hide: dim_screensaver_touch_guard
+      - lvgl.widget.hide: cover_art_error_label
+      - lvgl.widget.show: cover_art_screensaver
+      - if:
+          condition:
+            lambda: 'return ${cover_art_square_overlay};'
+          then:
+            - script.execute: cover_art_show_track_overlay
+          else:
+            - lvgl.widget.show: cover_art_track_panel
+      - script.execute: backlight_apply_brightness
+
+  - id: hide_cover_art_view
+    mode: restart
+    then:
+      - script.stop: cover_art_delay_timer
+      - script.stop: cover_art_show_track_overlay
+      - globals.set:
+          id: cover_art_screensaver_active
+          value: 'false'
+      - lvgl.widget.hide: cover_art_screensaver
+      - lvgl.widget.hide: cover_art_track_panel
+      - lvgl.widget.hide: cover_art_error_label
+
+  - id: cover_art_delay_timer
+    mode: restart
+    then:
+      - delay: !lambda |-
+          float seconds = id(cover_art_delay).state;
+          if (std::isnan(seconds) || seconds < 0.0f) seconds = 10.0f;
+          return (uint32_t)(seconds * 1000.0f);
+      - if:
+          condition:
+            lambda: |-
+              return id(cover_art_screensaver_enabled).state &&
+                     id(cover_art_media_playing) &&
+                     !id(cover_art_media_player_entity).state.empty();
+          then:
+            - script.execute: show_cover_art_view
+
+  - id: cover_art_playback_refresh
+    mode: restart
+    then:
+      - if:
+          condition:
+            lambda: |-
+              return id(cover_art_screensaver_enabled).state &&
+                     id(cover_art_media_playing) &&
+                     !id(cover_art_media_player_entity).state.empty();
+          then:
+            - script.execute: cover_art_playback_started
+          else:
+            - script.execute: cover_art_playback_stopped
+
+  - id: cover_art_resubscribe
+    mode: restart
+    then:
+      - lambda: |-
+          const std::string cover_entity = id(cover_art_media_player_entity).state;
+          if (cover_entity.empty() || cover_entity == id(cover_art_subscribed_entity)) return;
+          id(cover_art_subscribed_entity) = cover_entity;
+
+          ha_subscribe_state(
+            cover_entity,
+            std::function<void(esphome::StringRef)>(
+              [cover_entity](esphome::StringRef state) {
+                if (cover_entity != id(cover_art_media_player_entity).state) return;
+                std::string state_text = string_ref_limited(state, HA_SHORT_STATE_MAX_LEN);
+                bool playing = state_text == "playing";
+                id(cover_art_media_playing) = playing;
+                if (playing) id(cover_art_playback_started).execute();
+                else id(cover_art_playback_stopped).execute();
+              })
+          );
+
+          ha_subscribe_attribute(
+            cover_entity, std::string("media_title"),
+            std::function<void(esphome::StringRef)>(
+              [cover_entity](esphome::StringRef title) {
+                if (cover_entity != id(cover_art_media_player_entity).state) return;
+                std::string next = string_ref_limited(title, HA_STATE_TEXT_MAX_LEN);
+                if (next == "unknown" || next == "unavailable") next.clear();
+                bool changed = next != id(cover_art_title);
+                id(cover_art_title) = next;
+                id(cover_art_sync_track_text).execute();
+                if (changed && id(cover_art_screensaver_active)) {
+                  id(cover_art_show_track_overlay).execute();
+                }
+              })
+          );
+
+          ha_subscribe_attribute(
+            cover_entity, std::string("media_artist"),
+            std::function<void(esphome::StringRef)>(
+              [cover_entity](esphome::StringRef artist) {
+                if (cover_entity != id(cover_art_media_player_entity).state) return;
+                std::string next = string_ref_limited(artist, HA_STATE_TEXT_MAX_LEN);
+                if (next == "unknown" || next == "unavailable") next.clear();
+                id(cover_art_artist) = next;
+                id(cover_art_sync_track_text).execute();
+              })
+          );
+
+          ha_subscribe_attribute(
+            cover_entity, std::string("entity_picture"),
+            std::function<void(esphome::StringRef)>(
+              [cover_entity](esphome::StringRef picture) {
+                if (cover_entity != id(cover_art_media_player_entity).state) return;
+                std::string path = string_ref_limited(picture, HA_STATE_TEXT_MAX_LEN);
+                if (path.empty() || path == "unknown" || path == "unavailable") return;
+                std::string url = path;
+                if (!(path.rfind("http://", 0) == 0 || path.rfind("https://", 0) == 0)) {
+                  std::string base = id(cover_art_home_assistant_url).state;
+                  if (base.empty()) {
+                    ESP_LOGW("cover_art", "Relative artwork URL needs Screen Saver: Home Assistant URL");
+                    return;
+                  }
+                  while (!base.empty() && base.back() == '/') base.pop_back();
+                  url = base + path;
+                }
+                if (url == id(cover_art_url)) return;
+                id(cover_art_url) = url;
+                id(cover_art_download).execute();
+                if (id(cover_art_screensaver_active)) {
+                  id(cover_art_show_track_overlay).execute();
+                }
+              })
+          );
+
+  - id: cover_art_playback_started
+    mode: restart
+    then:
+      - if:
+          condition:
+            lambda: |-
+              return id(cover_art_open_media_subpage_enabled).state &&
+                     !id(cover_art_media_subpage_opened);
+          then:
+            - lambda: |-
+                if (navigation_open_first_kind("media", id(main_page)->obj)) {
+                  id(cover_art_media_subpage_opened) = true;
+                }
+      - if:
+          condition:
+            lambda: |-
+              return id(cover_art_screensaver_enabled).state &&
+                     !id(cover_art_media_player_entity).state.empty();
+          then:
+            - script.execute: cover_art_delay_timer
+
+  - id: cover_art_playback_stopped
+    mode: restart
+    then:
+      - globals.set:
+          id: cover_art_media_playing
+          value: 'false'
+      - globals.set:
+          id: cover_art_media_subpage_opened
+          value: 'false'
+      - script.execute: hide_cover_art_view

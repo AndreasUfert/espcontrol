@@ -224,6 +224,12 @@ export interface BackupPanelSettingsState {
   presenceSensorEntity: string;
   mediaPlayerSleepPrevention: boolean;
   mediaPlayerSleepPreventionEntity: string;
+  coverArtScreensaver: boolean;
+  coverArtMediaPlayerEntity: string;
+  coverArtHomeAssistantUrl: string;
+  coverArtDelay: unknown;
+  coverArtTrackOverlayDuration: unknown;
+  coverArtOpenMediaSubpage: boolean;
   screensaverAction: string;
   clockScreensaver: boolean;
   clockBrightnessDay: number;
@@ -307,6 +313,12 @@ export function normalizeBackupPanelSettings(
     presenceSensorEntity: String(settings.presence_sensor_entity || ""),
     mediaPlayerSleepPrevention: !!settings.media_player_sleep_prevention,
     mediaPlayerSleepPreventionEntity: String(settings.media_player_sleep_prevention_entity || ""),
+    coverArtScreensaver: !!settings.cover_art_screensaver,
+    coverArtMediaPlayerEntity: String(settings.cover_art_media_player_entity || ""),
+    coverArtHomeAssistantUrl: String(settings.cover_art_home_assistant_url || ""),
+    coverArtDelay: objectValue(settings, "cover_art_delay") != null ? settings.cover_art_delay : 10,
+    coverArtTrackOverlayDuration: objectValue(settings, "cover_art_track_overlay_duration") != null ? settings.cover_art_track_overlay_duration : 5,
+    coverArtOpenMediaSubpage: !!settings.cover_art_open_media_subpage,
     screensaverAction,
     clockScreensaver: screensaverAction === "clock",
     clockBrightnessDay,

@@ -242,6 +242,32 @@ switch:
           then:
             - script.execute: screensaver_idle_check
 
+  - platform: template
+    name: "${entity_screen_saver_cover_art}"
+    internal: true
+    id: cover_art_screensaver_enabled
+    optimistic: true
+    restore_mode: RESTORE_DEFAULT_OFF
+    icon: "mdi:image-album"
+    entity_category: config
+    web_server:
+      sorting_group_id: sg_screensaver
+    on_turn_on:
+      - script.execute: cover_art_playback_refresh
+    on_turn_off:
+      - script.execute: cover_art_playback_stopped
+
+  - platform: template
+    name: "${entity_screen_saver_open_media_subpage}"
+    internal: true
+    id: cover_art_open_media_subpage_enabled
+    optimistic: true
+    restore_mode: RESTORE_DEFAULT_OFF
+    icon: "mdi:page-next-outline"
+    entity_category: config
+    web_server:
+      sorting_group_id: sg_screensaver
+
 select:
   - platform: template
     name: "${entity_screen_saver_action}"
@@ -405,6 +431,42 @@ text:
             then:
               - script.execute: screensaver_idle_check
 
+  - platform: template
+    name: "${entity_screen_saver_cover_art_entity}"
+    internal: true
+    id: cover_art_media_player_entity
+    optimistic: true
+    restore_value: true
+    initial_value: ""
+    min_length: 0
+    max_length: 100
+    mode: text
+    entity_category: config
+    icon: "mdi:speaker-play"
+    update_interval: never
+    web_server:
+      sorting_group_id: sg_screensaver
+    on_value:
+      then:
+        - script.execute: cover_art_playback_stopped
+        - script.execute: cover_art_resubscribe
+
+  - platform: template
+    name: "${entity_screen_saver_cover_art_ha_url}"
+    internal: true
+    id: cover_art_home_assistant_url
+    optimistic: true
+    restore_value: true
+    initial_value: ""
+    min_length: 0
+    max_length: 120
+    mode: text
+    entity_category: config
+    icon: "mdi:home-assistant"
+    update_interval: never
+    web_server:
+      sorting_group_id: sg_screensaver
+
 number:
   - platform: template
     name: "${entity_screen_saver_daytime_clock_brightness}"
@@ -476,6 +538,41 @@ number:
               lambda: 'return id(screensaver_dimmed_active);'
             then:
               - script.execute: screensaver_dimmed_refresh_brightness
+
+  - platform: template
+    name: "${entity_screen_saver_cover_art_delay}"
+    internal: true
+    id: cover_art_delay
+    min_value: 0
+    max_value: 300
+    step: 1
+    initial_value: 10
+    restore_value: true
+    optimistic: true
+    unit_of_measurement: "s"
+    entity_category: config
+    icon: "mdi:timer-outline"
+    web_server:
+      sorting_group_id: sg_screensaver
+    on_value:
+      then:
+        - script.execute: cover_art_playback_refresh
+
+  - platform: template
+    name: "${entity_screen_saver_track_overlay_duration}"
+    internal: true
+    id: cover_art_track_overlay_duration
+    min_value: 0
+    max_value: 60
+    step: 1
+    initial_value: 5
+    restore_value: true
+    optimistic: true
+    unit_of_measurement: "s"
+    entity_category: config
+    icon: "mdi:playlist-music-outline"
+    web_server:
+      sorting_group_id: sg_screensaver
 
   # Legacy setting kept so existing panels can migrate their saved single
   # clock brightness into the new day/night settings, and so older cached web
