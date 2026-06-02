@@ -55,19 +55,19 @@ lvgl:
     - id: main_page
       scrollbar_mode: "off"
       align: top_left
-      x: 18
-      y: 68
       layout:
         type: grid
         grid_columns: [FR(1), FR(1), FR(1), FR(1)]
         grid_rows: [FR(1), FR(1), FR(1)]
         pad_row: 6
         pad_column: 6
-      width: 764
-      height: 394
+      width: 100%
       bg_color: 0xFFFFFF
       bg_opa: cover
-      pad_all: 0
+      pad_top: ${main_page_pad_top}
+      pad_bottom: ${main_page_pad_edge}
+      pad_left: ${main_page_pad_edge}
+      pad_right: ${main_page_pad_edge}
       widgets:
         - !include { file: ../../../common/device/button_widget.yaml, vars: { num: "1" } }
         - !include { file: ../../../common/device/button_widget.yaml, vars: { num: "2" } }

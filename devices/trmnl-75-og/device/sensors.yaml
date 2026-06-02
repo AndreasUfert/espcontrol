@@ -233,8 +233,10 @@ switch:
     web_server:
       sorting_group_id: sg_display
     on_turn_on:
+      - script.execute: trmnl_clock_bar_apply
       - script.execute: trmnl_dashboard_content_changed
     on_turn_off:
+      - script.execute: trmnl_clock_bar_apply
       - script.execute: trmnl_dashboard_content_changed
 
   - platform: template
@@ -462,6 +464,38 @@ script:
             - delay: 2s
             - script.execute: trmnl_refresh_display_when_ready
 
+  - id: trmnl_clock_bar_apply
+    mode: restart
+    then:
+      - lambda: |-
+          bool enabled = id(clock_bar_enabled).state;
+          lv_obj_set_style_pad_top(
+            id(main_page)->obj,
+            enabled ? ${main_page_pad_top} : ${main_page_compact_pad_top},
+            LV_PART_MAIN);
+          lv_obj_update_layout(id(main_page)->obj);
+
+          if (!enabled) {
+            lv_obj_add_flag(id(display_time), LV_OBJ_FLAG_HIDDEN);
+            lv_obj_add_flag(id(temperatures), LV_OBJ_FLAG_HIDDEN);
+            lv_obj_add_flag(id(network_status_button), LV_OBJ_FLAG_HIDDEN);
+            network_status_hide_modal();
+            return;
+          }
+
+          if (lv_scr_act() == id(main_page)->obj) {
+            lv_obj_clear_flag(id(display_time), LV_OBJ_FLAG_HIDDEN);
+            if (id(network_status_enabled).state) {
+              lv_obj_clear_flag(id(network_status_button), LV_OBJ_FLAG_HIDDEN);
+              id(network_status_refresh).execute();
+            }
+          }
+          refresh_temp_label_values(id(temperatures), id(main_page)->obj,
+                                    true,
+                                    id(indoor_temp_enable).state,
+                                    id(outdoor_temp_enable).state,
+                                    id(indoor_temp), id(outdoor_temp));
+
   - id: trmnl_refresh_display_when_ready
     mode: restart
     then:
@@ -528,6 +562,9 @@ script:
 
 esphome:
   on_boot:
+    - priority: -150
+      then:
+        - script.execute: trmnl_clock_bar_apply
     - priority: -100
       then:
         - script.execute: time_update
