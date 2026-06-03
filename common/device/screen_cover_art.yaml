@@ -30,6 +30,9 @@ globals:
   - id: cover_art_subscribed_entity
     type: std::string
     initial_value: '""'
+  - id: cover_art_empty_entity_logged
+    type: bool
+    initial_value: 'false'
   - id: cover_art_media_duration
     type: float
     initial_value: '0.0'
@@ -92,6 +95,16 @@ artwork_image:
       - script.execute: cover_art_download_failed
 
 interval:
+  - interval: 5s
+    then:
+      - if:
+          condition:
+            lambda: |-
+              return !id(cover_art_media_player_entity).state.empty() &&
+                     id(cover_art_media_player_entity).state != id(cover_art_subscribed_entity);
+          then:
+            - script.execute: cover_art_resubscribe
+
   - interval: 1s
     then:
       - if:
@@ -471,7 +484,20 @@ script:
     then:
       - lambda: |-
           const std::string cover_entity = id(cover_art_media_player_entity).state;
-          if (cover_entity.empty() || cover_entity == id(cover_art_subscribed_entity)) return;
+          if (cover_entity.empty()) {
+            if (!id(cover_art_empty_entity_logged)) {
+              ESP_LOGW("cover_art", "No media player selected for cover art screensaver");
+              id(cover_art_empty_entity_logged) = true;
+            }
+            return;
+          }
+          id(cover_art_empty_entity_logged) = false;
+          if (cover_entity == id(cover_art_subscribed_entity)) return;
+          if (!ha_api_state_connected()) {
+            ESP_LOGW("cover_art", "Waiting for Home Assistant state connection before subscribing to %s",
+                     cover_entity.c_str());
+            return;
+          }
           id(cover_art_subscribed_entity) = cover_entity;
           ESP_LOGI("cover_art", "Subscribing to artwork entity: %s", cover_entity.c_str());
 
