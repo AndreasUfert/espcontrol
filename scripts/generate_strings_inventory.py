@@ -66,6 +66,7 @@ IGNORED_EXACT = {
     "undefined",
     "unit",
     "value",
+    "warning",
     "yaml",
 }
 IGNORED_SUBSTRINGS = (
@@ -81,6 +82,7 @@ IGNORED_SUBSTRINGS = (
     ">",
     "__",
     "::",
+    "|",
     "LV_",
     "alarm_control_panel.",
     "automation.",
@@ -113,6 +115,31 @@ IGNORED_SUBSTRINGS = (
     "{",
     "}",
 )
+
+NON_DISPLAY_KEYS = {
+    "bindName",
+    "buttonClass",
+    "domain",
+    "domains",
+    "entity",
+    "field",
+    "icon",
+    "iconHtml",
+    "icon_on",
+    "id",
+    "idSuffix",
+    "key",
+    "kind",
+    "name",
+    "options",
+    "pickerKey",
+    "service",
+    "sensor",
+    "storage",
+    "type",
+    "unit",
+    "value",
+}
 IGNORED_PATTERNS = (
     re.compile(r"^[a-z0-9_./:-]+$"),
     re.compile(r"^#[0-9A-Fa-f]{3,8}$"),
@@ -155,10 +182,25 @@ def candidate_line(line: str, suffix: str) -> bool:
             "selectField",
             "textField",
             "toggleSection",
-            "return ",
             "options",
         )
     return any(marker in line for marker in markers)
+
+
+def display_context_allowed(line: str, start: int) -> bool:
+    """Filter strings that are adjacent to non-display object keys."""
+    prefix = line[:start]
+    key_match = re.search(r"([A-Za-z_][A-Za-z0-9_]*)\s*:\s*$", prefix)
+    if key_match and key_match.group(1) in NON_DISPLAY_KEYS:
+        return False
+    comparison_match = re.search(r"([A-Za-z_][A-Za-z0-9_]*)\s*(?:===|!==|==|!=)\s*$", prefix)
+    if comparison_match and comparison_match.group(1) in {"icon", "service", "type", "value"}:
+        return False
+    if re.search(r"(?:^|[.\s])icon(?:_on)?\s*=\s*$", prefix):
+        return False
+    if re.search(r"find_icon\s*\(\s*$", prefix):
+        return False
+    return True
 
 
 def is_display_string(value: str) -> bool:
@@ -216,6 +258,8 @@ def extract_code_strings(strings: dict[str, set[str]]) -> None:
             if not candidate_line(line, path.suffix):
                 continue
             for match in STRING_RE.finditer(line):
+                if not display_context_allowed(line, match.start()):
+                    continue
                 add_string(strings, match.group("body"), f"{rel}:{line_no}")
 
 
@@ -280,8 +324,10 @@ def build_inventory(strings: dict[str, set[str]]) -> dict[str, object]:
         "$schema": "https://espcontrol.local/schemas/source-strings-v1.json",
         "language": "en",
         "description": (
-            "English source-string inventory for hard-coded user-facing text. "
-            "This file is generated for translation review and is not yet used at runtime."
+            "English source-string inventory for hard-coded text rendered on screen by "
+            "EspControl. Entity names, service identifiers, icon names, and raw Home "
+            "Assistant API values are excluded. This file is generated for translation "
+            "review and is not yet used at runtime."
         ),
         "generatedBy": "scripts/generate_strings_inventory.py",
         "strings": entries,
