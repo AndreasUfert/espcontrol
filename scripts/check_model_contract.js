@@ -200,7 +200,6 @@ const panelSettings = model.normalizeBackupPanelSettings({
   language: "it",
   clock_format: "24h",
   ntp_server_1: "pool.ntp.org",
-  month_names: "Jan,Feb,Mar,Apr,May,Jun,Jul,Aug,Sep,Oct,Nov,Dec",
   screensaver_mode: "timer",
   screensaver_action: "Screen Dimmed",
   clock_brightness_day: 44,
@@ -216,7 +215,6 @@ const panelSettings = model.normalizeBackupPanelSettings({
   ntpServer1: "0.pool.ntp.org",
   ntpServer2: "1.pool.ntp.org",
   ntpServer3: "2.pool.ntp.org",
-  monthNames: model.MONTH_NAME_DEFAULTS,
   screenRotationOptions: ["0", "90", "180", "270"],
 });
 assert.strictEqual(panelSettings.temperatureUnit, "\u00B0C", "panel temperature unit normalizes");
@@ -224,7 +222,6 @@ assert.strictEqual(panelSettings.clockBarTime, false, "panel clock bar time impo
 assert.strictEqual(panelSettings.language, "it", "panel language imports");
 assert.strictEqual(panelSettings.clockFormat, "24h", "panel clock format validates against options");
 assert.strictEqual(panelSettings.ntpServer1, "pool.ntp.org", "panel NTP server imports");
-assert.strictEqual(panelSettings.monthNames[0], "Jan", "panel month names import");
 assert.strictEqual(panelSettings.screensaverMode, "timer", "panel screensaver mode imports");
 assert.strictEqual(panelSettings.screensaverAction, "dim", "panel screensaver action imports");
 assert.strictEqual(panelSettings.clockBrightnessDay, 44, "panel day clock brightness imports");
@@ -242,7 +239,6 @@ const legacyPanelSettings = model.normalizeBackupPanelSettings({}, {
   ntpServer1: "0.pool.ntp.org",
   ntpServer2: "1.pool.ntp.org",
   ntpServer3: "2.pool.ntp.org",
-  monthNames: model.MONTH_NAME_DEFAULTS,
   screenRotationOptions: ["0", "90", "180", "270"],
 });
 assert.strictEqual(legacyPanelSettings.clockBarTime, true, "legacy panel settings default clock bar time on");

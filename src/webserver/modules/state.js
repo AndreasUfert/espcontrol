@@ -1,10 +1,6 @@
 // ── State ──────────────────────────────────────────────────────────────
 
 var NTP_SERVER_DEFAULTS = ["0.pool.ntp.org", "1.pool.ntp.org", "2.pool.ntp.org"];
-var MONTH_NAME_DEFAULTS = [
-  "January", "February", "March", "April", "May", "June",
-  "July", "August", "September", "October", "November", "December"
-];
 var LANGUAGE_LABELS = {
   cs: "Čeština",
   da: "Dansk",
@@ -121,8 +117,6 @@ var state = {
   ntpServer1: NTP_SERVER_DEFAULTS[0],
   ntpServer2: NTP_SERVER_DEFAULTS[1],
   ntpServer3: NTP_SERVER_DEFAULTS[2],
-  customMonthNames: false,
-  monthNames: MONTH_NAME_DEFAULTS.slice(),
   screenRotation: (CFG.features && CFG.features.screenRotationDefault) || "0",
   screenRotationOptions: (CFG.features && CFG.features.screenRotationOptions) || ["0", "90", "180", "270"],
   screenRotationDeviceOptions: null,
@@ -360,29 +354,16 @@ function normalizeNtpServer(value, fallback) {
   return EspControlModel.normalizeNtpServer(value, fallback);
 }
 
-function normalizeMonthNames(value) {
-  return EspControlModel.normalizeMonthNames(value);
-}
-
-function serializeMonthNames(value) {
-  return EspControlModel.serializeMonthNames(value);
-}
-
-function hasCustomMonthNames() {
-  var names = normalizeMonthNames(state.monthNames);
-  for (var i = 0; i < 12; i++) {
-    if (names[i] !== MONTH_NAME_DEFAULTS[i]) return true;
-  }
-  return false;
-}
-
-function resetMonthNamesToDefaults() {
-  state.monthNames = MONTH_NAME_DEFAULTS.slice();
-}
-
 function monthNameForIndex(index) {
-  var names = normalizeMonthNames(state.monthNames);
-  return names[index] || MONTH_NAME_DEFAULTS[index] || "";
+  var monthIndex = parseInt(index, 10);
+  if (!isFinite(monthIndex) || monthIndex < 0 || monthIndex > 11) return "Date";
+  try {
+    return new Intl.DateTimeFormat(normalizeLanguage(state.language), { month: "long" })
+      .format(new Date(Date.UTC(2000, monthIndex, 1)));
+  } catch (_) {
+    return new Intl.DateTimeFormat("en", { month: "long" })
+      .format(new Date(Date.UTC(2000, monthIndex, 1)));
+  }
 }
 
 function hasCustomNtpServers() {
@@ -573,23 +554,6 @@ function syncNtpServerUi() {
   syncInput(els.setNtpServer1, state.ntpServer1);
   syncInput(els.setNtpServer2, state.ntpServer2);
   syncInput(els.setNtpServer3, state.ntpServer3);
-}
-
-function syncMonthNameUi() {
-  state.monthNames = normalizeMonthNames(state.monthNames);
-  state.customMonthNames = !!state.customMonthNames || hasCustomMonthNames();
-  if (els.setCustomMonthNamesToggle) {
-    els.setCustomMonthNamesToggle.checked = !!state.customMonthNames;
-  }
-  if (els.setMonthNameFields) {
-    els.setMonthNameFields.className =
-      "sp-field-stack" + (state.customMonthNames ? "" : " sp-hidden");
-  }
-  if (els.setMonthNameInputs) {
-    for (var i = 0; i < els.setMonthNameInputs.length; i++) {
-      syncInput(els.setMonthNameInputs[i], state.monthNames[i]);
-    }
-  }
 }
 
 function normalizeTheme(value) {

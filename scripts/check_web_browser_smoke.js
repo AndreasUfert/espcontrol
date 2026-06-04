@@ -380,7 +380,6 @@ function backupFixture(device, slots) {
       ntp_server_1: "pool.ntp.org",
       ntp_server_2: "time.nist.gov",
       ntp_server_3: "time.cloudflare.com",
-      month_names: "Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec",
       screensaver_mode: "timer",
       presence_sensor_entity: "binary_sensor.office_presence",
       media_player_sleep_prevention: true,

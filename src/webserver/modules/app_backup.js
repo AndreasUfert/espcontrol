@@ -31,7 +31,6 @@ function exportConfig() {
       ntp_server_1: state.ntpServer1,
       ntp_server_2: state.ntpServer2,
       ntp_server_3: state.ntpServer3,
-      month_names: serializeMonthNames(state.monthNames),
       screensaver_mode: getActiveScreensaverMode(),
       presence_sensor_entity: state.presenceEntity,
       media_player_sleep_prevention: state.mediaPlayerSleepPreventionOn,
@@ -169,7 +168,6 @@ function importConfig() {
           ntpServer1: state.ntpServer1,
           ntpServer2: state.ntpServer2,
           ntpServer3: state.ntpServer3,
-          monthNames: state.monthNames,
           screenRotationOptions: allScreenRotationOptions(),
         });
 
@@ -190,13 +188,11 @@ function importConfig() {
         var hasNtpServer1 = importedSettings.hasNtpServer1;
         var hasNtpServer2 = importedSettings.hasNtpServer2;
         var hasNtpServer3 = importedSettings.hasNtpServer3;
-        var hasMonthNames = importedSettings.hasMonthNames;
         var hasDeveloperExperimentalFeatures = importedSettings.hasDeveloperExperimentalFeatures;
         var importedDeveloperExperimentalFeatures = importedSettings.developerExperimentalFeatures;
         var importedNtpServer1 = importedSettings.ntpServer1;
         var importedNtpServer2 = importedSettings.ntpServer2;
         var importedNtpServer3 = importedSettings.ntpServer3;
-        var importedMonthNames = importedSettings.monthNames;
         if (s.timezone) postSelect(entityName("screen_timezone"), importedTimezone);
         if (s.language) postSelect(entityName("screen_language"), importedLanguage);
         if (s.theme && isEpaperPreview()) postSelect(entityName("screen_theme"), importedTheme);
@@ -210,9 +206,6 @@ function importConfig() {
         }
         if (hasNtpServer3) {
           postText(entityName("screen_ntp_server_3"), importedNtpServer3);
-        }
-        if (hasMonthNames) {
-          postText(entityName("screen_month_names"), serializeMonthNames(importedMonthNames));
         }
         var importedScreensaverMode = importedSettings.screensaverMode;
         postText(entityName("screensaver_mode"), importedScreensaverMode);
@@ -260,8 +253,6 @@ function importConfig() {
         state.ntpServer1 = importedNtpServer1;
         state.ntpServer2 = importedNtpServer2;
         state.ntpServer3 = importedNtpServer3;
-        state.monthNames = importedMonthNames;
-        state.customMonthNames = hasCustomMonthNames();
         state.customNtpServers = hasCustomNtpServers();
         state.screensaverMode = importedScreensaverMode;
         state._screensaverModeReceived = true;
@@ -305,7 +296,6 @@ function importConfig() {
         syncLanguageSelect();
         if (els.setClockFormat) els.setClockFormat.value = state.clockFormat;
         syncNtpServerUi();
-        syncMonthNameUi();
         syncClockScreensaverControls();
         syncScreensaverTimeoutUi();
         syncIdleUi();

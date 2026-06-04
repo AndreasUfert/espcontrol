@@ -298,10 +298,6 @@ var ENTITY_CATALOG = {
       "domain": "text",
       "name": "Screen: NTP Server 3"
     },
-    "screen_month_names": {
-      "domain": "text",
-      "name": "Screen: Month Names"
-    },
     "screen_sunrise": {
       "domain": "text_sensor",
       "name": "Screen: Sunrise"
@@ -518,7 +514,6 @@ var ENTITY_CATALOG = {
       "screen_ntp_server_1",
       "screen_ntp_server_2",
       "screen_ntp_server_3",
-      "screen_month_names",
       "screen_sunrise",
       "screen_sunset",
       "network_transport",

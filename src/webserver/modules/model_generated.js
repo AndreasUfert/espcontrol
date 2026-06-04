@@ -28,7 +28,6 @@ var EspControlModel = (() => {
     BACKUP_CONFIG_VERSION: () => BACKUP_CONFIG_VERSION,
     BACKUP_FORMAT: () => BACKUP_FORMAT,
     CARD_CONFIG_FIELDS: () => CARD_CONFIG_FIELDS,
-    MONTH_NAME_DEFAULTS: () => MONTH_NAME_DEFAULTS,
     applySpans: () => applySpans,
     backLabelFromOrder: () => backLabelFromOrder,
     backOrderToken: () => backOrderToken,
@@ -57,7 +56,6 @@ var EspControlModel = (() => {
     normalizeHexColor: () => normalizeHexColor,
     normalizeHour: () => normalizeHour,
     normalizeLanguage: () => normalizeLanguage,
-    normalizeMonthNames: () => normalizeMonthNames,
     normalizeNtpServer: () => normalizeNtpServer,
     normalizeScheduleClockBrightness: () => normalizeScheduleClockBrightness,
     normalizeScheduleDimmedBrightness: () => normalizeScheduleDimmedBrightness,
@@ -81,7 +79,6 @@ var EspControlModel = (() => {
     serializeCompactSubpageConfig: () => serializeCompactSubpageConfig,
     serializeGridOrder: () => serializeGridOrder,
     serializeLegacySubpageConfig: () => serializeLegacySubpageConfig,
-    serializeMonthNames: () => serializeMonthNames,
     serializeSubpageGrid: () => serializeSubpageGrid,
     sizeColSpan: () => sizeColSpan,
     sizeFitsAt: () => sizeFitsAt,
@@ -733,20 +730,6 @@ var EspControlModel = (() => {
   }
 
   // src/webserver/model/settings.ts
-  var MONTH_NAME_DEFAULTS = [
-    "January",
-    "February",
-    "March",
-    "April",
-    "May",
-    "June",
-    "July",
-    "August",
-    "September",
-    "October",
-    "November",
-    "December"
-  ];
   function normalizeTemperatureUnit(value) {
     const unit = String(value == null ? "" : value).trim().toLowerCase();
     if (unit === "f" || unit === "\xB0f" || unit === "fahrenheit") return "\xB0F";
@@ -840,18 +823,6 @@ var EspControlModel = (() => {
     const server = String(value == null ? "" : value).trim();
     return server || fallback;
   }
-  function normalizeMonthNames(value) {
-    const parts = Array.isArray(value) ? value.slice() : String(value == null ? "" : value).split(",");
-    const out = [];
-    for (let i = 0; i < 12; i += 1) {
-      const text = String(parts[i] == null ? "" : parts[i]).trim();
-      out.push(text || MONTH_NAME_DEFAULTS[i] || "");
-    }
-    return out;
-  }
-  function serializeMonthNames(value) {
-    return normalizeMonthNames(value).join(",");
-  }
   function numberOrFallback(value, fallback) {
     const n = parseFloat(String(value));
     return Number.isFinite(n) ? n : fallback;
@@ -896,7 +867,6 @@ var EspControlModel = (() => {
     const hasNtpServer1 = objectValue(settings, "ntp_server_1") !== void 0;
     const hasNtpServer2 = objectValue(settings, "ntp_server_2") !== void 0;
     const hasNtpServer3 = objectValue(settings, "ntp_server_3") !== void 0;
-    const hasMonthNames = objectValue(settings, "month_names") !== void 0;
     const hasDeveloperExperimentalFeatures = objectValue(settings, "developer_experimental_features") !== void 0;
     const clockFormat = current.clockFormatOptions.indexOf(String(settings.clock_format || "")) !== -1 ? String(settings.clock_format) : current.clockFormat;
     const screensaverAction = normalizeScreensaverAction(
@@ -927,13 +897,11 @@ var EspControlModel = (() => {
       hasNtpServer1,
       hasNtpServer2,
       hasNtpServer3,
-      hasMonthNames,
       hasDeveloperExperimentalFeatures,
       developerExperimentalFeatures: hasDeveloperExperimentalFeatures ? !!settings.developer_experimental_features : current.developerExperimentalFeatures,
       ntpServer1: hasNtpServer1 ? normalizeNtpServer(settings.ntp_server_1, current.ntpDefaults[0] || "") : current.ntpServer1,
       ntpServer2: hasNtpServer2 ? normalizeNtpServer(settings.ntp_server_2, current.ntpDefaults[1] || "") : current.ntpServer2,
       ntpServer3: hasNtpServer3 ? normalizeNtpServer(settings.ntp_server_3, current.ntpDefaults[2] || "") : current.ntpServer3,
-      monthNames: hasMonthNames ? normalizeMonthNames(settings.month_names) : normalizeMonthNames(current.monthNames),
       screensaverMode: normalizeScreensaverMode(settings.screensaver_mode),
       presenceSensorEntity: String(settings.presence_sensor_entity || ""),
       mediaPlayerSleepPrevention: !!settings.media_player_sleep_prevention,

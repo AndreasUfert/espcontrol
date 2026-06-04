@@ -25,7 +25,6 @@ var SSE_ALIAS_GROUPS = {
   ntpServer1: ["text-screen__ntp_server_1", "text-ntp_server_1"],
   ntpServer2: ["text-screen__ntp_server_2", "text-ntp_server_2"],
   ntpServer3: ["text-screen__ntp_server_3", "text-ntp_server_3"],
-  monthNames: ["text-screen__month_names", "text-month_names"],
   developerExperimentalFeatures: ["switch-developer__experimental_features", "switch-developer_experimental_features"],
 };
 
@@ -311,6 +310,7 @@ function connectEvents() {
         state.languageOptions = languageOptionsWithFallback(d.option, state.language);
       }
       syncLanguageSelect();
+      renderPreview();
     },
     "select-screen__clock_format": function (val, d) {
       state.clockFormat = d.value || val || state.clockFormat;
@@ -343,12 +343,6 @@ function connectEvents() {
       state.ntpServer3 = normalizeNtpServer(val, NTP_SERVER_DEFAULTS[2]);
       state.customNtpServers = state.customNtpServers || hasCustomNtpServers();
       syncNtpServerUi();
-    },
-    "text-screen__month_names": function (val) {
-      state.monthNames = normalizeMonthNames(val);
-      state.customMonthNames = hasCustomMonthNames();
-      syncMonthNameUi();
-      renderPreview();
     },
     "select-screen__rotation": function (val, d) {
       state.screenRotation = normalizeScreenRotation(d.value || val || state.screenRotation);
@@ -437,7 +431,6 @@ function connectEvents() {
   addSseAliases(sseHandlers, SSE_ALIAS_GROUPS.ntpServer1, sseHandlers["text-screen__ntp_server_1"]);
   addSseAliases(sseHandlers, SSE_ALIAS_GROUPS.ntpServer2, sseHandlers["text-screen__ntp_server_2"]);
   addSseAliases(sseHandlers, SSE_ALIAS_GROUPS.ntpServer3, sseHandlers["text-screen__ntp_server_3"]);
-  addSseAliases(sseHandlers, SSE_ALIAS_GROUPS.monthNames, sseHandlers["text-screen__month_names"]);
   addSseAliases(sseHandlers, SSE_ALIAS_GROUPS.developerExperimentalFeatures, sseHandlers["switch-developer__experimental_features"]);
 
   var ssePatterns = [

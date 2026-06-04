@@ -51,7 +51,6 @@
     { "key": "screen_ntp_server_1", "domain": "text", "name": "Screen: NTP Server 1", "groups": ["settings"] },
     { "key": "screen_ntp_server_2", "domain": "text", "name": "Screen: NTP Server 2", "groups": ["settings"] },
     { "key": "screen_ntp_server_3", "domain": "text", "name": "Screen: NTP Server 3", "groups": ["settings"] },
-    { "key": "screen_month_names", "domain": "text", "name": "Screen: Month Names", "groups": ["settings"] },
     { "key": "screen_sunrise", "domain": "text_sensor", "name": "Screen: Sunrise", "groups": ["settings"] },
     { "key": "screen_sunset", "domain": "text_sensor", "name": "Screen: Sunset", "groups": ["settings"] },
     { "key": "network_transport", "domain": "text_sensor", "name": "Network Transport", "groups": ["settings"] },

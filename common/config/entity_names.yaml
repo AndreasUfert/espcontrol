@@ -63,7 +63,6 @@ substitutions:
   entity_screen_ntp_server_1: "Screen: NTP Server 1"
   entity_screen_ntp_server_2: "Screen: NTP Server 2"
   entity_screen_ntp_server_3: "Screen: NTP Server 3"
-  entity_screen_month_names: "Screen: Month Names"
   entity_screen_sunrise: "Screen: Sunrise"
   entity_screen_sunset: "Screen: Sunset"
   entity_network_transport: "Network Transport"

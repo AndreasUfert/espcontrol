@@ -59,14 +59,12 @@ export {
 } from "./subpage";
 
 export {
-  MONTH_NAME_DEFAULTS,
   normalizeBackupPanelSettings,
   normalizeBackupScreenSettings,
   normalizeClockBrightness,
   normalizeHexColor,
   normalizeHour,
   normalizeLanguage,
-  normalizeMonthNames,
   normalizeNtpServer,
   normalizeScheduleClockBrightness,
   normalizeScheduleDimmedBrightness,
@@ -78,7 +76,6 @@ export {
   normalizeTemperatureUnit,
   scheduleModeOption,
   screensaverActionOption,
-  serializeMonthNames,
 } from "./settings";
 
 export type {

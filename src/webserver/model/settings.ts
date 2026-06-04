@@ -1,8 +1,3 @@
-export const MONTH_NAME_DEFAULTS = [
-  "January", "February", "March", "April", "May", "June",
-  "July", "August", "September", "October", "November", "December",
-] as const;
-
 export function normalizeTemperatureUnit(value: unknown): string {
   const unit = String(value == null ? "" : value).trim().toLowerCase();
   if (unit === "f" || unit === "\u00B0f" || unit === "fahrenheit") return "\u00B0F";
@@ -111,22 +106,6 @@ export function normalizeNtpServer(value: unknown, fallback: string): string {
   return server || fallback;
 }
 
-export function normalizeMonthNames(value: unknown): string[] {
-  const parts = Array.isArray(value)
-    ? value.slice()
-    : String(value == null ? "" : value).split(",");
-  const out: string[] = [];
-  for (let i = 0; i < 12; i += 1) {
-    const text = String(parts[i] == null ? "" : parts[i]).trim();
-    out.push(text || MONTH_NAME_DEFAULTS[i] || "");
-  }
-  return out;
-}
-
-export function serializeMonthNames(value: unknown): string {
-  return normalizeMonthNames(value).join(",");
-}
-
 export interface BackupScreenSettingsState {
   brightnessDayVal: number;
   brightnessNightVal: number;
@@ -200,7 +179,6 @@ export interface BackupPanelSettingsCurrent {
   ntpServer1: string;
   ntpServer2: string;
   ntpServer3: string;
-  monthNames: readonly string[];
   screenRotationOptions: readonly string[];
 }
 
@@ -221,13 +199,11 @@ export interface BackupPanelSettingsState {
   hasNtpServer1: boolean;
   hasNtpServer2: boolean;
   hasNtpServer3: boolean;
-  hasMonthNames: boolean;
   hasDeveloperExperimentalFeatures: boolean;
   developerExperimentalFeatures: boolean;
   ntpServer1: string;
   ntpServer2: string;
   ntpServer3: string;
-  monthNames: string[];
   screensaverMode: string;
   presenceSensorEntity: string;
   mediaPlayerSleepPrevention: boolean;
@@ -267,7 +243,6 @@ export function normalizeBackupPanelSettings(
   const hasNtpServer1 = objectValue(settings, "ntp_server_1") !== undefined;
   const hasNtpServer2 = objectValue(settings, "ntp_server_2") !== undefined;
   const hasNtpServer3 = objectValue(settings, "ntp_server_3") !== undefined;
-  const hasMonthNames = objectValue(settings, "month_names") !== undefined;
   const hasDeveloperExperimentalFeatures = objectValue(settings, "developer_experimental_features") !== undefined;
   const clockFormat = current.clockFormatOptions.indexOf(String(settings.clock_format || "")) !== -1
     ? String(settings.clock_format)
@@ -306,7 +281,6 @@ export function normalizeBackupPanelSettings(
     hasNtpServer1,
     hasNtpServer2,
     hasNtpServer3,
-    hasMonthNames,
     hasDeveloperExperimentalFeatures,
     developerExperimentalFeatures: hasDeveloperExperimentalFeatures
       ? !!settings.developer_experimental_features
@@ -320,7 +294,6 @@ export function normalizeBackupPanelSettings(
     ntpServer3: hasNtpServer3
       ? normalizeNtpServer(settings.ntp_server_3, current.ntpDefaults[2] || "")
       : current.ntpServer3,
-    monthNames: hasMonthNames ? normalizeMonthNames(settings.month_names) : normalizeMonthNames(current.monthNames),
     screensaverMode: normalizeScreensaverMode(settings.screensaver_mode),
     presenceSensorEntity: String(settings.presence_sensor_entity || ""),
     mediaPlayerSleepPrevention: !!settings.media_player_sleep_prevention,

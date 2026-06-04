@@ -272,6 +272,15 @@ const datePreview = hooks.buttonTypePreviewFor("calendar", {
 });
 assert(datePreview.labelHtml.includes("mdi-calendar-month"), "date preview uses the calendar badge");
 assert(datePreview.iconHtml.includes("sp-sensor-preview"), "date preview uses the shared sensor preview");
+const frenchMonth = new Intl.DateTimeFormat("fr", { month: "long" }).format(new Date());
+const frenchDatePreview = hooks.buttonTypePreviewFor("calendar", {
+  type: "calendar",
+  precision: "",
+  options: "",
+}, {
+  language: "fr",
+});
+assert(frenchDatePreview.labelHtml.includes(frenchMonth), "date preview follows selected language month names");
 assert.strictEqual(hooks.dateTimeLargeNumbersLabel({ type: "calendar", precision: "" }), "Large Date");
 assert.strictEqual(hooks.dateTimeLargeNumbersLabel({ type: "calendar", precision: "datetime" }), "Large Time");
 assert.strictEqual(hooks.dateTimeLargeNumbersLabel({ type: "clock" }), "Large Clock");

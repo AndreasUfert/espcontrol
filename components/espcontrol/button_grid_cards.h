@@ -49,11 +49,6 @@ inline int &calendar_card_count() {
   return count;
 }
 
-inline std::string *calendar_custom_month_names() {
-  static std::string names[12];
-  return names;
-}
-
 struct CalendarDateState {
   bool date_valid;
   int day;
@@ -102,9 +97,7 @@ inline const char *calendar_month_name(int month) {
     "July", "August", "September", "October", "November", "December"
   };
   if (month < 1 || month > 12) return espcontrol_i18n("Date");
-  const std::string &custom = calendar_custom_month_names()[month - 1];
-  if (!custom.empty()) return custom.c_str();
-  return months[month - 1];
+  return espcontrol_i18n(months[month - 1]);
 }
 
 inline void apply_calendar_card_text(const CalendarCardRef &ref,
@@ -151,17 +144,6 @@ inline void refresh_calendar_cards() {
   for (int i = 0; i < count; i++) {
     apply_calendar_card_text(refs[i], state);
   }
-}
-
-inline void set_calendar_month_names(const std::string &value) {
-  std::string *names = calendar_custom_month_names();
-  for (int i = 0; i < 12; i++) names[i].clear();
-
-  std::vector<std::string> parts = split_config_fields(value, ',');
-  for (int i = 0; i < 12 && i < static_cast<int>(parts.size()); i++) {
-    names[i] = trim_display_unit(parts[i]);
-  }
-  refresh_calendar_cards();
 }
 
 inline void update_calendar_cards(bool valid, int day, int month) {
