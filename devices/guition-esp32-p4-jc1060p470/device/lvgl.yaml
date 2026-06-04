@@ -20,7 +20,7 @@ lvgl:
           id: temperatures
           text_font: font_text_body
           align: top_left
-          x: 8
+          x: 4
           y: 8
           text_color: 0xFFFFFF
           hidden: true
@@ -41,7 +41,7 @@ lvgl:
       - obj:
           id: network_status_button
           align: top_right
-          x: -16
+          x: -4
           y: 2
           width: 36
           height: 32
