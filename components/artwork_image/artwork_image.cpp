@@ -70,6 +70,7 @@ class LocalHttpContainer : public http_request::HttpContainer {
   void add_response_header(const std::string &name, const std::string &value) {
     this->response_headers_.push_back({name, value});
   }
+  void set_content_length_known(bool known) { this->content_length_known_ = known; }
 
   int read(uint8_t *buf, size_t max_len) override {
     int read = esp_http_client_read(this->client_, reinterpret_cast<char *>(buf), max_len);
@@ -80,10 +81,16 @@ class LocalHttpContainer : public http_request::HttpContainer {
   }
 
   bool is_read_complete() const override {
-    if (HttpContainer::is_read_complete()) {
+    if (this->content_length_known_ && HttpContainer::is_read_complete()) {
       return true;
     }
-    return this->is_chunked_ && esp_http_client_is_complete_data_received(this->client_);
+    if (this->client_ == nullptr) {
+      return true;
+    }
+    if (this->bytes_read_ == 0 && !this->content_length_known_) {
+      return false;
+    }
+    return esp_http_client_is_complete_data_received(this->client_);
   }
 
   void end() override {
@@ -96,6 +103,7 @@ class LocalHttpContainer : public http_request::HttpContainer {
 
  protected:
   esp_http_client_handle_t client_{nullptr};
+  bool content_length_known_{false};
 };
 
 static esp_err_t insecure_local_http_event_handler(esp_http_client_event_t *evt) {
@@ -455,9 +463,10 @@ std::shared_ptr<http_request::HttpContainer> ArtworkImage::get_local_idf_(
     return nullptr;
   }
 
-  int content_length = esp_http_client_fetch_headers(client);
+  int64_t content_length = esp_http_client_fetch_headers(client);
   App.feed_wdt();
   container->content_length = content_length > 0 ? static_cast<size_t>(content_length) : 0;
+  container->set_content_length_known(content_length > 0);
   container->set_chunked(esp_http_client_is_chunked_response(client));
   container->status_code = esp_http_client_get_status_code(client);
   container->duration_ms = millis() - start;
