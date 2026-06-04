@@ -60,6 +60,9 @@ globals:
   - id: cover_art_api_wait_logged
     type: bool
     initial_value: 'false'
+  - id: cover_art_transition_from_ui
+    type: bool
+    initial_value: 'false'
   - id: cover_art_media_duration
     type: float
     initial_value: '0.0'
@@ -857,9 +860,16 @@ script:
       - script.stop: cover_art_delay_timer
       - script.execute: cover_art_sync_track_text
       - lambda: |-
+          id(cover_art_transition_from_ui) = !id(cover_art_screensaver_active);
           if (id(cover_art_url).empty() || id(cover_art_url) != id(cover_art_loaded_url)) {
             id(cover_art_image_available) = false;
           }
+      - if:
+          condition:
+            lambda: 'return id(cover_art_transition_from_ui);'
+          then:
+            - script.execute: backlight_fade_current_ui_to_black_300ms
+            - script.wait: backlight_fade_current_ui_to_black_300ms
       - globals.set:
           id: display_asleep
           value: 'true'
@@ -911,7 +921,15 @@ script:
           else:
             - lvgl.widget.hide: cover_art_progress_bar
       - script.execute: cover_art_refresh_progress
-      - script.execute: backlight_apply_brightness
+      - if:
+          condition:
+            lambda: 'return id(cover_art_transition_from_ui);'
+          then:
+            - script.execute: backlight_fade_saved_level_from_black_300ms
+            - script.wait: backlight_fade_saved_level_from_black_300ms
+            - globals.set:
+                id: cover_art_transition_from_ui
+                value: 'false'
 
   - id: hide_cover_art_view
     mode: restart
@@ -921,6 +939,9 @@ script:
       - script.stop: cover_art_deferred_request_artwork
       - globals.set:
           id: cover_art_screensaver_active
+          value: 'false'
+      - globals.set:
+          id: cover_art_transition_from_ui
           value: 'false'
       - lvgl.widget.hide: cover_art_screensaver
       - lvgl.widget.hide: cover_art_accent_overlay
