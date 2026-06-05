@@ -38,6 +38,7 @@ constexpr lv_coord_t CLIMATE_MODAL_COMPACT_PORTRAIT_OPTION_CHIP_W_PX = 200;
 constexpr lv_coord_t CLIMATE_MODAL_COMPACT_PORTRAIT_OPTION_CHIP_GAP_PX = 12;
 constexpr lv_coord_t CLIMATE_MODAL_COMPACT_PORTRAIT_OPTION_CHIP_PAD_X_PX = 16;
 constexpr lv_coord_t CLIMATE_MODAL_COMPACT_PORTRAIT_OPTION_CHIP_ICON_GAP_PX = 14;
+constexpr lv_coord_t CLIMATE_MODAL_COMPACT_PORTRAIT_STEP_BUTTON_REF_PX = 96;
 constexpr lv_coord_t CLIMATE_MODAL_STEP_BUTTON_GAP_REF_PX = 16;
 constexpr uint16_t CLIMATE_MODAL_STEP_ICON_ZOOM = 214;
 constexpr int CLIMATE_OPTION_ROW_WIDTH_PERCENT = 88;
@@ -1379,7 +1380,9 @@ inline void climate_control_layout_modal(ClimateControlCtx *ctx) {
   lv_obj_set_style_translate_y(ui.unit_lbl,
     control_modal_scaled_px(MEDIA_VOLUME_UNIT_Y_REF_PX, layout.short_side), LV_PART_MAIN);
   ControlModalLayout controls_layout = layout;
-  controls_layout.btn_size = control_modal_scaled_px(64, layout.short_side);
+  controls_layout.btn_size = control_modal_scaled_px(
+    compact_portrait ? CLIMATE_MODAL_COMPACT_PORTRAIT_STEP_BUTTON_REF_PX : 64,
+    layout.short_side);
   if (controls_layout.btn_size < 48) controls_layout.btn_size = 48;
   controls_layout.controls_gap = control_modal_scaled_px(CLIMATE_MODAL_STEP_BUTTON_GAP_REF_PX, layout.short_side);
   if (controls_layout.controls_gap < 6) controls_layout.controls_gap = 6;
