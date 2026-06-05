@@ -258,7 +258,7 @@
             "sensor_value_font": "font_number_value",
             "padding": "21px",
             "radius": "10px",
-            "main_page_pad_top": "\"50\"",
+            "main_page_pad_top": "\"62\"",
             "main_page_compact_pad_top": "\"5\"",
             "clock_font_size": "\"160\"",
             "clock_cx": "\"240\"",
