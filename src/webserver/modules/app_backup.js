@@ -24,6 +24,8 @@ function exportConfig() {
       clock_bar: state.clockBarOn,
       clock_bar_layout: serializeClockBarLayout(state.clockBarLayout),
       clock_bar_time: state.clockBarTimeOn,
+      clock_bar_weather_icon: state.clockBarWeatherOn,
+      clock_bar_weather_entity: state.clockBarWeatherEntity,
       network_status_icon: state.networkStatusOn,
       temperature_degree_symbol: state.temperatureDegreeSymbolOn,
       subpage_chevron: state.subpageChevronsOn,
@@ -179,6 +181,8 @@ function importConfig() {
         applyClockBarLayoutValue(importedSettings.clockBarLayout);
         postClockBarLayout(importedSettings.clockBarLayout);
         postClockBarTime(importedSettings.clockBarTime);
+        postClockBarWeatherIcon(importedSettings.clockBarWeatherIcon);
+        postText(entityName("clock_bar_weather_entity"), importedSettings.clockBarWeatherEntity);
         postNetworkStatusIcon(importedSettings.networkStatusIcon);
         postTemperatureDegreeSymbol(importedSettings.temperatureDegreeSymbol);
         postSubpageChevron(importedSettings.subpageChevron);
@@ -247,6 +251,8 @@ function importConfig() {
         state.temperatureUnit = importedTemperatureUnit;
         state.clockBarOn = importedSettings.clockBar;
         state.clockBarTimeOn = importedSettings.clockBarTime;
+        state.clockBarWeatherOn = importedSettings.clockBarWeatherIcon;
+        state.clockBarWeatherEntity = importedSettings.clockBarWeatherEntity;
         state.networkStatusOn = importedSettings.networkStatusIcon;
         state.temperatureDegreeSymbolOn = importedSettings.temperatureDegreeSymbol;
         state.subpageChevronsOn = importedSettings.subpageChevron;

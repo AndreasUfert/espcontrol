@@ -311,7 +311,8 @@ enum ClockBarItemId {
   CLOCK_BAR_ITEM_TEMPERATURE = 0,
   CLOCK_BAR_ITEM_TIME = CLOCK_BAR_TEMPERATURE_SLOT_COUNT,
   CLOCK_BAR_ITEM_NETWORK = CLOCK_BAR_TEMPERATURE_SLOT_COUNT + 1,
-  CLOCK_BAR_ITEM_COUNT = CLOCK_BAR_TEMPERATURE_SLOT_COUNT + 2,
+  CLOCK_BAR_ITEM_WEATHER = CLOCK_BAR_TEMPERATURE_SLOT_COUNT + 2,
+  CLOCK_BAR_ITEM_COUNT = CLOCK_BAR_TEMPERATURE_SLOT_COUNT + 3,
 };
 
 enum ClockBarSectionId {
@@ -355,6 +356,7 @@ inline int clock_bar_item_id(const char *start, size_t len) {
   }
   if (clock_bar_token_matches(start, len, "time")) return CLOCK_BAR_ITEM_TIME;
   if (clock_bar_token_matches(start, len, "network")) return CLOCK_BAR_ITEM_NETWORK;
+  if (clock_bar_token_matches(start, len, "weather")) return CLOCK_BAR_ITEM_WEATHER;
   return -1;
 }
 
@@ -419,7 +421,7 @@ inline void align_clock_bar_widget(lv_obj_t *obj, int section, int order, int co
   } else if (section == CLOCK_BAR_SECTION_MIDDLE) {
     int x = ((order * 2) - (count - 1)) * item_gap / 2;
     lv_obj_align(obj, LV_ALIGN_TOP_MID, x, y);
-  } else {
+  } else if (section == CLOCK_BAR_SECTION_RIGHT) {
     int x = -(right_x + (count - 1 - order) * item_gap);
     lv_obj_align(obj, LV_ALIGN_TOP_RIGHT, x, y);
   }
@@ -430,6 +432,7 @@ inline void apply_clock_bar_layout(const std::string &layout_text,
                                    size_t temperature_label_count,
                                    lv_obj_t *display_time,
                                    lv_obj_t *network_status_button,
+                                   lv_obj_t *weather_icon_label,
                                    int left_x, int label_y,
                                    int right_x, int network_y,
                                    int item_gap) {
@@ -451,6 +454,11 @@ inline void apply_clock_bar_layout(const std::string &layout_text,
                          layout.section[CLOCK_BAR_ITEM_NETWORK],
                          layout.order[CLOCK_BAR_ITEM_NETWORK],
                          layout.count[layout.section[CLOCK_BAR_ITEM_NETWORK]],
+                         left_x, network_y, right_x, item_gap);
+  align_clock_bar_widget(weather_icon_label,
+                         layout.section[CLOCK_BAR_ITEM_WEATHER],
+                         layout.order[CLOCK_BAR_ITEM_WEATHER],
+                         layout.section[CLOCK_BAR_ITEM_WEATHER] >= 0 ? layout.count[layout.section[CLOCK_BAR_ITEM_WEATHER]] : 0,
                          left_x, network_y, right_x, item_gap);
 }
 

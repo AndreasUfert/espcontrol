@@ -127,12 +127,13 @@ function clockBarTemperatureItemIds(includeNext) {
 }
 
 function clockBarItems(includeNextTemperature) {
-  return clockBarTemperatureItemIds(!!includeNextTemperature).concat(["time", "network"]);
+  return clockBarTemperatureItemIds(!!includeNextTemperature).concat(["time", "weather", "network"]);
 }
 
 function clockBarDefaultSection(item) {
   if (isClockBarTemperatureItem(item)) return "left";
   if (item === "time") return "middle";
+  if (item === "weather") return "right";
   if (item === "network") return "right";
   return "left";
 }
@@ -141,6 +142,7 @@ function clockBarItemActive(item) {
   var tempIndex = clockBarTemperatureItemIndex(item);
   if (tempIndex >= 0) return tempIndex < clockBarTemperatureEntries().length;
   if (item === "time") return !!state.clockBarTimeOn;
+  if (item === "weather") return !!state.clockBarWeatherOn;
   if (item === "network") return !!state.networkStatusOn;
   return false;
 }
@@ -152,17 +154,19 @@ function clockBarItemElement(item) {
 function clockBarItemLabel(item) {
   if (isClockBarTemperatureItem(item)) return "Temperature";
   if (item === "time") return "Time";
+  if (item === "weather") return "Weather";
   if (item === "network") return "Network Status";
   return "Clock Bar";
 }
 
 function clockBarItemHasSettings(item) {
-  return isClockBarTemperatureItem(item);
+  return isClockBarTemperatureItem(item) || item === "weather";
 }
 
 function clockBarItemIcon(item) {
   if (isClockBarTemperatureItem(item)) return "thermometer";
   if (item === "time") return "clock-outline";
+  if (item === "weather") return "weather-partly-cloudy";
   if (item === "network") return "wifi-strength-4";
   return "plus";
 }
@@ -332,6 +336,11 @@ function createClockBarItemElement(item, section) {
     clock.textContent = "--:--";
     button.appendChild(clock);
     els.clock = clock;
+  } else if (item === "weather") {
+    var weather = document.createElement("span");
+    weather.className = "sp-weather-preview mdi mdi-weather-partly-cloudy";
+    button.appendChild(weather);
+    els.weatherPreview = weather;
   } else if (item === "network") {
     var network = document.createElement("span");
     network.className = "sp-network-preview mdi mdi-wifi-strength-4";
@@ -357,6 +366,7 @@ function renderClockBarLayout() {
   els.clockBarItems = {};
   els.temps = {};
   els.clock = null;
+  els.weatherPreview = null;
   els.networkPreview = null;
   CLOCK_BAR_SECTIONS.forEach(function (section) {
     var container = els.clockBarSections[section];
@@ -376,6 +386,7 @@ function renderClockBarLayout() {
   });
   updateTempPreview();
   updateClockText();
+  updateWeatherPreview();
   updateNetworkPreview();
 }
 
@@ -396,6 +407,7 @@ function updateClockBarItemUi() {
   renderClockBarLayout();
   clockBarTemperatureItemIds(true).forEach(syncClockBarItemElement);
   syncClockBarItemElement("time");
+  syncClockBarItemElement("weather");
   syncClockBarItemElement("network");
 }
 
@@ -427,6 +439,10 @@ function addClockBarItem(item) {
     state.clockBarTimeOn = true;
     postClockBarTime(true);
     syncClockBarUi();
+  } else if (item === "weather") {
+    state.clockBarWeatherOn = true;
+    postClockBarWeatherIcon(true);
+    syncClockBarUi();
   } else if (item === "network") {
     state.networkStatusOn = true;
     postNetworkStatusIcon(true);
@@ -452,6 +468,11 @@ function deleteClockBarItem(item) {
     removeClockBarItemFromLayout(item);
     state.clockBarTimeOn = false;
     postClockBarTime(false);
+    syncClockBarUi();
+  } else if (item === "weather") {
+    removeClockBarItemFromLayout(item);
+    state.clockBarWeatherOn = false;
+    postClockBarWeatherIcon(false);
     syncClockBarUi();
   } else if (item === "network") {
     removeClockBarItemFromLayout(item);
@@ -553,5 +574,12 @@ function updateNetworkPreview() {
   var show = state.clockBarOn && state.networkStatusOn;
   els.networkPreview.className = "sp-network-preview mdi mdi-" +
     networkPreviewIconSlug(state.networkTransport, state.wifiStrengthPercent) +
+    (show ? " sp-visible" : "");
+}
+
+function updateWeatherPreview() {
+  if (!els.weatherPreview) return;
+  var show = state.clockBarOn && state.clockBarWeatherOn;
+  els.weatherPreview.className = "sp-weather-preview mdi mdi-weather-partly-cloudy" +
     (show ? " sp-visible" : "");
 }

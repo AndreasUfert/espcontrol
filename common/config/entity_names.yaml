@@ -33,6 +33,8 @@ substitutions:
   entity_screen_clock_bar_layout: "Screen: Clock Bar Layout"
   entity_screen_clock_bar_time: "Screen: Clock Bar Time"
   entity_clock_bar_temperature_entities: "Clock Bar: Temperature Entities"
+  entity_screen_clock_bar_weather_icon: "Screen: Clock Bar Weather Icon"
+  entity_clock_bar_weather_entity: "Clock Bar: Weather Entity"
   entity_screen_network_status_icon: "Screen: Network Status Icon"
   entity_screen_temperature_degree_symbol: "Screen: Temperature Degree Symbol"
   entity_screen_subpage_chevron: "Screen: Subpage Chevron"

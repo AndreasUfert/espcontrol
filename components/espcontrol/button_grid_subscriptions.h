@@ -212,6 +212,30 @@ inline void subscribe_weather_state(lv_obj_t *icon_lbl, lv_obj_t *text_lbl, cons
   );
 }
 
+inline void subscribe_clock_bar_weather_icon(lv_obj_t *icon_lbl, const std::string &entity_id) {
+  if (!icon_lbl) return;
+  static std::string active_entity;
+  std::string next_entity = entity_id;
+  if (next_entity.empty()) {
+    active_entity.clear();
+    lv_label_set_text(icon_lbl, weather_icon_for_state(""));
+    return;
+  }
+  if (active_entity == next_entity) return;
+  active_entity = next_entity;
+  lv_label_set_text(icon_lbl, weather_icon_for_state(""));
+  ESP_LOGI("weather", "Subscribing to clock bar weather state for %s", next_entity.c_str());
+  ha_subscribe_state(
+    next_entity,
+    std::function<void(esphome::StringRef)>([icon_lbl, next_entity](esphome::StringRef state) {
+      if (active_entity != next_entity) return;
+      std::string state_text = string_ref_limited(state, HA_SHORT_STATE_MAX_LEN);
+      lv_label_set_text(icon_lbl, weather_icon_for_state(state_text));
+      notify_dashboard_content_changed();
+    })
+  );
+}
+
 inline void subscribe_garage_state(lv_obj_t *btn_ptr, lv_obj_t *icon_lbl,
                                    TransientStatusLabel *status_label,
                                    const char *closed_icon, const char *open_icon,

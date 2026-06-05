@@ -106,6 +106,22 @@ var ENTITY_CATALOG = {
         "clock_bar__temperature_entities"
       ]
     },
+    "screen_clock_bar_weather_icon": {
+      "domain": "switch",
+      "name": "Screen: Clock Bar Weather Icon",
+      "objectIds": [
+        "screen__clock_bar_weather_icon",
+        "screen_clock_bar_weather_icon",
+        "clock_bar_weather_icon_enabled"
+      ]
+    },
+    "clock_bar_weather_entity": {
+      "domain": "text",
+      "name": "Clock Bar: Weather Entity",
+      "objectIds": [
+        "clock_bar__weather_entity"
+      ]
+    },
     "screen_network_status_icon": {
       "domain": "switch",
       "name": "Screen: Network Status Icon",
@@ -500,6 +516,8 @@ var ENTITY_CATALOG = {
       "screen_clock_bar_layout",
       "screen_clock_bar_time",
       "clock_bar_temperature_entities",
+      "screen_clock_bar_weather_icon",
+      "clock_bar_weather_entity",
       "screen_network_status_icon",
       "screen_temperature_degree_symbol",
       "screen_subpage_chevron",

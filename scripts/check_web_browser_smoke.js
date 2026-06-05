@@ -159,6 +159,8 @@ function seededEvents() {
     { id: "select-screen__theme", state: "Light", value: "Light", option: ["Light", "Dark"] },
     { id: "switch-screen__clock_bar", state: "ON", value: true },
     { id: "switch-screen__clock_bar_time", state: "ON", value: true },
+    { id: "switch-screen__clock_bar_weather_icon", state: "OFF", value: false },
+    { id: "text-clock_bar_weather_entity", state: "weather.home" },
     { id: "switch-screen__network_status_icon", state: "ON", value: true },
     { id: "switch-indoor_temp_enable", state: "ON", value: true },
     { id: "switch-outdoor_temp_enable", state: "ON", value: true },
@@ -419,6 +421,8 @@ function backupFixture(device, slots) {
       temperature_unit: "°C",
       clock_bar: true,
       clock_bar_time: true,
+      clock_bar_weather_icon: true,
+      clock_bar_weather_entity: "weather.home",
       network_status_icon: true,
       temperature_degree_symbol: true,
       timezone: "Europe/London (GMT+0)",
@@ -526,6 +530,8 @@ async function assertBackupImportSmoke(page, posts, slug) {
   await waitForPost(posts, { domain: "select", name: "screen__timezone", action: "set", option: "Europe/London (GMT+0)" }, "backup timezone import", before);
   await waitForPost(posts, { domain: "select", name: "screen__language", action: "set", option: "en" }, "backup language import", before);
   await waitForPost(posts, { domain: "switch", name: "screen__clock_bar_time", action: "turn_on" }, "backup clock bar time import", before);
+  await waitForPost(posts, { domain: "switch", name: "screen__clock_bar_weather_icon", action: "turn_on" }, "backup clock bar weather import", before);
+  await waitForPost(posts, { domain: "text", name: "Clock Bar: Weather Entity", action: "set", value: "weather.home" }, "backup clock bar weather entity import", before);
   await waitForPost(posts, { domain: "number", name: "Screen: Daytime Brightness", action: "set", value: "88" }, "backup brightness import", before);
   await waitForPost(posts, { domain: "select", name: "screen__rotation", action: "set", option: "90" }, "backup rotation import", before);
 
@@ -633,6 +639,20 @@ async function assertClockBarEditorSmoke(page, posts, label) {
     await openSelectedClockBarEditor(title);
   }
 
+  async function addClockBarItemFromPanel(section, item) {
+    await page.locator(`[data-clockbar-section="${section}"] [data-clockbar-add]`).click({ force: true });
+    await page.waitForSelector(".sp-settings-overlay.sp-visible");
+    assert.strictEqual(await page.locator(".sp-ctx-menu").count(), 0, `${label}: adding ${item} opens settings instead of a context menu`);
+    await page.locator("#sp-clockbar-add-type").selectOption(item);
+  }
+
+  async function waitForClockBarAddModalClosed() {
+    await page.waitForFunction(() => {
+      var overlay = document.querySelector(".sp-settings-overlay");
+      return overlay && !overlay.classList.contains("sp-visible");
+    });
+  }
+
   for (const selector of [
     '[data-clockbar-item="temperature"]',
     '[data-clockbar-item="time"]',
@@ -682,7 +702,11 @@ async function assertClockBarEditorSmoke(page, posts, label) {
   await page.locator('[data-clockbar-item="time"]').waitFor({ state: "detached" });
   before = posts.length;
   await page.locator('[data-clockbar-section="middle"] [data-clockbar-add]').click();
-  await page.getByText("Time", { exact: true }).click();
+  await page.waitForSelector(".sp-settings-overlay.sp-visible");
+  assert.strictEqual(await page.locator(".sp-ctx-menu").count(), 0, `${label}: adding time opens settings instead of a context menu`);
+  await page.locator("#sp-clockbar-add-type").selectOption("time");
+  await page.locator(".sp-settings-modal .sp-save-btn").click();
+  await waitForClockBarAddModalClosed();
   await waitForPost(posts, { domain: "switch", name: "screen__clock_bar_time", action: "turn_on" }, `${label}: add time`, before);
   await page.locator('[data-clockbar-item="time"][data-clockbar-section="middle"]').waitFor({ state: "visible" });
   const screenBox = await page.locator(".sp-screen").boundingBox();
@@ -699,6 +723,7 @@ async function assertClockBarEditorSmoke(page, posts, label) {
     middleAddBox.x >= timeBox.x + timeBox.width,
     `${label}: middle add control sits beside the centered time`
   );
+  await page.locator('[data-clockbar-item="time"][data-clockbar-section="middle"]').click();
   await expectClockBarSelection();
   assert.strictEqual(
     await page.locator(".sp-selection-bar.sp-visible").getByRole("button", { name: "Edit", exact: true }).count(),
@@ -727,8 +752,9 @@ async function assertClockBarEditorSmoke(page, posts, label) {
     `${label}: right add control does not touch the bottom of the clock bar`
   );
   before = posts.length;
-  await page.locator('[data-clockbar-section="right"] [data-clockbar-add]').click();
-  await page.getByText("Network Status", { exact: true }).click();
+  await addClockBarItemFromPanel("right", "network");
+  await page.locator(".sp-settings-modal .sp-save-btn").click();
+  await waitForClockBarAddModalClosed();
   await waitForPost(posts, { domain: "switch", name: "screen__network_status_icon", action: "turn_on" }, `${label}: add network`, before);
   await page.locator('[data-clockbar-item="network"][data-clockbar-section="right"]').waitFor({ state: "visible" });
   const rightAddAfterBox = await page.locator('[data-clockbar-section="right"] [data-clockbar-add]').boundingBox();
@@ -749,21 +775,43 @@ async function assertClockBarEditorSmoke(page, posts, label) {
   );
 
   before = posts.length;
+  await addClockBarItemFromPanel("right", "weather");
+  await page.locator("#sp-clockbar-add-weather-entity").fill("weather.home");
+  await page.locator(".sp-settings-modal .sp-save-btn").click();
+  await waitForClockBarAddModalClosed();
+  await waitForPost(posts, { domain: "switch", name: "screen__clock_bar_weather_icon", action: "turn_on" }, `${label}: add weather`, before);
+  await waitForPost(posts, { domain: "text", name: "Clock Bar: Weather Entity", action: "set", value: "weather.home" }, `${label}: set weather entity`, before);
+  await page.locator('[data-clockbar-item="weather"][data-clockbar-section="right"]').waitFor({ state: "visible" });
+  await selectAndOpenClockBarEditor('[data-clockbar-item="weather"]', "Weather");
+  await page.locator("#sp-clockbar-weather-entity").fill("weather.patio");
+  await page.locator(".sp-settings-modal .sp-save-btn").click();
+  await waitForPost(posts, { domain: "text", name: "Clock Bar: Weather Entity", action: "set", value: "weather.patio" }, `${label}: edit weather entity`, before);
+
+  before = posts.length;
   await selectAndOpenClockBarEditor('[data-clockbar-item="temperature"]', "Temperature");
   await page.getByText("Show Degree Symbol", { exact: true }).waitFor({ state: "visible" });
   assert.strictEqual(await page.locator("#sp-clockbar-temperature-unit").count(), 0, `${label}: temperature unit selector stays out of clock bar editor`);
   await page.getByRole("button", { name: "Delete" }).click();
-  await waitForPost(posts, { domain: "text", name: "Clock Bar: Temperature Entities", action: "set", value: "sensor.indoor_temperature" }, `${label}: delete first temperature`, before);
+  await waitForAnyPost(posts, [
+    { domain: "text", name: "Clock Bar: Temperature Entities", action: "set", value: "sensor.indoor_temperature" },
+    { domain: "text", name: "clock_bar__temperature_entities", action: "set", value: "sensor.indoor_temperature" },
+  ], `${label}: delete first temperature`, before);
   await waitForPost(posts, { domain: "switch", name: "indoor_temp_enable", action: "turn_off" }, `${label}: delete first temperature disables legacy second slot`, before);
   await page.locator('[data-clockbar-item="temperature"]').waitFor({ state: "visible" });
   assert.strictEqual(await page.locator('[data-clockbar-item="temperature_2"]').count(), 0, `${label}: deleting one temperature removes the second mini card`);
   before = posts.length;
   await page.locator('.sp-clockbar-section[data-clockbar-section="left"]').hover();
-  await page.locator('[data-clockbar-section="left"] [data-clockbar-add]').click();
-  await page.getByText("Temperature", { exact: true }).click();
-  await waitForPost(posts, { domain: "text", name: "Clock Bar: Temperature Entities", action: "set", value: "sensor.indoor_temperature" }, `${label}: add second temperature mini card`, before);
+  await addClockBarItemFromPanel("left", "temperature_2");
+  await page.locator("#sp-clockbar-add-temperature-entity-1").waitFor({ state: "visible" });
+  await page.locator(".sp-settings-modal .sp-save-btn").click();
+  await waitForClockBarAddModalClosed();
+  await waitForAnyPost(posts, [
+    { domain: "text", name: "Clock Bar: Temperature Entities", action: "set", value: "sensor.indoor_temperature" },
+    { domain: "text", name: "clock_bar__temperature_entities", action: "set", value: "sensor.indoor_temperature" },
+  ], `${label}: add second temperature mini card`, before);
   await page.locator('[data-clockbar-item="temperature"][data-clockbar-section="left"]').waitFor({ state: "visible" });
   await page.locator('[data-clockbar-item="temperature_2"][data-clockbar-section="left"]').waitFor({ state: "visible" });
+  await page.locator('[data-clockbar-item="temperature_2"][data-clockbar-section="left"]').click();
   await openSelectedClockBarEditor("Temperature");
   await page.getByText("Show Degree Symbol", { exact: true }).waitFor({ state: "visible" });
   await page.locator(".sp-settings-close").click();

@@ -197,6 +197,8 @@ assert.deepStrictEqual(
 const panelSettings = model.normalizeBackupPanelSettings({
   temperature_unit: "centigrade",
   clock_bar_time: false,
+  clock_bar_weather_icon: true,
+  clock_bar_weather_entity: "weather.home",
   language: "it",
   clock_format: "24h",
   ntp_server_1: "pool.ntp.org",
@@ -219,6 +221,8 @@ const panelSettings = model.normalizeBackupPanelSettings({
 });
 assert.strictEqual(panelSettings.temperatureUnit, "\u00B0C", "panel temperature unit normalizes");
 assert.strictEqual(panelSettings.clockBarTime, false, "panel clock bar time imports");
+assert.strictEqual(panelSettings.clockBarWeatherIcon, true, "panel clock bar weather icon imports");
+assert.strictEqual(panelSettings.clockBarWeatherEntity, "weather.home", "panel clock bar weather entity imports");
 assert.strictEqual(panelSettings.language, "it", "panel language imports");
 assert.strictEqual(panelSettings.clockFormat, "24h", "panel clock format validates against options");
 assert.strictEqual(panelSettings.ntpServer1, "pool.ntp.org", "panel NTP server imports");
@@ -242,5 +246,7 @@ const legacyPanelSettings = model.normalizeBackupPanelSettings({}, {
   screenRotationOptions: ["0", "90", "180", "270"],
 });
 assert.strictEqual(legacyPanelSettings.clockBarTime, true, "legacy panel settings default clock bar time on");
+assert.strictEqual(legacyPanelSettings.clockBarWeatherIcon, false, "legacy panel settings default clock bar weather icon off");
+assert.strictEqual(legacyPanelSettings.clockBarWeatherEntity, "", "legacy panel settings default clock bar weather entity empty");
 
 console.log("Model contract tests passed.");

@@ -75,6 +75,7 @@ function closeSettings() {
   _settingsDeferred = false;
   state.settingsDraft = null;
   state.clockBarSelectedItem = "";
+  state.clockBarAddDraft = null;
   ctx().setSelected([]);
   updateClockBarItemUi();
   renderPreview();
@@ -82,10 +83,11 @@ function closeSettings() {
 
 function clearCardSelection() {
   var c = ctx();
-  if (!c.selected.length && c.getLastClicked() < 0 && !state.clockBarSelectedItem) return;
+  if (!c.selected.length && c.getLastClicked() < 0 && !state.clockBarSelectedItem && !state.clockBarAddDraft) return;
   c.setSelected([]);
   c.setLastClicked(-1);
   state.clockBarSelectedItem = "";
+  state.clockBarAddDraft = null;
   hideSettingsOverlay();
   updateClockBarItemUi();
   renderPreview();
@@ -119,6 +121,140 @@ function openSelectedCardSettings() {
   var c = ctx();
   if (c.selected.length !== 1) return;
   renderButtonSettings(true);
+}
+
+function renderClockBarAddSettings(forceOpen) {
+  if (!state.clockBarAddDraft) return false;
+  if (!forceOpen && !isSettingsOpen()) return true;
+  if (els.settingsOverlay) els.settingsOverlay.classList.add("sp-visible");
+
+  var draft = state.clockBarAddDraft;
+  var container = els.buttonSettings;
+  var title = document.createElement("div");
+  title.className = "sp-section-title";
+  title.textContent = "Settings";
+  container.appendChild(title);
+
+  var panel = document.createElement("div");
+  panel.className = "sp-panel";
+
+  var chooseValue = "__choose-clockbar-item__";
+  var options = clockBarItemsAvailableToAdd(draft.section);
+  var itemField = document.createElement("div");
+  itemField.className = "sp-field";
+  itemField.appendChild(fieldLabel("Clock Bar", "sp-clockbar-add-type"));
+  var itemSelect = document.createElement("select");
+  itemSelect.className = "sp-select";
+  itemSelect.id = "sp-clockbar-add-type";
+  var chooseOpt = document.createElement("option");
+  chooseOpt.value = chooseValue;
+  chooseOpt.textContent = options.length ? "Select item type" : "No items available";
+  chooseOpt.disabled = true;
+  chooseOpt.selected = !draft.item;
+  itemSelect.appendChild(chooseOpt);
+  options.forEach(function (item) {
+    var opt = document.createElement("option");
+    opt.value = item;
+    opt.textContent = clockBarItemLabel(item);
+    if (draft.item === item) opt.selected = true;
+    itemSelect.appendChild(opt);
+  });
+  itemSelect.addEventListener("change", function () {
+    if (this.value === chooseValue) return;
+    draft.item = this.value;
+    if (isClockBarTemperatureItem(draft.item)) {
+      var index = clockBarTemperatureItemIndex(draft.item);
+      var entries = clockBarTemperatureEntries();
+      var restore = normalizeClockBarTemperatureEntities(state.clockBarTempRestoreEntities);
+      draft.temperatureEntity = entries[index] || restore[index] || (index === 0 ? "sensor.outdoor_temperature" : "");
+    } else if (draft.item === "weather") {
+      draft.weatherEntity = state.clockBarWeatherEntity || "";
+    }
+    renderButtonSettings(true);
+  });
+  itemField.appendChild(itemSelect);
+  panel.appendChild(itemField);
+
+  var tempInput = null;
+  if (isClockBarTemperatureItem(draft.item)) {
+    var tempIndex = clockBarTemperatureItemIndex(draft.item);
+    var tempField = document.createElement("div");
+    tempField.className = "sp-field";
+    var tempInputId = "sp-clockbar-add-temperature-entity-" + tempIndex;
+    tempField.appendChild(fieldLabel("Temperature Entity", tempInputId));
+    tempInput = entityInput(tempInputId, draft.temperatureEntity || "", "sensor.temperature", ["sensor"]);
+    tempField.appendChild(tempInput);
+    panel.appendChild(tempField);
+    tempInput.addEventListener("input", function () {
+      draft.temperatureEntity = this.value;
+    });
+    tempInput.addEventListener("change", function () {
+      draft.temperatureEntity = this.value;
+    });
+
+    var degreeSymbol = toggleRow("Show Degree Symbol", "sp-clockbar-add-degree-symbol", state.temperatureDegreeSymbolOn);
+    panel.appendChild(degreeSymbol.row);
+    degreeSymbol.input.addEventListener("change", function () {
+      draft.temperatureDegreeSymbolOn = this.checked;
+    });
+  }
+
+  var weatherInput = null;
+  if (draft.item === "weather") {
+    var weatherField = document.createElement("div");
+    weatherField.className = "sp-field";
+    var weatherInputId = "sp-clockbar-add-weather-entity";
+    weatherField.appendChild(fieldLabel("Weather Entity", weatherInputId));
+    weatherInput = entityInput(weatherInputId, draft.weatherEntity || "", "weather.home", ["weather"]);
+    weatherField.appendChild(weatherInput);
+    panel.appendChild(weatherField);
+    weatherInput.addEventListener("input", function () {
+      draft.weatherEntity = this.value;
+    });
+    weatherInput.addEventListener("change", function () {
+      draft.weatherEntity = this.value;
+    });
+  }
+
+  var row = document.createElement("div");
+  row.className = "sp-btn-row sp-btn-row--save";
+  var saveBtn = document.createElement("button");
+  saveBtn.type = "button";
+  saveBtn.className = "sp-action-btn sp-save-btn";
+  saveBtn.textContent = "Save";
+  saveBtn.disabled = !draft.item;
+  saveBtn.addEventListener("click", function () {
+    if (!draft.item) return;
+    if (tempInput) draft.temperatureEntity = tempInput.value;
+    if (weatherInput) draft.weatherEntity = weatherInput.value;
+    addClockBarItem(draft.item);
+    if (isClockBarTemperatureItem(draft.item)) {
+      var index = clockBarTemperatureItemIndex(draft.item);
+      var next = clockBarTemperatureEntries();
+      while (next.length <= index) next.push("");
+      next[index] = String(draft.temperatureEntity || "").trim();
+      applyClockBarTemperatureEntities(next, true);
+      if (draft.temperatureDegreeSymbolOn !== undefined &&
+          draft.temperatureDegreeSymbolOn !== state.temperatureDegreeSymbolOn) {
+        state.temperatureDegreeSymbolOn = !!draft.temperatureDegreeSymbolOn;
+        syncClockBarUi();
+        postTemperatureDegreeSymbol(state.temperatureDegreeSymbolOn);
+      }
+    } else if (draft.item === "weather") {
+      state.clockBarWeatherEntity = String(draft.weatherEntity || "").trim();
+      postText(entityName("clock_bar_weather_entity"), state.clockBarWeatherEntity);
+      syncClockBarWeatherUi();
+      updateWeatherPreview();
+    }
+    moveClockBarItem(draft.item, draft.section);
+    state.clockBarAddDraft = null;
+    closeSettings();
+  });
+  row.appendChild(saveBtn);
+  panel.appendChild(row);
+
+  container.appendChild(panel);
+  return true;
 }
 
 function fieldWithControl(labelText, inputId, control) {
@@ -157,6 +293,29 @@ function renderClockBarTemperatureEntityControl(panel, item) {
   });
 }
 
+function renderClockBarWeatherEntityControl(panel) {
+  var field = document.createElement("div");
+  field.className = "sp-field";
+  var inputId = "sp-clockbar-weather-entity";
+  field.appendChild(fieldLabel("Weather Entity", inputId));
+  var input = entityInput(inputId, state.clockBarWeatherEntity || "", "weather.home", ["weather"]);
+  field.appendChild(input);
+  panel.appendChild(field);
+  els.setClockBarWeatherEntity = input;
+
+  function saveInput() {
+    state.clockBarWeatherEntity = input.value.trim();
+    postText(entityName("clock_bar_weather_entity"), state.clockBarWeatherEntity);
+    syncClockBarWeatherUi();
+    updateWeatherPreview();
+  }
+  input.addEventListener("blur", saveInput);
+  input.addEventListener("change", saveInput);
+  input.addEventListener("keydown", function (e) {
+    if (e.key === "Enter") this.blur();
+  });
+}
+
 function renderClockBarSettings(forceOpen) {
   if (!state.clockBarSelectedItem) return false;
   var item = state.clockBarSelectedItem;
@@ -185,6 +344,8 @@ function renderClockBarSettings(forceOpen) {
       syncClockBarUi();
       postTemperatureDegreeSymbol(state.temperatureDegreeSymbolOn);
     });
+  } else if (item === "weather") {
+    renderClockBarWeatherEntityControl(panel);
   }
 
   var row = document.createElement("div");
@@ -213,6 +374,7 @@ function renderClockBarSettings(forceOpen) {
 
 function openCardSettings(slot) {
   if (isConfigLocked()) return;
+  state.clockBarAddDraft = null;
   var c = ctx();
   if ((slot > 0 || (slot === -2 && c.isSub)) && c.selected.indexOf(slot) === -1) {
     c.setSelected([slot]);
@@ -279,6 +441,8 @@ function renderButtonSettings(forceOpen) {
     hideSettingsOverlay();
     return;
   }
+
+  if (renderClockBarAddSettings(forceOpen)) return;
 
   if (renderClockBarSettings(forceOpen)) return;
 

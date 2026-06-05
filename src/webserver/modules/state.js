@@ -73,6 +73,8 @@ var state = {
   temperatureUnit: "Auto",
   clockBarOn: false,
   clockBarTimeOn: true,
+  clockBarWeatherOn: false,
+  clockBarWeatherEntity: "",
   networkStatusOn: true,
   networkTransport: "wifi",
   wifiStrengthPercent: 100,
@@ -152,6 +154,7 @@ var state = {
   configLockReason: "",
   clockBarLayout: null,
   clockBarSelectedItem: "",
+  clockBarAddDraft: null,
   clockBarDragItem: "",
   clockBarTempRestoreIndoor: false,
   clockBarTempRestoreOutdoor: true,
@@ -618,6 +621,10 @@ function syncTemperatureUi() {
   }
 }
 
+function syncClockBarWeatherUi() {
+  syncInput(els.setClockBarWeatherEntity, state.clockBarWeatherEntity);
+}
+
 function syncNtpServerUi() {
   if (els.setCustomNtpServersToggle) {
     els.setCustomNtpServersToggle.checked = !!state.customNtpServers;
@@ -682,6 +689,7 @@ function syncClockBarUi() {
   if (els.topbar) els.topbar.className = "sp-topbar" + (state.clockBarOn ? "" : " sp-hidden");
   if (els.setClockBarToggle) els.setClockBarToggle.checked = !!state.clockBarOn;
   if (els.setClockBarTimeToggle) els.setClockBarTimeToggle.checked = !!state.clockBarTimeOn;
+  if (els.setClockBarWeatherToggle) els.setClockBarWeatherToggle.checked = !!state.clockBarWeatherOn;
   if (els.setNetworkStatusToggle) {
     els.setNetworkStatusToggle.checked = !!state.networkStatusOn;
   }
@@ -695,6 +703,8 @@ function syncClockBarUi() {
     els.setSubpageChevronToggle.checked = !!state.subpageChevronsOn;
   }
   updateClockBarItemUi();
+  syncClockBarWeatherUi();
+  updateWeatherPreview();
   updateNetworkPreview();
   updateTempPreview();
 }

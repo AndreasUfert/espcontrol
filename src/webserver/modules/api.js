@@ -132,6 +132,7 @@ function rememberConfiguredEntities() {
   clockBarTemperatureEntities().forEach(function (entityId, index) {
     rememberEntityName(entityId, "Clock Bar Temperature " + (index + 1));
   });
+  rememberEntityName(state.clockBarWeatherEntity, "Clock Bar Weather");
   rememberEntityName(state.presenceEntity, "Presence Sensor");
   rememberEntityName(state.mediaPlayerSleepPreventionEntity, "Media Player");
   rememberEntityName(state.coverArtMediaPlayerEntity, "Cover Art Media Player");
@@ -639,6 +640,18 @@ function postClockBarTime(on) {
     entityObjectIds("screen_clock_bar_time"),
     on,
     CLOCK_BAR_TIME_UNAVAILABLE
+  );
+}
+
+var CLOCK_BAR_WEATHER_ICON_UNAVAILABLE =
+  "Clock bar weather icon setting is not available on this firmware. Update the device firmware, then reload this page.";
+
+function postClockBarWeatherIcon(on) {
+  postSwitchWithObjectIds(
+    entityName("screen_clock_bar_weather_icon"),
+    entityObjectIds("screen_clock_bar_weather_icon"),
+    on,
+    CLOCK_BAR_WEATHER_ICON_UNAVAILABLE
   );
 }
 

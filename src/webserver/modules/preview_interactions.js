@@ -206,6 +206,7 @@ function setupPreviewEvents() {
       e.preventDefault();
       e.stopPropagation();
       var item = target.getAttribute("data-clockbar-item");
+      state.clockBarAddDraft = null;
       setClockBarItemSelected(item, false);
       clearTextSelection();
     });
@@ -281,8 +282,9 @@ function setupPreviewEvents() {
     }
     var target = e.target.closest("[data-pos]");
     if (!target) return;
-    if (state.clockBarSelectedItem) {
+    if (state.clockBarSelectedItem || state.clockBarAddDraft) {
       state.clockBarSelectedItem = "";
+      state.clockBarAddDraft = null;
       updateClockBarItemUi();
     }
     var pos = parseInt(target.getAttribute("data-pos"), 10);
@@ -533,6 +535,7 @@ function newCardDraftKey(isSub, homeSlot, pos, slot) {
 }
 
 function beginNewCardDraft(pos, slot, isSub) {
+  state.clockBarAddDraft = null;
   state.settingsDraft = {
     key: newCardDraftKey(isSub, state.editingSubpage, pos, slot),
     slot: slot,
@@ -996,25 +999,20 @@ function showEmptySlotMenu(e, pos) {
 function showClockBarAddMenu(e, section) {
   if (isConfigLocked()) return;
   hideContextMenu();
-  ctxMenu = document.createElement("div");
-  ctxMenu.className = "sp-ctx-menu";
-  var options = clockBarItemsAvailableToAdd(section);
-  if (!options.length) {
-    var empty = document.createElement("div");
-    empty.className = "sp-ctx-item sp-ctx-disabled";
-    empty.textContent = "No items available";
-    ctxMenu.appendChild(empty);
-  } else {
-    options.forEach(function (item) {
-      addCtxItem(clockBarItemIcon(item), clockBarItemLabel(item), function () {
-        addClockBarItem(item);
-        moveClockBarItem(item, section);
-        setClockBarItemSelected(item, false);
-      });
-    });
-  }
-  document.body.appendChild(ctxMenu);
-  positionMenu(ctxMenu, e);
+  if (CLOCK_BAR_SECTIONS.indexOf(section) === -1) return;
+  state.clockBarAddDraft = {
+    section: section,
+    item: "",
+    temperatureEntity: "",
+    temperatureDegreeSymbolOn: state.temperatureDegreeSymbolOn,
+  };
+  state.clockBarSelectedItem = "";
+  state.settingsDraft = null;
+  ctx().setSelected([]);
+  ctx().setLastClicked(-1);
+  updateClockBarItemUi();
+  renderPreview();
+  renderButtonSettings(true);
 }
 
 function hideContextMenu() {

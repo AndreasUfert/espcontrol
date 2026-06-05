@@ -4,6 +4,8 @@ var SSE_ALIAS_GROUPS = {
   clockBar: ["switch-screen__clock_bar", "switch-screen_clock_bar", "switch-clock_bar_enabled"],
   clockBarLayout: ["text-screen__clock_bar_layout", "text-screen_clock_bar_layout", "text-clock_bar_layout"],
   clockBarTime: ["switch-screen__clock_bar_time", "switch-screen_clock_bar_time", "switch-clock_bar_time_enabled"],
+  clockBarWeather: ["switch-screen__clock_bar_weather_icon", "switch-screen_clock_bar_weather_icon", "switch-clock_bar_weather_icon_enabled"],
+  clockBarWeatherEntity: ["text-clock_bar_weather_entity", "text-clock_bar__weather_entity"],
   clockBarTemperatureEntities: ["text-clock_bar_temperature_entities", "text-clock_bar__temperature_entities"],
   networkStatus: ["switch-screen__network_status_icon", "switch-screen_network_status_icon", "switch-network_status_enabled"],
   temperatureDegreeSymbol: ["switch-screen__temperature_degree_symbol", "switch-screen_temperature_degree_symbol", "switch-temperature_degree_symbol_enabled"],
@@ -119,6 +121,15 @@ function connectEvents() {
     "switch-screen__clock_bar_time": function (val, d) {
       state.clockBarTimeOn = d.value === true || val === "ON";
       syncClockBarUi();
+    },
+    "switch-screen__clock_bar_weather_icon": function (val, d) {
+      state.clockBarWeatherOn = d.value === true || val === "ON";
+      syncClockBarUi();
+    },
+    "text-clock_bar_weather_entity": function (val) {
+      state.clockBarWeatherEntity = String(val || "").trim();
+      syncClockBarWeatherUi();
+      updateWeatherPreview();
     },
     "switch-screen__network_status_icon": function (val, d) {
       state.networkStatusOn = d.value === true || val === "ON";
@@ -420,6 +431,8 @@ function connectEvents() {
   addSseAliases(sseHandlers, SSE_ALIAS_GROUPS.clockBar, sseHandlers["switch-screen__clock_bar"]);
   addSseAliases(sseHandlers, SSE_ALIAS_GROUPS.clockBarLayout, sseHandlers["text-screen__clock_bar_layout"]);
   addSseAliases(sseHandlers, SSE_ALIAS_GROUPS.clockBarTime, sseHandlers["switch-screen__clock_bar_time"]);
+  addSseAliases(sseHandlers, SSE_ALIAS_GROUPS.clockBarWeather, sseHandlers["switch-screen__clock_bar_weather_icon"]);
+  addSseAliases(sseHandlers, SSE_ALIAS_GROUPS.clockBarWeatherEntity, sseHandlers["text-clock_bar_weather_entity"]);
   addSseAliases(sseHandlers, SSE_ALIAS_GROUPS.clockBarTemperatureEntities, sseHandlers["text-clock_bar_temperature_entities"]);
   addSseAliases(sseHandlers, SSE_ALIAS_GROUPS.networkStatus, sseHandlers["switch-screen__network_status_icon"]);
   addSseAliases(sseHandlers, SSE_ALIAS_GROUPS.temperatureDegreeSymbol, sseHandlers["switch-screen__temperature_degree_symbol"]);

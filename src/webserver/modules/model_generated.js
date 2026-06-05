@@ -908,6 +908,8 @@ var EspControlModel = (() => {
       clockBar: objectValue(settings, "clock_bar") != null ? !!settings.clock_bar : false,
       clockBarLayout: String(settings.clock_bar_layout || current.clockBarLayout),
       clockBarTime: objectValue(settings, "clock_bar_time") != null ? !!settings.clock_bar_time : true,
+      clockBarWeatherIcon: objectValue(settings, "clock_bar_weather_icon") != null ? !!settings.clock_bar_weather_icon : false,
+      clockBarWeatherEntity: String(settings.clock_bar_weather_entity || ""),
       networkStatusIcon: objectValue(settings, "network_status_icon") != null ? !!settings.network_status_icon : true,
       temperatureDegreeSymbol: objectValue(settings, "temperature_degree_symbol") != null ? !!settings.temperature_degree_symbol : true,
       subpageChevron: objectValue(settings, "subpage_chevron") != null ? !!settings.subpage_chevron : true,
