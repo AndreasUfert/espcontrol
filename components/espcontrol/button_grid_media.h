@@ -21,6 +21,19 @@ inline void media_set_metadata_text(lv_obj_t *label, esphome::StringRef value,
   lv_label_set_text(label, text.c_str());
 }
 
+inline void media_refresh_artist_text(lv_obj_t *artist_lbl,
+                                      const std::string &entity_id) {
+  if (!artist_lbl || entity_id.empty()) return;
+  lv_label_set_text(artist_lbl, "");
+  ha_get_attribute(
+    entity_id, std::string("media_artist"),
+    std::function<void(esphome::StringRef)>(
+      [artist_lbl](esphome::StringRef artist) {
+        media_set_metadata_text(artist_lbl, artist, "");
+      })
+  );
+}
+
 inline bool media_seek_pending_active(SliderCtx *ctx) {
   return ctx && ctx->media_seek_pending &&
          (esphome::millis() - ctx->media_seek_pending_ms) < MEDIA_SEEK_PENDING_TIMEOUT_MS;
@@ -510,8 +523,9 @@ inline void subscribe_media_now_playing_state(MediaNowPlayingCtx *ctx,
   ha_subscribe_attribute(
     entity_id, std::string("media_title"),
     std::function<void(esphome::StringRef)>(
-      [title_lbl](esphome::StringRef title) {
+      [title_lbl, artist_lbl, entity_id](esphome::StringRef title) {
         media_set_metadata_text(title_lbl, title, "--");
+        media_refresh_artist_text(artist_lbl, entity_id);
       })
   );
   ha_subscribe_attribute(
