@@ -7,7 +7,7 @@ description: Flash EspControl display firmware from this repository using ESPHom
 
 ## Overview
 
-Use the committed test ESPHome configs to flash the known EspControl displays. If the user invokes `/flash-displays` with no additional display name or target, assume they mean all displays. Flash one requested display, or flash all displays in the fixed order below. Use OTA with the default hard-coded target unless the user provides a different target; use USB only when the user explicitly asks for USB.
+Use the local development ESPHome configs to flash the known EspControl displays. If the user invokes `/flash-displays` with no additional display name or target, assume they mean all displays. Flash one requested display, or flash all displays in the fixed order below. Use OTA with the default hard-coded target unless the user provides a different target; use USB only when the user explicitly asks for USB.
 
 ## Device Map
 
@@ -33,9 +33,8 @@ For `/flash-displays` with no extra target, or for `all`, flash in this sequence
 
 ## YAML Selection
 
-Use the selected display's `test.yaml` by default. This is important because each test YAML sets the real device name and friendly name for that physical display.
+Use `dev.yaml` by default. If the user names a YAML file, use that file instead.
 
-- If the user does not name a YAML file, use the selected display's test YAML from the device map.
 - If the user says `test`, `test file`, or `test.yaml`, use the selected display's test YAML from the device map.
 - If the user explicitly says `dev`, `dev file`, or `dev.yaml`, use `dev.yaml` instead.
 - If the user gives a bare filename such as `esphome.yaml` or `test.yaml`, resolve it inside the selected display's config directory.
@@ -51,7 +50,7 @@ Use the selected display's `test.yaml` by default. This is important because eac
    - If the worktree is dirty, do not revert or commit unrelated changes. Tell the user the flash will use the current local checkout as-is.
    - If the worktree is clean, run `git pull --ff-only` before flashing.
 2. Resolve the requested display names from the device map. If the user invoked `/flash-displays` without naming a display, resolve it as `all`. If the request is ambiguous, ask one short clarification.
-3. Resolve the YAML file from the user's request. If none is provided, use the selected display's `test.yaml`.
+3. Resolve the YAML file from the user's request. If none is provided, use `dev.yaml`.
 4. Resolve OTA targets from an explicit user-supplied target first, then from the device's default hard-coded target. If a needed OTA target is missing, ask for that target or ask whether to use USB.
 5. If the user says `USB`, `over USB`, `use USB`, `local`, or similar, use USB for the selected display instead of OTA.
    - For a single display, use that display's config directory and the USB target.
@@ -79,43 +78,43 @@ Run from the appropriate config directory:
 ```bash
 # 7-inch P4 over OTA
 cd /Users/jtenniswood/Git/espcontrol/devices/guition-esp32-p4-jc1060p470
-esphome -s espcontrol_component_url file:///Users/jtenniswood/Git/espcontrol run test.yaml --device 192.168.6.102 --no-logs
+esphome -s espcontrol_component_url file:///Users/jtenniswood/Git/espcontrol run dev.yaml --device 192.168.6.102 --no-logs
 
 # 7-inch P4 over USB, only when explicitly requested
 cd /Users/jtenniswood/Git/espcontrol/devices/guition-esp32-p4-jc1060p470
-esphome -s espcontrol_component_url file:///Users/jtenniswood/Git/espcontrol run test.yaml --device /dev/cu.usbmodem201301 --no-logs
+esphome -s espcontrol_component_url file:///Users/jtenniswood/Git/espcontrol run dev.yaml --device /dev/cu.usbmodem201301 --no-logs
 
 # 10-inch P4 over OTA
 cd /Users/jtenniswood/Git/espcontrol/devices/guition-esp32-p4-jc8012p4a1
-esphome -s espcontrol_component_url file:///Users/jtenniswood/Git/espcontrol run test.yaml --device 192.168.6.103 --no-logs
+esphome -s espcontrol_component_url file:///Users/jtenniswood/Git/espcontrol run dev.yaml --device 192.168.6.103 --no-logs
 
 # 10-inch P4 over USB, only when explicitly requested
 cd /Users/jtenniswood/Git/espcontrol/devices/guition-esp32-p4-jc8012p4a1
-esphome -s espcontrol_component_url file:///Users/jtenniswood/Git/espcontrol run test.yaml --device /dev/cu.usbmodem201301 --no-logs
+esphome -s espcontrol_component_url file:///Users/jtenniswood/Git/espcontrol run dev.yaml --device /dev/cu.usbmodem201301 --no-logs
 
 # 4-inch P4 / P4-86 over OTA
 cd /Users/jtenniswood/Git/espcontrol/devices/esp32-p4-86
-esphome -s espcontrol_component_url file:///Users/jtenniswood/Git/espcontrol run test.yaml --device 192.168.10.52 --no-logs
+esphome -s espcontrol_component_url file:///Users/jtenniswood/Git/espcontrol run dev.yaml --device 192.168.10.52 --no-logs
 
 # 4-inch P4 / P4-86 over USB, only when explicitly requested
 cd /Users/jtenniswood/Git/espcontrol/devices/esp32-p4-86
-esphome -s espcontrol_component_url file:///Users/jtenniswood/Git/espcontrol run test.yaml --device /dev/cu.usbmodem201301 --no-logs
+esphome -s espcontrol_component_url file:///Users/jtenniswood/Git/espcontrol run dev.yaml --device /dev/cu.usbmodem201301 --no-logs
 
 # 4.3-inch P4 over OTA
 cd /Users/jtenniswood/Git/espcontrol/devices/guition-esp32-p4-jc4880p443
-esphome -s espcontrol_component_url file:///Users/jtenniswood/Git/espcontrol run test.yaml --device 192.168.6.101 --no-logs
+esphome -s espcontrol_component_url file:///Users/jtenniswood/Git/espcontrol run dev.yaml --device 192.168.6.101 --no-logs
 
 # 4.3-inch P4 over USB, only when explicitly requested
 cd /Users/jtenniswood/Git/espcontrol/devices/guition-esp32-p4-jc4880p443
-esphome -s espcontrol_component_url file:///Users/jtenniswood/Git/espcontrol run test.yaml --device /dev/cu.usbmodem201301 --no-logs
+esphome -s espcontrol_component_url file:///Users/jtenniswood/Git/espcontrol run dev.yaml --device /dev/cu.usbmodem201301 --no-logs
 
 # 4-inch S3 over OTA
 cd /Users/jtenniswood/Git/espcontrol/devices/guition-esp32-s3-4848s040
-esphome -s espcontrol_component_url file:///Users/jtenniswood/Git/espcontrol run test.yaml --device 192.168.10.226 --no-logs
+esphome -s espcontrol_component_url file:///Users/jtenniswood/Git/espcontrol run dev.yaml --device 192.168.10.226 --no-logs
 
 # 4-inch S3 over USB, only when explicitly requested
 cd /Users/jtenniswood/Git/espcontrol/devices/guition-esp32-s3-4848s040
-esphome -s espcontrol_component_url file:///Users/jtenniswood/Git/espcontrol run test.yaml --device /dev/cu.usbmodem201301 --no-logs
+esphome -s espcontrol_component_url file:///Users/jtenniswood/Git/espcontrol run dev.yaml --device /dev/cu.usbmodem201301 --no-logs
 ```
 
 ## Reporting
