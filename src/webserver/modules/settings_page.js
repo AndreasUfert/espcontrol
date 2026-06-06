@@ -568,7 +568,7 @@ function buildSettingsPage(parent) {
 
     var coverArtEntityField = document.createElement("div");
     coverArtEntityField.className = "sp-field";
-    coverArtEntityField.appendChild(fieldLabel("Cover Art Media Player", "sp-set-ss-cover-art-player"));
+    coverArtEntityField.appendChild(fieldLabel("Media Player", "sp-set-ss-cover-art-player"));
     var coverArtEntityInp = entityInput(
       "sp-set-ss-cover-art-player",
       state.coverArtMediaPlayerEntity,

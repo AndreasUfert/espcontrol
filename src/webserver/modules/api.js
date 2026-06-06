@@ -135,7 +135,7 @@ function rememberConfiguredEntities() {
   rememberEntityName(state.clockBarWeatherEntity, "Clock Bar Weather");
   rememberEntityName(state.presenceEntity, "Presence Sensor");
   rememberEntityName(state.mediaPlayerSleepPreventionEntity, "Media Player");
-  rememberEntityName(state.coverArtMediaPlayerEntity, "Cover Art Media Player");
+  rememberEntityName(state.coverArtMediaPlayerEntity, "Media Player");
 }
 
 function optionLabelForEntity(entityId) {
