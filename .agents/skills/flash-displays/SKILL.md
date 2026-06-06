@@ -11,13 +11,13 @@ Use the local development ESPHome configs to flash the known EspControl displays
 
 ## Device Map
 
-| Request names | ESPHome config directory | Default OTA target | Test YAML |
-|---|---|---|---|
-| `7inch`, `7-inch`, `7inch P4`, `7-inch P4`, `JC1060P470` | `devices/guition-esp32-p4-jc1060p470` | `192.168.6.102` | `test.yaml` |
-| `10inch`, `10-inch`, `10inch P4`, `10-inch P4`, `JC8012P4A1` | `devices/guition-esp32-p4-jc8012p4a1` | `192.168.6.103` | `test.yaml` |
-| `4inch P4`, `4-inch P4`, `P4-86`, `86 Panel`, `Waveshare P4-86`, `esp32-p4-86` | `devices/esp32-p4-86` | `192.168.10.52` | `test.yaml` |
-| `4.3inch P4`, `4.3-inch P4`, `P4 4.3inch`, `P4 4.3-inch`, `JC4880P443` | `devices/guition-esp32-p4-jc4880p443` | `192.168.6.101` | `test.yaml` |
-| `4inch S3`, `4-inch S3`, `4848S040` | `devices/guition-esp32-s3-4848s040` | `192.168.10.226` | `test.yaml` |
+| Request names | ESPHome config directory | Default OTA target |
+|---|---|---|
+| `7inch`, `7-inch`, `7inch P4`, `7-inch P4`, `JC1060P470` | `devices/guition-esp32-p4-jc1060p470` | `192.168.6.102` |
+| `10inch`, `10-inch`, `10inch P4`, `10-inch P4`, `JC8012P4A1` | `devices/guition-esp32-p4-jc8012p4a1` | `192.168.6.103` |
+| `4inch P4`, `4-inch P4`, `P4-86`, `86 Panel`, `Waveshare P4-86`, `esp32-p4-86` | `devices/esp32-p4-86` | `192.168.10.52` |
+| `4.3inch P4`, `4.3-inch P4`, `P4 4.3inch`, `P4 4.3-inch`, `JC4880P443` | `devices/guition-esp32-p4-jc4880p443` | `192.168.6.101` |
+| `4inch S3`, `4-inch S3`, `4848S040` | `devices/guition-esp32-s3-4848s040` | `192.168.10.226` |
 
 All screens can also be flashed over USB when explicitly requested. Use the selected screen's config directory and the local serial target, normally `/dev/cu.usbmodem201301`.
 
@@ -33,14 +33,13 @@ For `/flash-displays` with no extra target, or for `all`, flash in this sequence
 
 ## YAML Selection
 
-Use `dev.yaml` by default. If the user names a YAML file, use that file instead.
+Use `dev.yaml` by default. If the user names another YAML file, use that file instead.
 
-- If the user says `test`, `test file`, or `test.yaml`, use the selected display's test YAML from the device map.
 - If the user explicitly says `dev`, `dev file`, or `dev.yaml`, use `dev.yaml` instead.
-- If the user gives a bare filename such as `esphome.yaml` or `test.yaml`, resolve it inside the selected display's config directory.
-- If the user gives a repo-relative path such as `devices/guition-esp32-p4-jc8012p4a1/test.yaml`, resolve it from the repository root.
+- If the user gives a bare filename such as `esphome.yaml`, resolve it inside the selected display's config directory.
+- If the user gives a repo-relative path such as `devices/guition-esp32-p4-jc8012p4a1/esphome.yaml`, resolve it from the repository root.
 - Only use YAML files inside this repository. If the selected file does not exist, ask for the correct file instead of guessing.
-- Do not create, copy, commit, or print `secrets.yaml`. Test YAML files may reference `!secret wifi_ssid` and `!secret wifi_password`, but the secrets file itself must stay local and uncommitted.
+- Do not create, copy, commit, or print `secrets.yaml`. YAML files may reference `!secret wifi_ssid` and `!secret wifi_password`, but the secrets file itself must stay local and uncommitted.
 
 ## Workflow
 
