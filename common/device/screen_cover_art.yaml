@@ -53,7 +53,7 @@ globals:
     initial_value: 'false'
   - id: cover_art_home_assistant_base_url
     type: std::string
-    initial_value: '"http://192.168.1.31:8123"'
+    initial_value: '""'
   - id: cover_art_title
     type: std::string
     initial_value: '""'
@@ -1114,7 +1114,7 @@ script:
             if (path.rfind("http://", 0) == 0 || path.rfind("https://", 0) == 0) return path;
             std::string base = id(cover_art_home_assistant_url).state;
             if (base.empty()) base = id(cover_art_home_assistant_base_url);
-            if (base.empty()) base = "http://192.168.1.31:8123";
+            if (base.empty()) return "";
             while (!base.empty() && base.back() == '/') base.pop_back();
             return base + path;
           };
@@ -1359,9 +1359,10 @@ script:
                 } else {
                   std::string base = id(cover_art_home_assistant_url).state;
                   if (base.empty()) base = id(cover_art_home_assistant_base_url);
-                  if (base.empty()) base = "http://192.168.1.31:8123";
-                  while (!base.empty() && base.back() == '/') base.pop_back();
-                  url = base + path;
+                  if (!base.empty()) {
+                    while (!base.empty() && base.back() == '/') base.pop_back();
+                    url = base + path;
+                  }
                 }
               }
 

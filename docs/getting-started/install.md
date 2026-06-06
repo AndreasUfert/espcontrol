@@ -57,7 +57,7 @@ This connection is how the display gets the current time, temperature data, and 
 With the display connected to WiFi and paired with Home Assistant, you're ready to set it up.
 
 1. **Find the device's address.** It's shown on the display screen. You can also find it in your router's device list or in **Home Assistant > Settings > Devices & Services > ESPHome** (click the device, then look for the IP address).
-2. **Open that address in a browser** — for example, `http://192.168.1.42`. This opens the device's built-in web page.
+2. **Open that address in a browser** — for example, `http://espcontrol.local`. This opens the device's built-in web page.
 3. **Add your cards.** On the **Screen** tab, tap an empty slot and choose the card type you want. For example, a **Switch** card controls a Home Assistant entity, while a **Sensor** card displays a reading.
 4. **Adjust your settings.** On the **Settings** tab, set your card colours, temperatures, screensaver timeout, brightness, and more.
 5. **Tap "Apply Configuration"** when you're done. The display restarts with your new settings.

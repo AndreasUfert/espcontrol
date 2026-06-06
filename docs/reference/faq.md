@@ -11,7 +11,7 @@ description:
 There are several ways:
 
 - **On the display itself** — when no cards are configured yet, the panel shows its address on screen.
-- **In your router** — look at the connected devices list (usually at `192.168.1.1` or similar). The panel will appear with its hostname.
+- **In your router** — look at the connected devices list in your router admin page. The panel will appear with its hostname.
 - **In Home Assistant** — go to **Settings > Devices & Services > ESPHome**, click on the device, and look for the IP address.
 
 ## The Web Page Looks Broken or Unstyled
