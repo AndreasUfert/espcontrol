@@ -185,6 +185,8 @@ static const IconEntry ICON_ENTRIES[] = {
     {"Pill",                       "\U000F0402"},
     {"Pill Multiple",              "\U000F1B4C"},
     {"Plus",                       "\U000F0415"},
+    {"Pause",                      "\U000F03E4"},
+    {"Play",                       "\U000F040A"},
     {"Play Pause",                 "\U000F040E"},
     {"Pool",                       "\U000F0606"},
     {"Power",                      "\U000F0425"},
