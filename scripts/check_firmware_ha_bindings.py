@@ -281,6 +281,16 @@ def firmware_action_card_availability_errors(firmware_dir: Path, root: Path) -> 
         r"(?P<body>.*?)ParsedCfg\s+\*ctx\s*=",
         re.DOTALL,
     )
+    push_main_pattern = re.compile(
+        r"if\s*\(\s*p\.type\s*==\s*\"push\"\s*\)\s*\{"
+        r"(?P<body>.*?)continue;",
+        re.DOTALL,
+    )
+    push_subpage_pattern = re.compile(
+        r"if\s*\(\s*sb_cfg\.type\s*==\s*\"push\"\s*\)\s*\{"
+        r"(?P<body>.*?)continue;",
+        re.DOTALL,
+    )
 
     for match in stateless_main_pattern.finditer(text):
         body = match.group("body")
@@ -290,6 +300,14 @@ def firmware_action_card_availability_errors(firmware_dir: Path, root: Path) -> 
         body = match.group("body")
         if "else" in body and "register_ha_control_availability(sub_slot.btn, sub_slot.btn)" in body:
             errors.append(f"{rel}: keep stateless subpage action cards tappable while Home Assistant availability is pending")
+    for match in push_main_pattern.finditer(text):
+        body = match.group("body")
+        if "register_ha_control_availability(s.btn, s.btn)" in body:
+            errors.append(f"{rel}: keep trigger cards tappable while Home Assistant availability is pending")
+    for match in push_subpage_pattern.finditer(text):
+        body = match.group("body")
+        if "register_ha_control_availability(sb_btn, sb_btn)" in body:
+            errors.append(f"{rel}: keep subpage trigger cards tappable while Home Assistant availability is pending")
     return errors
 
 
@@ -1497,6 +1515,32 @@ def run_self_test() -> int:
         "  if (!state_entity.empty()) {\n"
         "    subscribe_action_card_display_state(ctx, state_entity);\n"
         "  }\n"
+        "  continue;\n"
+        "}\n",
+        (),
+    )
+    expect_action_card_availability_errors(
+        "main trigger registered for availability",
+        "if (p.type == \"push\") {\n"
+        "  register_ha_control_availability(s.btn, s.btn);\n"
+        "  continue;\n"
+        "}\n",
+        ("keep trigger cards tappable",),
+    )
+    expect_action_card_availability_errors(
+        "subpage trigger registered for availability",
+        "if (sb_cfg.type == \"push\") {\n"
+        "  register_ha_control_availability(sb_btn, sb_btn);\n"
+        "  std::string push_label = sb_cfg.label.empty() ? espcontrol_i18n(std::string(\"Push\")) : sb_cfg.label;\n"
+        "  continue;\n"
+        "}\n",
+        ("keep subpage trigger cards tappable",),
+    )
+    expect_action_card_availability_errors(
+        "trigger cards stay stateless",
+        "if (p.type == \"push\") continue;\n"
+        "if (sb_cfg.type == \"push\") {\n"
+        "  std::string push_label = sb_cfg.label.empty() ? espcontrol_i18n(std::string(\"Push\")) : sb_cfg.label;\n"
         "  continue;\n"
         "}\n",
         (),

@@ -827,10 +827,7 @@ inline void grid_phase2(
     int col_span = order.col_span[idx - 1] > 0 ? order.col_span[idx - 1] : 1;
     bool is_1x1_card = row_span == 1 && col_span == 1;
     if (cfg.info_only && info_only_hidden_card_type(p)) continue;
-    if (p.type == "push") {
-      register_ha_control_availability(s.btn, s.btn);
-      continue;
-    }
+    if (p.type == "push") continue;
     if (bind_basic_sensor_card(s, p, palette)) continue;
     if (bind_passive_card_sources(s, p)) continue;
     if (p.type == "garage") {
@@ -1511,7 +1508,6 @@ inline void grid_phase2(
         continue;
       }
       if (sb_cfg.type == "push") {
-        register_ha_control_availability(sb_btn, sb_btn);
         std::string push_label = sb_cfg.label.empty() ? espcontrol_i18n(std::string("Push")) : sb_cfg.label;
         std::string *label = new std::string(push_label);
         lv_obj_add_event_cb(sb_btn, [](lv_event_t *e) {
