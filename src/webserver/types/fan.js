@@ -1,6 +1,7 @@
 // Fan cards: experimental grouped controls for Home Assistant fan entities.
 
 var FAN_CONTROL_TYPE_OPTIONS = [
+  ["fan", "Control Panel"],
   ["fan_switch", "Switch"],
   ["fan_speed", "Speed"],
   ["fan_oscillate", "Oscillation"],
@@ -9,7 +10,8 @@ var FAN_CONTROL_TYPE_OPTIONS = [
 ];
 
 function normalizeFanControlType(type) {
-  if (type === "fan_switch" ||
+  if (type === "fan" ||
+      type === "fan_switch" ||
       type === "fan_oscillate" ||
       type === "fan_direction" ||
       type === "fan_preset") return type;
@@ -17,6 +19,7 @@ function normalizeFanControlType(type) {
 }
 
 function fanControlDefaultIcon(type) {
+  if (type === "fan") return "Fan";
   if (type === "fan_switch") return "Fan Off";
   if (type === "fan_oscillate") return "Fan";
   if (type === "fan_direction") return "Swap Horizontal";
@@ -25,6 +28,7 @@ function fanControlDefaultIcon(type) {
 }
 
 function fanControlBadgeIcon(type) {
+  if (type === "fan") return "fan";
   if (type === "fan_switch") return "fan";
   if (type === "fan_oscillate") return "sync";
   if (type === "fan_direction") return "swap-horizontal";
@@ -171,3 +175,75 @@ registerButtonType("fan_switch", fanTypeFactory({ type: "fan_switch", pickerKey:
 registerButtonType("fan_oscillate", fanTypeFactory({ type: "fan_oscillate", pickerKey: "fan_speed", hidden: true }));
 registerButtonType("fan_direction", fanTypeFactory({ type: "fan_direction", pickerKey: "fan_speed", hidden: true }));
 registerButtonType("fan_preset", fanTypeFactory({ type: "fan_preset", pickerKey: "fan_speed", hidden: true }));
+
+registerButtonType("fan", {
+  label: function () { return cardContractCardLabel("fan"); },
+  allowInSubpage: function () { return cardContractAllowInSubpage("fan"); },
+  pickerKey: function () { return cardContractPickerKey("fan"); },
+  hideLabel: true,
+  labelPlaceholder: "e.g. Bedroom Fan",
+  cardMetadata: FAN_CARD_METADATA,
+  defaultConfig: function () { return cardContractDefaultConfig("fan"); },
+
+  onSelect: function (b) {
+    b.sensor = ""; b.unit = ""; b.precision = ""; b.options = "";
+    b.icon = "Fan"; b.icon_on = "Fan";
+  },
+
+  renderSettings: function (panel, b, slot, helpers) {
+    b.sensor = ""; b.unit = ""; b.precision = "";
+    if (!b.icon || b.icon === "Auto") b.icon = "Fan";
+    if (!b.icon_on || b.icon_on === "Auto") b.icon_on = "Fan";
+
+    renderFanControlTypeField(panel, b, helpers);
+    helpers.renderCardEntityField(panel, b, helpers, FAN_CARD_METADATA);
+    helpers.renderCardTextField(panel, b, helpers, FAN_CARD_METADATA.labelField);
+
+    helpers.renderCardSegmentControl(panel, b, helpers, {
+      segment: {
+        label: "Label Display",
+        idSuffix: "fan-label-display",
+        options: [["label", "Label"], ["status", "Status"]],
+        value: function () {
+          return configOptionValue(b.options, "label_display") === "status" ? "status" : "label";
+        },
+        onSelect: function (button, cardHelpers, value) {
+          button.options = setConfigOptionValue(button.options || "", "label_display", value === "status" ? "status" : "");
+          // remove the key when it's the default ("label") to keep the options string clean
+          if (value !== "status") {
+            button.options = (button.options || "").split(",").filter(function (t) {
+              return t && t !== "label_display=" && t.indexOf("label_display=") !== 0;
+            }).join(",");
+          }
+          cardHelpers.saveField("options", button.options);
+          scheduleRender();
+        },
+      },
+    });
+
+    helpers.renderCardIconPicker(panel, b, helpers, {
+      pickerIdSuffix: "fan-icon-picker",
+      idSuffix: "fan-icon",
+      field: "icon",
+      fallback: "Fan",
+      label: "Off Icon",
+    });
+    helpers.renderCardIconPicker(panel, b, helpers, {
+      pickerIdSuffix: "fan-icon-on-picker",
+      idSuffix: "fan-icon-on",
+      field: "icon_on",
+      fallback: "Fan",
+      label: "On Icon",
+    });
+  },
+
+  renderPreview: function (b, helpers) {
+    var label = b.label || b.entity || "Fan";
+    var iconName = b.icon && b.icon !== "Auto" ? iconSlug(b.icon) : "fan";
+    var iconHtml = '<span class="sp-btn-icon mdi mdi-' + iconName + '"></span>';
+    return {
+      iconHtml: iconHtml,
+      labelHtml: cardBadgeLabelHtml(helpers, label, "fan"),
+    };
+  },
+});

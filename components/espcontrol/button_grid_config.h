@@ -631,6 +631,15 @@ inline ParsedCfg normalize_parsed_cfg(ParsedCfg p) {
     }
     p.options = media_card_options_normalized(p.options, p.sensor);
   }
+  if (p.type == "fan") {
+    p.sensor.clear();
+    p.unit.clear();
+    p.precision.clear();
+    if (p.icon.empty() || p.icon == "Auto") p.icon = "Fan";
+    if (p.icon_on.empty() || p.icon_on == "Auto") p.icon_on = "Fan";
+    std::string ld = cfg_option_value(p.options, "label_display");
+    p.options = (ld == "status") ? "label_display=status" : "";
+  }
   if (p.type == "climate") {
     p.sensor.clear();
     p.unit.clear();
@@ -723,7 +732,7 @@ inline ParsedCfg normalize_parsed_cfg(ParsedCfg p) {
     if (p.icon_on.empty() || p.icon_on == "Auto") p.icon_on = "Motion Sensor";
     p.options = presence_card_options_normalized(p.options);
   }
-  if (!p.type.empty() && p.type != "action" && p.type != "alarm" && p.type != "alarm_action" && p.type != "climate" && p.type != "garage" && p.type != "webhook" && p.type != "todo" && p.type != "sensor" && p.type != "door_window" && p.type != "presence" && p.type != "media" && p.type != "subpage" && !fan_card_type(p.type) && !card_large_numbers_supported(p)) {
+  if (!p.type.empty() && p.type != "action" && p.type != "alarm" && p.type != "alarm_action" && p.type != "climate" && p.type != "fan" && p.type != "garage" && p.type != "webhook" && p.type != "todo" && p.type != "sensor" && p.type != "door_window" && p.type != "presence" && p.type != "media" && p.type != "subpage" && !fan_card_type(p.type) && !card_large_numbers_supported(p)) {
     p.options.clear();
   }
   if (p.type == "sensor") {

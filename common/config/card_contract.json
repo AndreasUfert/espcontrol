@@ -380,6 +380,32 @@
         "options": "active_color"
       }
     },
+    "fan": {
+      "label": "Fans",
+      "allowInSubpage": true,
+      "pickerKey": "fan",
+      "domains": ["fan"],
+      "options": [
+        {
+          "name": "label_display",
+          "label": "Label Display",
+          "kind": "choice",
+          "values": ["label", "status"],
+          "defaultValue": "label"
+        }
+      ],
+      "default": {
+        "entity": "",
+        "label": "",
+        "icon": "Fan",
+        "icon_on": "Fan",
+        "sensor": "",
+        "unit": "",
+        "type": "fan",
+        "precision": "",
+        "options": ""
+      }
+    },
     "fan_direction": {
       "label": "Fans",
       "allowInSubpage": true,
@@ -1045,6 +1071,7 @@
     "weather": "W",
     "weather_forecast": "F",
     "option_select": "U",
+    "fan": "FC",
     "fan_switch": "B",
     "fan_speed": "J",
     "fan_oscillate": "O",
