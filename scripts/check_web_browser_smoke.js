@@ -39,17 +39,23 @@ function viewportFor(ratio) {
 
 function casesFromManifest() {
   const manifest = readManifest();
+  const sharedFourInchSquareSlugs = new Set([
+    "esp32-p4-86",
+    "guition-esp32-s3-4848s040",
+  ]);
   return Object.entries(manifest.devices || {}).map(([slug, device]) => {
     const aspect = parseAspect(device.web && device.web.screen && device.web.screen.aspect);
     const orientation = orientationFor(aspect.ratio);
     return {
       name: `${orientation}-${slug}`,
       slug,
+      slots: device.slots,
       viewport: viewportFor(aspect.ratio),
       isEpaper: device.web && device.web.previewTheme === "epaper",
       coverArtSquareOverlay: !!(device.web && device.web.coverArtSquareOverlay),
       minVisibleCards: device.web && device.web.infoOnly ? 1 : 4,
       exerciseInteractions: slug === "guition-esp32-p4-jc8012p4a1",
+      exerciseDeviceMocks: sharedFourInchSquareSlugs.has(slug),
     };
   });
 }
@@ -669,9 +675,9 @@ async function startBannerCapture(page) {
   });
 }
 
-async function assertBackupImportSmoke(page, posts, slug) {
+async function assertBackupImportSmoke(page, posts, testCase) {
   const before = posts.length;
-  await importBackup(page, backupFixture(slug, 20), "same-device-backup");
+  await importBackup(page, backupFixture(testCase.slug, testCase.slots), "same-device-backup");
   await page.waitForSelector(".sp-banner.sp-success");
   assert((await page.locator(".sp-banner").textContent()).includes("Configuration imported successfully"), "same-device import succeeds");
   await waitForPost(posts, { domain: "text", name: "button_on_color", action: "set", value: "AA5500" }, "backup color import", before);
@@ -1025,8 +1031,10 @@ async function runCase(browser, testCase) {
     await assertEmptyCellSettings(page, posts, testCase.name);
     if (testCase.exerciseInteractions) {
       await assertClockBarEditorSmoke(page, posts, testCase.name);
-      await assertBackupImportSmoke(page, posts, testCase.slug);
+      await assertBackupImportSmoke(page, posts, testCase);
       await assertEditAndApplySmoke(page, posts, errors);
+    } else if (testCase.exerciseDeviceMocks) {
+      await assertBackupImportSmoke(page, posts, testCase);
     }
   } catch (error) {
     fs.mkdirSync(FAILURE_DIR, { recursive: true });
