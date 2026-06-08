@@ -61,6 +61,8 @@ inline bool image_card_modal_active_for(ImageCardCtx *ctx) {
   return ctx && ui.active == ctx && ui.overlay && ui.image_widget;
 }
 
+inline lv_obj_t *image_card_loading_widget(lv_obj_t *widget);
+
 inline uint32_t image_card_scale_for_size(lv_coord_t target_width, lv_coord_t target_height,
                                           int source_width, int source_height, bool fit) {
   if (target_width <= 0 || target_height <= 0 || source_width <= 0 || source_height <= 0) {
@@ -84,6 +86,27 @@ inline void image_card_set_widget_source(lv_obj_t *widget,
 #endif
   lv_obj_clear_flag(widget, LV_OBJ_FLAG_HIDDEN);
   lv_obj_invalidate(widget);
+}
+
+inline lv_style_selector_t image_card_pressed_selector() {
+  return static_cast<lv_style_selector_t>(LV_PART_MAIN) |
+         static_cast<lv_style_selector_t>(LV_STATE_PRESSED);
+}
+
+inline void image_card_apply_corner_clip(lv_obj_t *obj, lv_coord_t radius) {
+  if (!obj) return;
+  lv_obj_set_style_radius(obj, radius, LV_PART_MAIN);
+  lv_obj_set_style_radius(obj, radius, image_card_pressed_selector());
+  lv_obj_set_style_clip_corner(obj, true, LV_PART_MAIN);
+  lv_obj_set_style_clip_corner(obj, true, image_card_pressed_selector());
+}
+
+inline void image_card_sync_tile_corners(lv_obj_t *btn, lv_obj_t *widget) {
+  if (!btn) return;
+  lv_coord_t radius = lv_obj_get_style_radius(btn, LV_PART_MAIN);
+  image_card_apply_corner_clip(btn, radius);
+  image_card_apply_corner_clip(widget, radius);
+  image_card_apply_corner_clip(image_card_loading_widget(widget), radius);
 }
 
 inline lv_obj_t *image_card_loading_widget(lv_obj_t *widget) {
@@ -262,6 +285,7 @@ inline bool image_card_position_widget(lv_obj_t *btn, lv_obj_t *widget,
   lv_coord_t pad_top = lv_obj_get_style_pad_top(btn, LV_PART_MAIN);
   lv_obj_set_pos(widget, -pad_left, -pad_top);
   lv_obj_set_size(widget, width, height);
+  image_card_sync_tile_corners(btn, widget);
   if (target_width) *target_width = width;
   if (target_height) *target_height = height;
   return true;
@@ -352,8 +376,6 @@ inline void setup_image_card(BtnSlot &s) {
   lv_obj_set_style_pad_all(img, 0, LV_PART_MAIN);
   lv_obj_set_style_border_width(img, 0, LV_PART_MAIN);
   lv_obj_set_style_bg_opa(img, LV_OPA_TRANSP, LV_PART_MAIN);
-  lv_obj_set_style_radius(img, lv_obj_get_style_radius(s.btn, LV_PART_MAIN), LV_PART_MAIN);
-  lv_obj_set_style_clip_corner(img, true, LV_PART_MAIN);
 
   lv_obj_t *loading = lv_obj_create(s.btn);
   lv_obj_set_size(loading, lv_pct(100), lv_pct(100));
@@ -367,8 +389,6 @@ inline void setup_image_card(BtnSlot &s) {
   lv_obj_set_style_flex_flow(loading, LV_FLEX_FLOW_COLUMN, LV_PART_MAIN);
   lv_obj_set_style_flex_main_place(loading, LV_FLEX_ALIGN_CENTER, LV_PART_MAIN);
   lv_obj_set_style_flex_cross_place(loading, LV_FLEX_ALIGN_CENTER, LV_PART_MAIN);
-  lv_obj_set_style_radius(loading, lv_obj_get_style_radius(s.btn, LV_PART_MAIN), LV_PART_MAIN);
-  lv_obj_set_style_clip_corner(loading, true, LV_PART_MAIN);
   lv_obj_clear_flag(loading, LV_OBJ_FLAG_CLICKABLE);
   lv_obj_clear_flag(loading, LV_OBJ_FLAG_SCROLLABLE);
 
@@ -393,6 +413,7 @@ inline void setup_image_card(BtnSlot &s) {
 
   lv_obj_set_user_data(img, loading);
   lv_obj_set_user_data(s.sensor_container, img);
+  image_card_sync_tile_corners(s.btn, img);
 }
 
 inline void image_card_align_label(lv_obj_t *label, lv_obj_t *btn) {

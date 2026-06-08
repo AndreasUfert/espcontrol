@@ -666,6 +666,10 @@ def firmware_image_card_quality_errors(firmware_dir: Path, root: Path) -> list[s
         errors.append(f"{rel}: set image card download target size before requesting images")
     if "lv_obj_set_style_clip_corner(ui.panel, true, LV_PART_MAIN)" not in text:
         errors.append(f"{rel}: clip image card modal content to rounded panel corners")
+    if "image_card_apply_corner_clip" not in text:
+        errors.append(f"{rel}: preserve image card rounded corners while pressed")
+    if "image_card_pressed_selector" not in text:
+        errors.append(f"{rel}: apply image card corner clipping to the pressed state")
     return errors
 
 
@@ -2114,11 +2118,15 @@ def run_self_test() -> int:
             "request a modal-sized image when opening image cards",
             "set image card download target size before requesting images",
             "clip image card modal content to rounded panel corners",
+            "preserve image card rounded corners while pressed",
+            "apply image card corner clipping to the pressed state",
         ),
     )
     expect_image_card_quality_errors(
         "image card modal requests capped image",
         "constexpr int IMAGE_CARD_MODAL_MAX_TARGET_SIDE_PX = 800;\n"
+        "inline lv_style_selector_t image_card_pressed_selector() { return LV_STATE_PRESSED; }\n"
+        "inline void image_card_apply_corner_clip(lv_obj_t *obj, lv_coord_t radius) {}\n"
         "inline void image_card_limit_target_size(lv_coord_t source_width, lv_coord_t source_height,\n"
         "                                         int *target_width, int *target_height) {}\n"
         "inline void image_card_request_source_url(ImageCardCtx *ctx) {\n"
