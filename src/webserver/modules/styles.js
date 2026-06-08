@@ -108,8 +108,8 @@ var CSS =
   ".sp-image-card{padding:0}" +
   ".sp-image-preview{position:absolute;inset:0;display:block;overflow:hidden;border-radius:var(--btn-r);" +
   "background:#212121}" +
-  ".sp-image-preview-icon{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);" +
-  "font-size:calc(var(--btn-icon)*1.15);line-height:1;color:#fff}" +
+  ".sp-image-preview-text{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);" +
+  "font-size:var(--btn-label);line-height:1;color:#fff;font-weight:400}" +
   ".sp-image-preview-label{position:absolute;left:8%;top:8%;max-width:84%;box-sizing:border-box;" +
   "padding:.35em .55em;border-radius:4px;background:rgba(0,0,0,.58);color:#fff;" +
   "font-size:var(--btn-label);line-height:1.1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;z-index:1}" +
