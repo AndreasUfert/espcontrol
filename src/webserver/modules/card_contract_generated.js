@@ -1150,7 +1150,7 @@ var CARD_CONTRACT_CARDS = {
       },
       {
         "name": "image_modal_mode",
-        "label": "Modal Image Size",
+        "label": "Expanded Image",
         "kind": "choice",
         "values": [
           "fill",

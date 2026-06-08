@@ -30,8 +30,8 @@ function imageRefreshModeOptions() {
 
 function imageModalModeOptions() {
   return [
-    ["fill", "Fill (cropped)"],
-    ["fit", "Fit (borders)"],
+    ["fill", "Crop to fit"],
+    ["fit", "Show full image"],
   ];
 }
 
@@ -69,7 +69,7 @@ function renderImageLabelSettings(panel, b, helpers) {
 
 function renderImageModalSettings(panel, b, helpers) {
   var modeField = helpers.selectField(
-    "Modal Image Size",
+    "Expanded Image",
     helpers.idPrefix + "image-modal-mode",
     imageModalModeOptions(),
     imageModalMode(b)
