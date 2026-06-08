@@ -450,9 +450,10 @@ script:
                 then:
                   - script.execute: cover_art_show_track_overlay
           else:
-            - globals.set:
-                id: cover_art_image_available
-                value: 'false'
+            - lambda: |-
+                if (id(cover_art_loaded_url).empty()) {
+                  id(cover_art_image_available) = false;
+                }
 
   - id: cover_art_extract_accent_color
     mode: queued
@@ -587,7 +588,13 @@ script:
                       id(cover_art_fallback_url).clear();
                       id(cover_art_retry_url) = id(cover_art_url);
                       id(cover_art_retry_count) = 0;
-                  - script.execute: cover_art_show_black_screen
+                  - if:
+                      condition:
+                        lambda: |-
+                          return !id(cover_art_image_available) &&
+                                 id(cover_art_loaded_url).empty();
+                      then:
+                        - script.execute: cover_art_show_black_screen
                   - script.execute: cover_art_deferred_download
                 else:
                   - lambda: |-
@@ -598,7 +605,13 @@ script:
                         ESP_LOGW("cover_art", "Artwork download failed, retries exhausted (url %u chars)",
                                  (unsigned) id(cover_art_url).size());
                       }
-                  - script.execute: cover_art_show_black_screen
+                  - if:
+                      condition:
+                        lambda: |-
+                          return !id(cover_art_image_available) &&
+                                 id(cover_art_loaded_url).empty();
+                      then:
+                        - script.execute: cover_art_show_black_screen
                   - script.execute: cover_art_retry_download
 
   - id: cover_art_disable
@@ -663,7 +676,10 @@ script:
           then:
             - if:
                 condition:
-                  lambda: 'return id(cover_art_screensaver_active) && !id(cover_art_image_available);'
+                  lambda: |-
+                    return id(cover_art_screensaver_active) &&
+                           !id(cover_art_image_available) &&
+                           id(cover_art_loaded_url).empty();
                 then:
                   - script.execute: cover_art_show_black_screen
             - lambda: |-
@@ -769,7 +785,9 @@ script:
           id(cover_art_url) = chosen;
           id(cover_art_retry_url).clear();
           id(cover_art_retry_count) = 0;
-          id(cover_art_image_available) = false;
+          if (id(cover_art_loaded_url).empty()) {
+            id(cover_art_image_available) = false;
+          }
           if (id(cover_art_screensaver_active)) {
             id(cover_art_deferred_download).execute();
             id(cover_art_show_track_overlay).execute();
@@ -934,7 +952,7 @@ script:
       - script.stop: cover_art_delay_timer
       - script.execute: cover_art_sync_track_text
       - lambda: |-
-          if (id(cover_art_url).empty() || id(cover_art_url) != id(cover_art_loaded_url)) {
+          if (id(cover_art_loaded_url).empty()) {
             id(cover_art_image_available) = false;
           }
       - globals.set:
@@ -1313,7 +1331,9 @@ script:
                          (unsigned) next.size());
                 id(cover_art_retry_url).clear();
                 id(cover_art_retry_count) = 0;
-                id(cover_art_image_available) = false;
+                if (id(cover_art_loaded_url).empty()) {
+                  id(cover_art_image_available) = false;
+                }
               }
             };
           if (!already_subscribed) {
