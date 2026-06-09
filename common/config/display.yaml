@@ -61,6 +61,9 @@ script:
           bool show_network = visible && id(network_status_enabled).state;
           bool show_weather = visible && id(clock_bar_weather_icon_enabled).state;
           int clock_bar_label_y = ${main_page_pad_top} / 5;
+          int clock_bar_icon_y =
+              (${screen_width} == 1024 ||
+               (${screen_width} == 480 && ${screen_height} == 480)) ? 1 : clock_bar_label_y;
           int clock_bar_gap = ${clock_bar_item_gap};
           lv_obj_t *temperature_labels[] = {
             id(temperatures),
@@ -85,7 +88,7 @@ script:
                                  ${screen_width} >= 700 ? 12 : 8,
                                  clock_bar_label_y,
                                  ${screen_width} >= 700 ? 20 : 16,
-                                 clock_bar_label_y,
+                                 clock_bar_icon_y,
                                  clock_bar_gap);
           clock_bar_set_button_grid_pages_pad_top(
             id(main_page)->obj,
