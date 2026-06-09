@@ -937,6 +937,16 @@ inline void image_card_request_picture(ImageCardCtx *ctx) {
     return;
   }
   const std::string entity_id = ctx->entity_id;
+  std::string proxy_path = image_card_entity_proxy_path(entity_id);
+  if (!proxy_path.empty()) {
+    if (image_card_base_url(ctx).empty()) {
+      image_card_schedule_picture_retry(ctx, IMAGE_CARD_RETRY_INTERVAL_MS);
+      image_card_set_loading_state(ctx, "Loading", true);
+      return;
+    }
+    image_card_handle_picture(ctx, esphome::StringRef(proxy_path));
+    return;
+  }
   const uint32_t generation = ha_subscription_generation();
   bool requested = ha_get_attribute(
     entity_id,
