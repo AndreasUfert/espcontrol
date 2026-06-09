@@ -27,6 +27,7 @@ struct ImageCardCtx {
   lv_obj_t *loading_widget = nullptr;
   lv_obj_t *loading_label = nullptr;
   const lv_font_t *icon_font = nullptr;
+  const lv_font_t *label_font = nullptr;
   esphome::artwork_image::ArtworkImage *image = nullptr;
   esphome::artwork_image::ArtworkImage *modal_image = nullptr;
   std::string entity_id;
@@ -78,6 +79,9 @@ inline bool image_card_modal_active_for(ImageCardCtx *ctx) {
 }
 
 inline lv_obj_t *image_card_loading_widget(lv_obj_t *widget);
+inline bool image_card_position_widget(lv_obj_t *btn, lv_obj_t *widget,
+                                       lv_coord_t *target_width,
+                                       lv_coord_t *target_height);
 inline void image_card_align_label(lv_obj_t *label, lv_obj_t *btn,
                                    lv_coord_t x_offset = 0,
                                    lv_coord_t y_offset = 0);
@@ -167,6 +171,33 @@ inline lv_obj_t *image_card_loading_label(lv_obj_t *loading_widget) {
   return lv_obj_get_child(loading_widget, 1);
 }
 
+inline const lv_font_t *image_card_label_font_for_slot(const BtnSlot &s) {
+  const lv_font_t *font = s.text_lbl
+    ? lv_obj_get_style_text_font(s.text_lbl, LV_PART_MAIN)
+    : nullptr;
+  if (!font && s.btn) font = lv_obj_get_style_text_font(s.btn, LV_PART_MAIN);
+  return font;
+}
+
+inline const lv_font_t *image_card_icon_font_for_slot(const BtnSlot &s) {
+  const lv_font_t *font = s.icon_lbl
+    ? lv_obj_get_style_text_font(s.icon_lbl, LV_PART_MAIN)
+    : nullptr;
+  if (!font && s.btn) font = lv_obj_get_style_text_font(s.btn, LV_PART_MAIN);
+  return font;
+}
+
+inline void image_card_apply_loading_fonts(lv_obj_t *loading_widget,
+                                           const lv_font_t *icon_font,
+                                           const lv_font_t *label_font) {
+  if (!loading_widget) return;
+  if (label_font) lv_obj_set_style_text_font(loading_widget, label_font, LV_PART_MAIN);
+  lv_obj_t *icon = image_card_loading_icon(loading_widget);
+  if (icon && icon_font) lv_obj_set_style_text_font(icon, icon_font, LV_PART_MAIN);
+  lv_obj_t *label = image_card_loading_label(loading_widget);
+  if (label && label_font) lv_obj_set_style_text_font(label, label_font, LV_PART_MAIN);
+}
+
 inline void image_card_refresh_loading_layout(lv_obj_t *loading_widget) {
   if (!loading_widget) return;
   lv_obj_set_layout(loading_widget, 0);
@@ -188,11 +219,13 @@ inline void image_card_refresh_loading_layout(lv_obj_t *loading_widget) {
 
 inline void image_card_set_loading_state(lv_obj_t *loading_widget, const char *text) {
   if (!loading_widget) return;
-  image_card_refresh_loading_layout(loading_widget);
+  lv_obj_t *btn = lv_obj_get_parent(loading_widget);
+  image_card_position_widget(btn, loading_widget, nullptr, nullptr);
   lv_obj_t *icon = image_card_loading_icon(loading_widget);
   if (icon) lv_label_set_text(icon, IMAGE_CARD_LOADING_ICON);
   lv_obj_t *label = image_card_loading_label(loading_widget);
   if (label) lv_label_set_text(label, espcontrol_i18n(text));
+  image_card_refresh_loading_layout(loading_widget);
   lv_obj_clear_flag(loading_widget, LV_OBJ_FLAG_HIDDEN);
   lv_obj_move_foreground(loading_widget);
   lv_obj_invalidate(loading_widget);
@@ -399,6 +432,7 @@ inline void reset_image_card_pool(const GridConfig &cfg) {
     contexts[i].loading_widget = nullptr;
     contexts[i].loading_label = nullptr;
     contexts[i].icon_font = nullptr;
+    contexts[i].label_font = nullptr;
     contexts[i].entity_id.clear();
     contexts[i].base_url.clear();
     contexts[i].base_url_provider = nullptr;
@@ -607,19 +641,15 @@ inline void setup_image_card(BtnSlot &s) {
   lv_obj_clear_flag(loading, LV_OBJ_FLAG_SCROLLABLE);
 
   lv_obj_t *loading_icon = lv_label_create(loading);
-  if (s.icon_lbl) {
-    const lv_font_t *font = lv_obj_get_style_text_font(s.icon_lbl, LV_PART_MAIN);
-    if (font) lv_obj_set_style_text_font(loading_icon, font, LV_PART_MAIN);
-  }
+  const lv_font_t *loading_icon_font = image_card_icon_font_for_slot(s);
+  const lv_font_t *loading_label_font = image_card_label_font_for_slot(s);
+  image_card_apply_loading_fonts(loading, loading_icon_font, loading_label_font);
   lv_obj_set_style_text_color(loading_icon, lv_color_hex(DARK_TEXT_PRIMARY), LV_PART_MAIN);
   lv_obj_set_style_text_opa(loading_icon, LV_OPA_70, LV_PART_MAIN);
   lv_label_set_text(loading_icon, IMAGE_CARD_LOADING_ICON);
 
   lv_obj_t *loading_label = lv_label_create(loading);
-  if (s.text_lbl) {
-    const lv_font_t *font = lv_obj_get_style_text_font(s.text_lbl, LV_PART_MAIN);
-    if (font) lv_obj_set_style_text_font(loading_label, font, LV_PART_MAIN);
-  }
+  image_card_apply_loading_fonts(loading, loading_icon_font, loading_label_font);
   lv_obj_set_style_text_color(loading_label, lv_color_hex(DARK_TEXT_SOFT), LV_PART_MAIN);
   lv_obj_set_style_text_opa(loading_label, LV_OPA_80, LV_PART_MAIN);
   lv_obj_set_style_text_align(loading_label, LV_TEXT_ALIGN_LEFT, LV_PART_MAIN);
@@ -1109,6 +1139,7 @@ inline void image_card_open_modal(ImageCardCtx *ctx) {
   lv_label_set_text(loading_icon, IMAGE_CARD_LOADING_ICON);
 
   lv_obj_t *loading_label = lv_label_create(ui.loading_widget);
+  if (ctx->label_font) lv_obj_set_style_text_font(loading_label, ctx->label_font, LV_PART_MAIN);
   lv_obj_set_style_text_color(loading_label, lv_color_hex(DARK_TEXT_PRIMARY), LV_PART_MAIN);
   lv_obj_set_style_text_opa(loading_label, LV_OPA_80, LV_PART_MAIN);
   lv_obj_set_style_text_align(loading_label, LV_TEXT_ALIGN_CENTER, LV_PART_MAIN);
@@ -1239,7 +1270,9 @@ inline bool bind_image_card(BtnSlot &s, const ParsedCfg &p, const GridConfig &cf
   ctx->btn = s.btn;
   ctx->loading_widget = loading;
   ctx->loading_label = image_card_loading_label(loading);
-  ctx->icon_font = s.icon_lbl ? lv_obj_get_style_text_font(s.icon_lbl, LV_PART_MAIN) : nullptr;
+  ctx->icon_font = image_card_icon_font_for_slot(s);
+  ctx->label_font = image_card_label_font_for_slot(s);
+  image_card_apply_loading_fonts(loading, ctx->icon_font, ctx->label_font);
   ctx->entity_id = p.entity;
   ctx->base_url = cfg.home_assistant_base_url ? cfg.home_assistant_base_url() : "";
   ctx->base_url_provider = cfg.home_assistant_base_url;
