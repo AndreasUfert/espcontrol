@@ -796,11 +796,21 @@ script:
           then:
             - if:
                 condition:
-                  lambda: 'return id(cover_art_screensaver_active) && id(cover_art_image_available);'
+                  lambda: |-
+                    return id(cover_art_screensaver_active) &&
+                           id(cover_art_image_available) &&
+                           !${cover_art_live_image_updates};
                 then:
-                  - script.execute: cover_art_deferred_download
+                  - lambda: |-
+                      ESP_LOGI("cover_art", "Keeping current artwork visible; live image updates disabled for this display");
                 else:
-                  - script.execute: cover_art_download
+                  - if:
+                      condition:
+                        lambda: 'return id(cover_art_screensaver_active) && id(cover_art_image_available);'
+                      then:
+                        - script.execute: cover_art_deferred_download
+                      else:
+                        - script.execute: cover_art_download
           else:
             - if:
                 condition:
