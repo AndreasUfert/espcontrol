@@ -680,7 +680,11 @@ def firmware_image_card_quality_errors(firmware_dir: Path, root: Path) -> list[s
         errors.append(f"{rel}: defer image downloads while image card modals are open")
     if "image_card_clear_widget_source(ui.image_widget)" not in text:
         errors.append(f"{rel}: detach image sources before deleting image card modals")
-    if "ctx->image->set_target_size(width, height)" not in text:
+    if (
+        "ctx->image->set_target_size(width, height)" not in text
+        and "image_card_tile_decode_size(width, height, &target_width, &target_height)" not in text
+        and "ctx->image->set_target_size(decode_width, decode_height)" not in text
+    ):
         errors.append(f"{rel}: set image card download target size before requesting images")
     if "modal_image" not in text or "image_card_request_modal_source_url" not in text:
         errors.append(f"{rel}: use a separate modal image downloader for expanded image-card quality")
@@ -747,7 +751,11 @@ def firmware_image_card_startup_errors(
         errors.append(f"{rel}: refresh image cards when the camera/image entity state changes")
     if "image_card_context_current" not in text or "generation == ha_subscription_generation()" not in text:
         errors.append(f"{rel}: ignore stale image-card callbacks after grid rebuild")
-    if "image_card_tile_request_size(width, height" not in text or "image_card_high_quality_request_size" not in text:
+    if (
+        ("image_card_tile_request_size(width, height" not in text and
+         "image_card_tile_request_size(decode_width, decode_height" not in text)
+        or "image_card_high_quality_request_size" not in text
+    ):
         errors.append(f"{rel}: request high-quality Home Assistant image card source downloads")
     if "image_card_sized_url(ctx->source_url, request_width, request_height)" not in text:
         errors.append(f"{rel}: request bounded Home Assistant image card proxy downloads")

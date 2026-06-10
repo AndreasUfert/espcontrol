@@ -18,6 +18,7 @@ constexpr uint32_t IMAGE_CARD_MODAL_CLEANUP_DELAY_MS = 100;
 constexpr uint8_t IMAGE_CARD_STARTUP_DOWNLOAD_RETRIES = 10;
 constexpr int IMAGE_CARD_MAX_CONTEXTS = 6;
 constexpr int IMAGE_CARD_MODAL_MAX_TARGET_SIDE_PX = 800;
+constexpr int IMAGE_CARD_4848_TILE_MAX_TARGET_SIDE_PX = 145;
 constexpr size_t IMAGE_CARD_MEMORY_HEADROOM_BYTES = 96 * 1024;
 constexpr lv_coord_t IMAGE_CARD_JC4880P443_MODAL_BACK_BUTTON_REF_PX = 58;
 constexpr const char *IMAGE_CARD_LOADING_ICON = "\U000F02E9";
@@ -50,6 +51,7 @@ struct ImageCardCtx {
   bool requested_once = false;
   bool image_ready = false;
   bool download_active = false;
+  bool download_queued = false;
   bool timer_only = false;
   bool modal_fit = false;
   lv_timer_t *modal_cleanup_timer = nullptr;
@@ -69,6 +71,37 @@ struct ImageCardModalUi {
 inline ImageCardCtx *image_card_contexts() {
   static ImageCardCtx contexts[IMAGE_CARD_MAX_CONTEXTS];
   return contexts;
+}
+
+inline void image_card_schedule_source_refresh(ImageCardCtx *ctx, uint32_t delay_ms,
+                                               const char *reason);
+
+inline ImageCardCtx *&image_card_active_download_context() {
+  static ImageCardCtx *ctx = nullptr;
+  return ctx;
+}
+
+inline void image_card_start_next_queued_download(ImageCardCtx *finished_ctx) {
+  ImageCardCtx *contexts = image_card_contexts();
+  for (int i = 0; i < IMAGE_CARD_MAX_CONTEXTS; i++) {
+    ImageCardCtx *next = &contexts[i];
+    if (!next->active || !next->download_queued || next == finished_ctx) continue;
+    next->download_queued = false;
+    image_card_schedule_source_refresh(next, IMAGE_CARD_API_RETRY_INTERVAL_MS,
+                                       "image download queue");
+    return;
+  }
+}
+
+inline void image_card_release_download_slot(ImageCardCtx *ctx, bool start_next = true) {
+  if (!ctx) return;
+  ctx->download_active = false;
+  ctx->download_queued = false;
+  ImageCardCtx *&active = image_card_active_download_context();
+  if (active == ctx) {
+    active = nullptr;
+    if (start_next) image_card_start_next_queued_download(ctx);
+  }
 }
 
 inline ImageCardModalUi &image_card_modal_ui() {
@@ -103,6 +136,8 @@ inline void image_card_align_label(lv_obj_t *label, lv_obj_t *btn,
                                    lv_coord_t x_offset = 0,
                                    lv_coord_t y_offset = 0);
 inline void image_card_align_icon(lv_obj_t *icon, lv_obj_t *btn);
+inline void image_card_tile_decode_size(lv_coord_t target_width, lv_coord_t target_height,
+                                        int *decode_width, int *decode_height);
 inline bool image_card_apply_modal_geometry(
   ImageCardCtx *ctx,
   esphome::artwork_image::ArtworkImage *image,
@@ -162,7 +197,12 @@ inline void image_card_apply_corner_clip(lv_obj_t *obj, lv_coord_t radius) {
 }
 
 inline void image_card_apply_tile_image_align(lv_obj_t *widget) {
+  if (!widget) return;
+#if ESPHOME_VERSION_CODE >= VERSION_CODE(2026, 4, 0)
+  lv_image_set_inner_align(widget, LV_IMAGE_ALIGN_COVER);
+#else
   (void) widget;
+#endif
 }
 
 inline void image_card_sync_tile_corners(lv_obj_t *btn, lv_obj_t *widget) {
@@ -365,9 +405,12 @@ inline bool image_card_memory_available(ImageCardCtx *ctx, const char *stage,
 
 inline void image_card_apply_downloaded(ImageCardCtx *ctx) {
   if (!ctx || !ctx->active || !ctx->widget || !ctx->image) return;
-  if (ctx->image->get_url() != ctx->url) return;
+  if (ctx->image->get_url() != ctx->url) {
+    image_card_release_download_slot(ctx);
+    return;
+  }
   ctx->image_ready = true;
-  ctx->download_active = false;
+  image_card_release_download_slot(ctx);
   ctx->startup_download_errors = 0;
   ctx->next_download_retry_ms = 0;
   image_card_hide_loading(ctx);
@@ -381,7 +424,7 @@ inline void image_card_apply_downloaded(ImageCardCtx *ctx) {
 
 inline void image_card_handle_download_error(ImageCardCtx *ctx) {
   if (!ctx) return;
-  ctx->download_active = false;
+  image_card_release_download_slot(ctx);
   ESP_LOGW("image_card", "Image download failed for %s", ctx->entity_id.c_str());
   uint32_t now = esphome::millis();
   if (!ctx->image_ready && image_card_startup_retry_active(ctx, now) &&
@@ -490,7 +533,7 @@ inline void reset_image_card_pool(const GridConfig &cfg) {
     }
     contexts[i].requested_once = false;
     contexts[i].image_ready = false;
-    contexts[i].download_active = false;
+    image_card_release_download_slot(&contexts[i], false);
     contexts[i].timer_only = false;
     contexts[i].modal_fit = false;
     contexts[i].startup_download_errors = 0;
@@ -546,7 +589,10 @@ inline void image_card_apply_widget_geometry(lv_obj_t *btn, lv_obj_t *widget,
   lv_obj_t *loading = image_card_loading_widget(widget);
   image_card_position_widget(btn, loading);
   image_card_refresh_loading_layout(loading);
-  image->set_target_size(width, height);
+  int target_width = 0;
+  int target_height = 0;
+  image_card_tile_decode_size(width, height, &target_width, &target_height);
+  image->set_target_size(target_width, target_height);
   image->set_resize_mode(esphome::artwork_image::ImageResizeMode::COVER);
 }
 
@@ -648,6 +694,21 @@ inline void image_card_high_quality_request_size(lv_coord_t target_width, lv_coo
     height = std::max(1, height * IMAGE_CARD_MODAL_MAX_TARGET_SIDE_PX / long_side);
   }
   image_card_limit_target_size(width, height, request_width, request_height);
+}
+
+inline void image_card_tile_decode_size(lv_coord_t target_width, lv_coord_t target_height,
+                                        int *decode_width, int *decode_height) {
+  int width = target_width > 0 ? static_cast<int>(target_width) : 1;
+  int height = target_height > 0 ? static_cast<int>(target_height) : 1;
+  if (control_modal_current_is_4848_size()) {
+    int long_side = width > height ? width : height;
+    if (long_side > IMAGE_CARD_4848_TILE_MAX_TARGET_SIDE_PX) {
+      width = std::max(1, width * IMAGE_CARD_4848_TILE_MAX_TARGET_SIDE_PX / long_side);
+      height = std::max(1, height * IMAGE_CARD_4848_TILE_MAX_TARGET_SIDE_PX / long_side);
+    }
+  }
+  if (decode_width) *decode_width = width;
+  if (decode_height) *decode_height = height;
 }
 
 inline void image_card_tile_request_size(lv_coord_t target_width, lv_coord_t target_height,
@@ -1083,7 +1144,18 @@ inline void image_card_request_source_url(ImageCardCtx *ctx) {
              ctx->entity_id.c_str());
     return;
   }
-  if (!image_card_memory_available(ctx, "tile", width, height)) {
+  ImageCardCtx *active_download = image_card_active_download_context();
+  if (active_download && active_download != ctx) {
+    ctx->download_queued = true;
+    ctx->next_download_retry_ms = now + IMAGE_CARD_API_RETRY_INTERVAL_MS;
+    ESP_LOGD("image_card", "Deferring image refresh for %s while %s is downloading",
+             ctx->entity_id.c_str(), active_download->entity_id.c_str());
+    return;
+  }
+  int decode_width = 0;
+  int decode_height = 0;
+  image_card_tile_decode_size(width, height, &decode_width, &decode_height);
+  if (!image_card_memory_available(ctx, "tile", decode_width, decode_height)) {
     ctx->next_download_retry_ms = now + IMAGE_CARD_RETRY_INTERVAL_MS;
     if (!ctx->image_ready) {
       image_card_hide(ctx);
@@ -1093,19 +1165,21 @@ inline void image_card_request_source_url(ImageCardCtx *ctx) {
   }
   int request_width = 0;
   int request_height = 0;
-  image_card_tile_request_size(width, height, &request_width, &request_height);
+  image_card_tile_request_size(decode_width, decode_height, &request_width, &request_height);
   ctx->url = image_card_cache_bust_url(
     image_card_sized_url(ctx->source_url, request_width, request_height));
   ctx->requested_once = true;
   ctx->download_active = true;
+  ctx->download_queued = false;
+  image_card_active_download_context() = ctx;
   ctx->next_download_retry_ms = 0;
   image_card_schedule_next_refresh(ctx, now);
-  ctx->image->set_target_size(width, height);
+  ctx->image->set_target_size(decode_width, decode_height);
   ctx->image->set_resize_mode(resize_mode);
   ESP_LOGI("image_card", "Downloading camera image for %s", ctx->entity_id.c_str());
   int max_source_dim = request_width > request_height ? request_width : request_height;
   std::string effective_url = ctx->image->request_update_url(ctx->url, max_source_dim);
-  if (effective_url.empty()) ctx->download_active = false;
+  if (effective_url.empty()) image_card_release_download_slot(ctx);
   if (!effective_url.empty()) {
     ctx->url = effective_url;
   }
