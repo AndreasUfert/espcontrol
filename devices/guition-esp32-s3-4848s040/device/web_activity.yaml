@@ -43,7 +43,7 @@ script:
       - output.turn_on: gpio_backlight_pwm
       - output.set_level:
           id: gpio_backlight_pwm
-          level: 15%
+          level: 35%
 
   - id: web_settings_activity_timeout
     mode: restart
@@ -56,8 +56,16 @@ script:
     then:
       - lambda: |-
           id(web_settings_active) = true;
-          id(web_settings_was_display_asleep) = id(display_asleep);
+          id(web_settings_was_display_asleep) =
+              id(display_asleep) || id(screen_schedule_asleep) ||
+              id(screensaver_display_off_active) || id(backlight_manual_off);
           id(home_screen_idle_suspended) = true;
+          id(display_asleep) = false;
+          id(screen_schedule_asleep) = false;
+          id(screensaver_display_off_active) = false;
+          id(screensaver_dimmed_active) = false;
+          id(cover_art_screensaver_active) = false;
+          id(backlight_manual_off) = false;
       - script.stop: home_screen_idle_check
       - script.stop: screensaver_sleep_timer
       - script.stop: screensaver_sleep_sensor
@@ -74,21 +82,22 @@ script:
           condition: lvgl.is_paused
           then:
             - lvgl.resume:
+      - delay: 100ms
       - script.execute: hide_clock_view
       - script.execute: hide_cover_art_view
       - lvgl.widget.hide: dim_screensaver_touch_guard
       - lvgl.page.show: web_settings_active_page
       - script.execute: clock_bar_hide
       - lvgl.widget.redraw:
-      - delay: 50ms
+      - delay: 250ms
       - output.turn_on: gpio_backlight_pwm
       - output.set_level:
           id: gpio_backlight_pwm
-          level: 15%
+          level: 35%
       - artwork_image.release: cover_art_downloaded_image
       - output.set_level:
           id: gpio_backlight_pwm
-          level: 15%
+          level: 35%
 
   - id: exit_web_settings_mode
     mode: restart
