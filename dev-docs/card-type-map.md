@@ -15,6 +15,41 @@ All card types also share these core files:
   `components/espcontrol/button_grid_contract_generated.h`, and
   `docs/generated/cards/capabilities.md`
 
+## Public Documentation Map
+
+Keep the public docs matched to the setup-page names users see. When adding or
+changing a card type, update the relevant page and the sidebar in
+`docs/.vitepress/config.mts`.
+
+| Public card page | Covered saved types |
+|---|---|
+| `docs/card-types/index.md` | Human-facing chooser for all visible card groups |
+| `docs/card-types/switches.md` | `(empty)` switch |
+| `docs/card-types/lights.md` | `light_switch`, `light_brightness`, `light_temperature` |
+| `docs/card-types/actions.md` | `action` and action modes |
+| `docs/card-types/option-select.md` | Option-select action path and hidden `option_select` compatibility entry |
+| `docs/card-types/webhooks.md` | `webhook` |
+| `docs/card-types/buttons.md` | `push` |
+| `docs/card-types/sensors.md` | `sensor` |
+| `docs/card-types/doors-windows.md` | `door_window` |
+| `docs/card-types/presence.md` | `presence` |
+| `docs/card-types/sliders.md` | `slider` |
+| `docs/card-types/fans.md` | `fan_switch`, `fan_speed`, `fan_oscillate`, `fan_direction`, `fan_preset` |
+| `docs/card-types/covers.md` | `cover` |
+| `docs/card-types/garage-doors.md` | `garage` |
+| `docs/card-types/locks.md` | `lock` |
+| `docs/card-types/alarms.md` | `alarm`, `alarm_action` |
+| `docs/card-types/calendar.md` | `calendar`, `clock` |
+| `docs/card-types/timezones.md` | `timezone` |
+| `docs/card-types/weather.md` | `weather`, legacy `weather_forecast` behavior |
+| `docs/card-types/weather-forecast.md` | Legacy redirect/explanation for `weather_forecast` |
+| `docs/card-types/cameras.md` | `image` |
+| `docs/card-types/media.md` | `media` |
+| `docs/card-types/climate.md` | `climate` |
+| `docs/card-types/internal-relays.md` | `internal` |
+| `docs/card-types/screen-lock.md` | `screen_lock` |
+| `docs/features/subpages.md` | `subpage` |
+
 ## Check Key
 
 | Key | Command | Use when |
