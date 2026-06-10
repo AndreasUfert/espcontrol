@@ -99,6 +99,9 @@ globals:
   - id: cover_art_accent_b
     type: int
     initial_value: '0'
+  - id: cover_art_manual_wake_ms
+    type: uint32_t
+    initial_value: '0'
 
 esphome:
   on_boot:
@@ -1010,6 +1013,14 @@ script:
       - lvgl.widget.hide: cover_art_screensaver
       - lvgl.widget.hide: cover_art_accent_overlay
       - lvgl.widget.hide: cover_art_track_panel
+      - if:
+          condition:
+            lambda: 'return std::string("${device_slug}") == "guition-esp32-s3-4848s040";'
+          then:
+            - artwork_image.release: cover_art_downloaded_image
+            - lambda: |-
+                id(cover_art_image_available) = false;
+                id(cover_art_loaded_url).clear();
       - script.execute: clock_bar_apply
 
   - id: cover_art_delay_timer
@@ -1018,7 +1029,16 @@ script:
       - delay: !lambda |-
           float seconds = id(cover_art_delay).state;
           if (std::isnan(seconds) || seconds < 0.0f) seconds = 10.0f;
-          return (uint32_t)(seconds * 1000.0f);
+          uint32_t delay_ms = (uint32_t)(seconds * 1000.0f);
+          const uint32_t manual_wake_holdoff_ms = 60000;
+          if (id(cover_art_manual_wake_ms) != 0) {
+            uint32_t elapsed = (uint32_t)(millis() - id(cover_art_manual_wake_ms));
+            if (elapsed < manual_wake_holdoff_ms) {
+              uint32_t remaining = manual_wake_holdoff_ms - elapsed;
+              if (remaining > delay_ms) delay_ms = remaining;
+            }
+          }
+          return delay_ms;
       - if:
           condition:
             lambda: |-
@@ -1531,6 +1551,9 @@ script:
       - globals.set:
           id: cover_art_media_playing
           value: 'false'
+      - globals.set:
+          id: cover_art_manual_wake_ms
+          value: '0'
       - lambda: |-
           id(cover_art_media_position) = 0.0f;
           id(cover_art_position_anchor) = 0.0f;

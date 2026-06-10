@@ -505,6 +505,9 @@ script:
             lambda: 'return id(cover_art_screensaver_active);'
           then:
             - globals.set:
+                id: cover_art_manual_wake_ms
+                value: !lambda 'return millis();'
+            - globals.set:
                 id: screensaver_wake_touch_guard_skip_once
                 value: 'true'
             - globals.set:
