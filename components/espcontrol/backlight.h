@@ -282,7 +282,8 @@ inline bool screen_schedule_in_window(int now_h, int on_hour, int off_hour) {
 
 inline bool screen_schedule_always_on_mode(const std::string &mode) {
   return mode == "Screen Dimmed" || mode == "screen_dimmed" ||
-         mode == "Always On" || mode == "always_on";
+         mode == "Dimmed" || mode == "dimmed" || mode == "dim" ||
+         mode == "Always On" || mode == "always_on" || mode == "always";
 }
 
 inline bool screen_schedule_clock_mode(const std::string &mode) {
@@ -343,7 +344,7 @@ inline bool screensaver_action_clock_mode(const std::string &action) {
 
 inline bool screensaver_action_dimmed_mode(const std::string &action) {
   return action == "Screen Dimmed" || action == "screen_dimmed" ||
-         action == "Dimmed" || action == "dimmed";
+         action == "Dimmed" || action == "dimmed" || action == "dim";
 }
 
 // ── Temperature label visibility ─────────────────────────────────────
