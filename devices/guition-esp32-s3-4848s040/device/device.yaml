@@ -204,7 +204,7 @@ output:
   - platform: ledc
     pin: GPIO38
     id: gpio_backlight_pwm
-    frequency: 20kHz
+    frequency: 100Hz
     min_power: 0.01
     zero_means_zero: true
 
