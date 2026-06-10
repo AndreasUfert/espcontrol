@@ -133,6 +133,7 @@ inline lv_obj_t *image_card_loading_widget(lv_obj_t *widget);
 inline bool image_card_position_widget(lv_obj_t *btn, lv_obj_t *widget,
                                        lv_coord_t *target_width,
                                        lv_coord_t *target_height);
+inline void image_card_move_label_foreground(lv_obj_t *loading_widget);
 inline void image_card_align_label(lv_obj_t *label, lv_obj_t *btn,
                                    lv_coord_t x_offset = 0,
                                    lv_coord_t y_offset = 0);
@@ -283,7 +284,11 @@ inline void image_card_refresh_loading_layout(lv_obj_t *loading_widget) {
     if (width > pad_left + pad_right) {
       lv_obj_set_width(label, width - pad_left - pad_right);
     }
-    lv_obj_align(label, LV_ALIGN_BOTTOM_LEFT, pad_left, -pad_bottom);
+    if (icon) {
+      lv_obj_align_to(label, icon, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 6);
+    } else {
+      lv_obj_align(label, LV_ALIGN_TOP_LEFT, pad_left, pad_top);
+    }
     lv_obj_move_foreground(label);
   }
   lv_obj_update_layout(loading_widget);
@@ -300,6 +305,7 @@ inline void image_card_set_loading_state(lv_obj_t *loading_widget, const char *t
   image_card_refresh_loading_layout(loading_widget);
   lv_obj_clear_flag(loading_widget, LV_OBJ_FLAG_HIDDEN);
   lv_obj_move_foreground(loading_widget);
+  image_card_move_label_foreground(loading_widget);
   lv_obj_invalidate(loading_widget);
 }
 
@@ -757,6 +763,7 @@ inline void setup_image_card(BtnSlot &s) {
   lv_label_set_text(loading_label, espcontrol_i18n("Loading"));
 
   lv_obj_set_user_data(img, loading);
+  lv_obj_set_user_data(loading, s.text_lbl);
   lv_obj_set_user_data(s.sensor_container, img);
   image_card_sync_tile_corners(s.btn, img);
 }
@@ -826,6 +833,17 @@ inline void image_card_align_label_stack(lv_obj_t *label, lv_obj_t *btn) {
   lv_obj_t *shadow = image_card_label_shadow(label, btn);
   if (shadow) image_card_align_label(shadow, btn, 1, 1);
   image_card_align_label(label, btn);
+}
+
+inline void image_card_move_label_foreground(lv_obj_t *loading_widget) {
+  if (!loading_widget) return;
+  lv_obj_t *label = static_cast<lv_obj_t *>(lv_obj_get_user_data(loading_widget));
+  lv_obj_t *btn = lv_obj_get_parent(loading_widget);
+  if (!label || !btn || lv_obj_has_flag(label, LV_OBJ_FLAG_HIDDEN)) return;
+  lv_obj_t *shadow = image_card_label_shadow(label, btn);
+  if (shadow) lv_obj_move_foreground(shadow);
+  lv_obj_move_foreground(label);
+  image_card_align_label_stack(label, btn);
 }
 
 inline void image_card_align_icon(lv_obj_t *icon, lv_obj_t *btn) {
