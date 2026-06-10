@@ -58,7 +58,6 @@ function init() {
   renderPreview();
   renderButtonSettings();
   connectEvents();
-  startWebActivityHeartbeat();
   updateClock();
 
   document.addEventListener("click", hideContextMenu);
@@ -67,10 +66,4 @@ function init() {
   document.addEventListener("keydown", function (e) {
     if (e.key === "Escape") hideContextMenu();
   });
-  document.addEventListener("visibilitychange", function () {
-    if (document.visibilityState === "hidden") stopWebActivityHeartbeat();
-    else startWebActivityHeartbeat();
-  });
-  window.addEventListener("pagehide", stopWebActivityHeartbeat);
-  window.addEventListener("beforeunload", stopWebActivityHeartbeat);
 }

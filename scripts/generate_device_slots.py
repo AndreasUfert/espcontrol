@@ -326,11 +326,6 @@ def package_file_text(device: dict) -> str:
                 "fw_update",
                 f"!include ../../common/addon/firmware_update{firmware_update_suffix}.yaml",
             ),
-            *(
-                [include_line("web_activity", "!include device/web_activity.yaml")]
-                if device["slug"] == "guition-esp32-s3-4848s040"
-                else []
-            ),
             "",
             "  # ---------------------------------------------------------------------------",
             "  # Screens (loading must be first page for LVGL startup)",

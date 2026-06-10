@@ -1,11 +1,6 @@
 // ── POST queue ─────────────────────────────────────────────────────────
 
 var _postQueue = Promise.resolve();
-var WEB_ACTIVITY_S3_DEVICE_ID = "guition-esp32-s3-4848s040";
-var WEB_ACTIVITY_HEARTBEAT_MS = 10000;
-var webActivityTimer = null;
-var webActivityStarted = false;
-var webActivityClosed = false;
 
 function uniquePush(list, value) {
   if (value && list.indexOf(value) === -1) list.push(value);
@@ -15,38 +10,6 @@ function postQuiet(url) {
   return fetch(url, { method: "POST", keepalive: true }).catch(function () {
     return null;
   });
-}
-
-function isS3WebActivityDevice() {
-  return typeof DEVICE_ID === "string" && DEVICE_ID === WEB_ACTIVITY_S3_DEVICE_ID;
-}
-
-function webActivityEndpoint(name) {
-  return "/button/" + encodeURIComponent(name) + "/press";
-}
-
-function sendWebActivityHeartbeat() {
-  if (!isS3WebActivityDevice()) return;
-  webActivityStarted = true;
-  webActivityClosed = false;
-  postQuiet(webActivityEndpoint("Web Settings Heartbeat"));
-}
-
-function startWebActivityHeartbeat() {
-  if (!isS3WebActivityDevice() || webActivityTimer) return;
-  sendWebActivityHeartbeat();
-  webActivityTimer = setInterval(sendWebActivityHeartbeat, WEB_ACTIVITY_HEARTBEAT_MS);
-}
-
-function stopWebActivityHeartbeat() {
-  if (webActivityTimer) {
-    clearInterval(webActivityTimer);
-    webActivityTimer = null;
-  }
-  if (webActivityStarted && !webActivityClosed && isS3WebActivityDevice()) {
-    webActivityClosed = true;
-    postQuiet(webActivityEndpoint("Web Settings Closed"));
-  }
 }
 
 function entityDef(key) {
