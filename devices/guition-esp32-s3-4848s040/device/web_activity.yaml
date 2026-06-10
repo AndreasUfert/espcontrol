@@ -40,7 +40,10 @@ script:
           then:
             - script.execute: enter_web_settings_mode
       - script.execute: web_settings_activity_timeout
-      - script.execute: backlight_force_display_off
+      - output.turn_on: gpio_backlight_pwm
+      - output.set_level:
+          id: gpio_backlight_pwm
+          level: 15%
 
   - id: web_settings_activity_timeout
     mode: restart
@@ -74,10 +77,14 @@ script:
       - script.execute: hide_clock_view
       - script.execute: hide_cover_art_view
       - lvgl.widget.hide: dim_screensaver_touch_guard
-      - lvgl.page.show: screen_off_page
+      - lvgl.page.show: web_settings_active_page
+      - script.execute: clock_bar_hide
       - lvgl.widget.redraw:
       - delay: 50ms
-      - script.execute: backlight_force_display_off
+      - output.turn_on: gpio_backlight_pwm
+      - output.set_level:
+          id: gpio_backlight_pwm
+          level: 15%
       - artwork_image.release: cover_art_downloaded_image
       - artwork_image.release: image_card_download_1
       - artwork_image.release: image_card_download_2
@@ -88,7 +95,9 @@ script:
       - artwork_image.release: image_card_modal_download_3
       - artwork_image.release: image_card_modal_download_4
       - lvgl.pause:
-      - script.execute: backlight_force_display_off
+      - output.set_level:
+          id: gpio_backlight_pwm
+          level: 15%
 
   - id: exit_web_settings_mode
     mode: restart

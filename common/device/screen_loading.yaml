@@ -65,6 +65,37 @@ lvgl:
     - id: screen_off_page
       bg_color: 0x000000
       scrollable: false
+    - id: web_settings_active_page
+      bg_color: 0x000000
+      scrollable: false
+      widgets:
+        - obj:
+            align: center
+            width: $content_width
+            height: SIZE_CONTENT
+            bg_opa: 0%
+            border_width: 0
+            pad_all: 0
+            scrollable: false
+            layout:
+              type: flex
+              flex_flow: COLUMN
+              flex_align_main: center
+              flex_align_cross: center
+              pad_row: 12
+            widgets:
+              - label:
+                  text: "Web settings active"
+                  text_font: $setup_title_font_id
+                  text_color: 0xFFFFFF
+                  width: $content_width
+                  text_align: center
+              - label:
+                  text: "Screen paused while settings are open"
+                  text_font: $setup_body_font_id
+                  text_color: 0xB0B0B0
+                  width: $content_width
+                  text_align: center
 
 esphome:
   on_boot:
