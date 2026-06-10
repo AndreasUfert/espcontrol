@@ -1600,7 +1600,7 @@ assertButtonMigration(hooks, "fan card clears ignored fields", "fan.bedroom;Bedr
 assert.strictEqual(hooks.buttonTypeVisibleInPickerForExperimental("fan_speed", false, false), false, "fan picker hidden without experimental flag");
 assert.strictEqual(hooks.buttonTypeVisibleInPickerForExperimental("fan_speed", true, false), true, "fan picker visible with experimental flag");
 assert.strictEqual(hooks.buttonTypeVisibleInPickerForExperimental("fan_speed", true, true), true, "fan picker visible in subpages with experimental flag");
-assert.strictEqual(hooks.buttonTypeVisibleInPickerForExperimental("image", false, false), false, "image picker hidden without experimental flag");
+assert.strictEqual(hooks.buttonTypeVisibleInPickerForExperimental("image", false, false), true, "image picker visible without experimental flag");
 assert.strictEqual(hooks.buttonTypeVisibleInPickerForExperimental("image", true, false), true, "image picker visible with experimental flag");
 assert.strictEqual(hooks.buttonTypeVisibleInPickerForExperimental("image", true, true), true, "image picker visible in subpages with experimental flag");
 assert.deepStrictEqual(Array.from(hooks.imageModalModeValues()), ["fill", "fit"], "image modal mode values are contract-backed");

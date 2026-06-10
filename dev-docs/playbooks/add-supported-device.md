@@ -39,6 +39,10 @@ python3 scripts/build.py
 python3 scripts/generate_device_slots.py
 ```
 
+Do not edit generated files or generated YAML blocks directly. The
+source-to-generated mapping is in
+[Source of Truth Contract](../source-of-truth.md).
+
 Expected generated files commonly include:
 
 - `docs/public/device-profiles.json`

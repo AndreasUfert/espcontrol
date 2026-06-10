@@ -15,41 +15,6 @@ All card types also share these core files:
   `components/espcontrol/button_grid_contract_generated.h`, and
   `docs/generated/cards/capabilities.md`
 
-## Public Documentation Map
-
-Keep the public docs matched to the setup-page names users see. When adding or
-changing a card type, update the relevant page and the sidebar in
-`docs/.vitepress/config.mts`.
-
-| Public card page | Covered saved types |
-|---|---|
-| `docs/card-types/index.md` | Human-facing chooser for all visible card groups |
-| `docs/card-types/switches.md` | `(empty)` switch |
-| `docs/card-types/lights.md` | `light_switch`, `light_brightness`, `light_temperature` |
-| `docs/card-types/actions.md` | `action` and action modes |
-| `docs/card-types/option-select.md` | Option-select action path and hidden `option_select` compatibility entry |
-| `docs/card-types/webhooks.md` | `webhook` |
-| `docs/card-types/buttons.md` | `push` |
-| `docs/card-types/sensors.md` | `sensor` |
-| `docs/card-types/doors-windows.md` | `door_window` |
-| `docs/card-types/presence.md` | `presence` |
-| `docs/card-types/sliders.md` | `slider` |
-| `docs/card-types/fans.md` | `fan_switch`, `fan_speed`, `fan_oscillate`, `fan_direction`, `fan_preset` |
-| `docs/card-types/covers.md` | `cover` |
-| `docs/card-types/garage-doors.md` | `garage` |
-| `docs/card-types/locks.md` | `lock` |
-| `docs/card-types/alarms.md` | `alarm`, `alarm_action` |
-| `docs/card-types/calendar.md` | `calendar`, `clock` |
-| `docs/card-types/timezones.md` | `timezone` |
-| `docs/card-types/weather.md` | `weather`, legacy `weather_forecast` behavior |
-| `docs/card-types/weather-forecast.md` | Legacy redirect/explanation for `weather_forecast` |
-| `docs/card-types/cameras.md` | `image` |
-| `docs/card-types/media.md` | `media` |
-| `docs/card-types/climate.md` | `climate` |
-| `docs/card-types/internal-relays.md` | `internal` |
-| `docs/card-types/screen-lock.md` | `screen_lock` |
-| `docs/features/subpages.md` | `subpage` |
-
 ## Check Key
 
 | Key | Command | Use when |
@@ -65,52 +30,84 @@ changing a card type, update the relevant page and the sidebar in
 | Backup | `npm run check:backup-contract` | Backup import/export shape changes |
 | Model | `npm run check:model-contract` | Web model contract changes |
 
-## Matrix
+<!-- BEGIN GENERATED CARD TYPE MAP -->
+## Generated Public Documentation Map
 
-| Type | Web file | Firmware header | Stores options | Opens modal | HA subscriptions | Key checks |
-|---|---|---|---|---|---|---|
-| `(empty)` switch | `src/webserver/types/switch.js` | `button_grid_cards.h`, `button_grid_actions.h`, `button_grid_confirm.h` | Yes: large numbers, confirmation, on pattern | Conditional confirmation modal | Entity state, optional sensor, friendly name | Contract, Codec, Parser, HA, Modals |
-| `action` | `src/webserver/types/action.js` | `button_grid_cards.h`, `button_grid_actions.h`, `button_grid_subscriptions.h` | Yes: large numbers, optional display state | No, except option-select action mode | Optional display-state entity | Contract, Codec, Parser, HA |
-| `alarm` | `src/webserver/types/alarm.js` | `button_grid_alarm.h` | Yes: control/action mode, PIN rules, visible actions, display mode | Yes: alarm control and PIN modals | Alarm state, friendly name | Contract, Codec, Parser, HA, Modals |
-| `alarm_action` | `src/webserver/types/alarm.js` | `button_grid_alarm.h` | Yes: inherited alarm PIN options | Yes: PIN modal when required | Alarm state for selected action | Contract, Codec, Parser, HA, Modals |
-| `calendar` | `src/webserver/types/calendar.js` | `button_grid_cards.h` | Yes: date/time mode, large numbers | No | Date sensor source, when configured | Contract, Codec, Parser, HA |
-| `clock` | `src/webserver/types/clock.js` | `button_grid_cards.h` | Yes: date/time mode, large numbers | No | None; local display time | Contract, Codec, Parser |
-| `timezone` | `src/webserver/types/timezone.js` | `button_grid_cards.h` | Yes: date/time mode, large numbers | No | None; local timezone rendering | Contract, Codec, Parser |
-| `climate` | `src/webserver/types/climate.js` | `button_grid_climate.h` | Yes: label display, number display, large numbers | Yes: climate control modal | Climate state and friendly name | Contract, Codec, Parser, HA, Modals |
-| `cover` | `src/webserver/types/slider.js` | `button_grid_sliders.h`, `button_grid_actions.h` | Yes: mode and position | No | Cover state, friendly name, availability for command cards | Contract, Codec, Parser, HA, Runtime |
-| `door_window` | `src/webserver/types/door_window.js` | `button_grid_cards.h`, `button_grid_subscriptions.h` | Yes: active color | No | Sensor state and friendly name | Contract, Codec, Parser, HA |
-| `presence` | `src/webserver/types/presence.js` | `button_grid_cards.h`, `button_grid_subscriptions.h` | Yes: active color | No | Sensor state and friendly name | Contract, Codec, Parser, HA |
-| `fan_speed` | `src/webserver/types/fan.js` | `button_grid_sliders.h` | No | No | Fan state, friendly name | Contract, Codec, Parser, HA, Runtime |
-| `fan_switch` | `src/webserver/types/fan.js` | `button_grid_fan.h` | No | No | Fan state | Contract, Codec, Parser, HA, Runtime |
-| `fan_oscillate` | `src/webserver/types/fan.js` | `button_grid_fan.h` | No | No | Fan state | Contract, Codec, Parser, HA, Runtime |
-| `fan_direction` | `src/webserver/types/fan.js` | `button_grid_fan.h` | No | No | Fan state | Contract, Codec, Parser, HA, Runtime |
-| `fan_preset` | `src/webserver/types/fan.js` | `button_grid_fan.h` | No | Yes: preset picker modal | Fan state and preset modes | Contract, Codec, Parser, HA, Modals, Runtime |
-| `garage` | `src/webserver/types/garage.js` | `button_grid_cards.h`, `button_grid_actions.h` | Yes: command mode, label display | No | Cover state, friendly name, availability for command cards | Contract, Codec, Parser, HA, Runtime |
-| `internal` | `src/webserver/types/internal.js` | `button_grid_cards.h`, `button_grid_actions.h` | Yes: switch or push mode | No | None; local relay watcher | Contract, Codec, Parser |
-| `light_brightness` | `src/webserver/types/slider.js` | `button_grid_sliders.h` | No | No | Light state, friendly name | Contract, Codec, Parser, HA |
-| `light_switch` | `src/webserver/types/switch.js` | `button_grid_cards.h`, `button_grid_actions.h` | No | No | Light state, friendly name | Contract, Codec, Parser, HA |
-| `light_temperature` | `src/webserver/types/light_temperature.js` | `button_grid_sliders.h` | No | No | Light color-temperature state, friendly name | Contract, Codec, Parser, HA |
-| `lock` | `src/webserver/types/lock.js` | `button_grid_cards.h`, `button_grid_actions.h`, `button_grid_subscriptions.h` | Yes: command mode | No | Lock state, friendly name, availability for command cards | Contract, Codec, Parser, HA, Runtime |
-| `media` | `src/webserver/types/media.js` | `button_grid_media.h`, `button_grid_sliders.h`, `button_grid_actions.h` | Yes: mode, display options, volume max, large numbers | Yes for volume mode | Media state, attributes, friendly name | Contract, Codec, Parser, HA, Modals, Runtime |
-| `option_select` | `src/webserver/types/action.js` | `button_grid_option_select.h` | No | Yes: option list modal | Select state, options, friendly name | Contract, Codec, Parser, HA, Modals |
-| `push` | `src/webserver/types/push.js` | `button_grid_cards.h`, `button_grid_actions.h` | No | No | Sends HA action; no state subscription | Contract, Codec, Parser, HA |
-| `screen_lock` | `src/webserver/types/screen_lock.js` | `button_grid_cards.h`, `button_grid_config.h` | No | No | None; local screen-lock registry | Contract, Codec, Parser |
-| `webhook` | `src/webserver/types/webhook.js` | `button_grid_actions.h` | Yes: URL, method, headers | No | None; direct HTTP action | Contract, Codec, Parser |
-| `sensor` | `src/webserver/types/sensor.js` | `button_grid_cards.h`, `button_grid_subscriptions.h` | Yes: large numbers, active color, text state labels | No | Sensor state and friendly name | Contract, Codec, Parser, HA |
-| `slider` | `src/webserver/types/slider.js` | `button_grid_sliders.h` | No | No | Light or fan state, friendly name | Contract, Codec, Parser, HA |
-| `subpage` | `src/webserver/types/subpage.js` | `button_grid_subpages.h`, `button_grid_grid.h` | Yes: kind, parent state, large numbers | No; navigates to subpage | Optional parent entity/sensor state and child indicators | Contract, Codec, Parser, HA |
-| `weather` | `src/webserver/types/weather.js` | `button_grid_cards.h`, `button_grid_subscriptions.h` | Yes: current/forecast mode, large numbers | No | Current weather state or forecast request | Contract, Codec, Parser, HA |
-| `image` | `src/webserver/types/image.js` | `button_grid_image.h` | Yes: label, icon, modal fit, refresh options | Yes: image modal | Camera/image state and source URL handling | Contract, Codec, Parser, HA, Modals |
-| `weather_forecast` | `src/webserver/types/weather_forecast.js` | `button_grid_cards.h` | No; legacy precision drives day | No | Weather forecast request | Contract, Codec, Parser, HA |
-| `todo` | No current web type; firmware-only/disabled path | `button_grid_todo.h` | Yes: count display, large numbers | Yes: todo list modal | Todo state plus `todo.get_items` response callback | Parser, HA, Modals |
+This table is generated by `python3 scripts/check_dev_docs.py --update` from `common/config/card_contract.json` and the public documentation mapping in that script.
 
-## Staleness Notes
+| Public card page | Covered saved type |
+| --- | --- |
+| [switches.md](../docs/card-types/switches.md) | `(empty)` |
+| [actions.md](../docs/card-types/actions.md) | `action` |
+| [alarms.md](../docs/card-types/alarms.md) | `alarm` |
+| [alarms.md](../docs/card-types/alarms.md) | `alarm_action` |
+| [calendar.md](../docs/card-types/calendar.md) | `calendar` |
+| [calendar.md](../docs/card-types/calendar.md) | `clock` |
+| [climate.md](../docs/card-types/climate.md) | `climate` |
+| [covers.md](../docs/card-types/covers.md) | `cover` |
+| [doors-windows.md](../docs/card-types/doors-windows.md) | `door_window` |
+| [presence.md](../docs/card-types/presence.md) | `presence` |
+| [fans.md](../docs/card-types/fans.md) | `fan_direction` |
+| [fans.md](../docs/card-types/fans.md) | `fan_oscillate` |
+| [fans.md](../docs/card-types/fans.md) | `fan_preset` |
+| [fans.md](../docs/card-types/fans.md) | `fan_speed` |
+| [fans.md](../docs/card-types/fans.md) | `fan_switch` |
+| [garage-doors.md](../docs/card-types/garage-doors.md) | `garage` |
+| [internal-relays.md](../docs/card-types/internal-relays.md) | `internal` |
+| [lights.md](../docs/card-types/lights.md) | `light_brightness` |
+| [lights.md](../docs/card-types/lights.md) | `light_switch` |
+| [lights.md](../docs/card-types/lights.md) | `light_temperature` |
+| [locks.md](../docs/card-types/locks.md) | `lock` |
+| [media.md](../docs/card-types/media.md) | `media` |
+| [option-select.md](../docs/card-types/option-select.md) | `option_select` |
+| [buttons.md](../docs/card-types/buttons.md) | `push` |
+| [screen-lock.md](../docs/card-types/screen-lock.md) | `screen_lock` |
+| [webhooks.md](../docs/card-types/webhooks.md) | `webhook` |
+| [sensors.md](../docs/card-types/sensors.md) | `sensor` |
+| [sliders.md](../docs/card-types/sliders.md) | `slider` |
+| [subpages.md](../docs/features/subpages.md) | `subpage` |
+| [timezones.md](../docs/card-types/timezones.md) | `timezone` |
+| [weather.md](../docs/card-types/weather.md) | `weather` |
+| [cameras.md](../docs/card-types/cameras.md) | `image` |
+| [weather-forecast.md](../docs/card-types/weather-forecast.md) | `weather_forecast` |
 
-- This file is intentionally manual for now. If it starts drifting, generate the
-  type, web file, and contract-backed columns from `common/config/card_contract.json`
-  plus `registerButtonType(...)` calls.
-- Rows with hidden or compatibility behavior still matter because old saved
-  config can reach the firmware parser.
-- The `Stores options` column means options are preserved somewhere in saved
-  config, not necessarily that the card has explicit `options` metadata in the
-  contract.
+## Generated Matrix
+
+This table is generated from the card contract, `registerButtonType(...)` calls in `src/webserver/types/`, and matching firmware header references under `components/espcontrol/`.
+
+| Type | Label | Web file | Firmware references | Entity domains | Subpages | Options | Status | Key checks |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| `(empty)` | Switch | `src/webserver/types/switch.js` | `components/espcontrol/button_grid_config.h`, `components/espcontrol/button_grid_subpages.h` | `light`, `switch`, `input_boolean`, `fan` | Yes | Large Active Display Numbers; Confirmation Required: default, off, on, both; On State Pattern: default, stripes; Message; Confirm Button; Cancel Button | Visible | Contract, Codec, Parser, HA, Backup |
+| `action` | Action | `src/webserver/types/action.js` | `components/espcontrol/button_grid_actions.h`, `components/espcontrol/button_grid_config.h`, `components/espcontrol/button_grid_grid.h`, `components/espcontrol/button_grid_subpages.h` | `scene`, `script`, `automation`, `button`, `vacuum`, `input_button`, `input_boolean`, `input_number`, `input_select`, `select` | Yes | Large State Numbers | Visible | Contract, Codec, Parser, HA, Backup |
+| `alarm` | Alarm | `src/webserver/types/alarm.js` | `components/espcontrol/button_grid_actions.h`, `components/espcontrol/button_grid_config.h`, `components/espcontrol/button_grid_grid.h`, `components/espcontrol/button_grid_subpages.h` | `alarm_control_panel` | Yes | Type: control_panel, away, home, disarm; PIN required for arming; PIN required for disarming; Visible Actions: away, home, disarm; Icon Display: static, status; Label Display: name, status | Visible | Contract, Codec, Parser, HA, Modals, Backup |
+| `alarm_action` | Alarm | `src/webserver/types/alarm.js` | `components/espcontrol/button_grid_actions.h`, `components/espcontrol/button_grid_config.h`, `components/espcontrol/button_grid_grid.h`, `components/espcontrol/button_grid_subpages.h` | `alarm_control_panel` | Yes | None | Visible | Contract, Codec, Parser, HA, Modals |
+| `calendar` | Date & Time | `src/webserver/types/calendar.js` | `components/espcontrol/button_grid_actions.h`, `components/espcontrol/button_grid_cards.h`, `components/espcontrol/button_grid_grid.h` | `sensor` | Yes | Type: clock, datetime, default, timezone; Large Clock | Visible | Contract, Codec, Parser, HA, Backup |
+| `clock` | Date & Time | `src/webserver/types/clock.js` | `components/espcontrol/button_grid_actions.h`, `components/espcontrol/button_grid_grid.h` | None | Yes | Type: clock, datetime, default, timezone; Large Clock | Visible | Contract, Codec, Parser, Backup |
+| `climate` | Climate | `src/webserver/types/climate.js` | `components/espcontrol/button_grid_actions.h`, `components/espcontrol/button_grid_config.h`, `components/espcontrol/button_grid_grid.h`, `components/espcontrol/button_grid_subpages.h` | `climate` | Yes | Label Display: label, status, actual, target; Icon & Temperatures: icon, actual, target; Large Temperature Numbers | Visible | Contract, Codec, Parser, HA, Modals, Backup |
+| `cover` | Cover | `src/webserver/types/slider.js` | `components/espcontrol/button_grid_actions.h`, `components/espcontrol/button_grid_grid.h`, `components/espcontrol/button_grid_sliders.h` | `cover` | Yes | Type: default, tilt, toggle, open, close, stop, set_position; Position | Visible | Contract, Codec, Parser, HA, Backup |
+| `door_window` | Doors & Windows | `src/webserver/types/door_window.js` | `components/espcontrol/button_grid_actions.h`, `components/espcontrol/button_grid_config.h`, `components/espcontrol/button_grid_grid.h`, `components/espcontrol/button_grid_subpages.h` | `binary_sensor`, `sensor` | Yes | None | Visible | Contract, Codec, Parser, HA |
+| `presence` | Presence | `src/webserver/types/presence.js` | `components/espcontrol/button_grid_actions.h`, `components/espcontrol/button_grid_config.h`, `components/espcontrol/button_grid_grid.h`, `components/espcontrol/button_grid_subpages.h` | `binary_sensor`, `sensor`, `text_sensor` | Yes | None | Visible | Contract, Codec, Parser, HA |
+| `fan_direction` | Fans | `src/webserver/types/fan.js` | `components/espcontrol/button_grid_fan.h` | `fan` | Yes | None | Experimental | Contract, Codec, Parser, HA |
+| `fan_oscillate` | Fans | `src/webserver/types/fan.js` | `components/espcontrol/button_grid_fan.h` | `fan` | Yes | None | Experimental | Contract, Codec, Parser, HA |
+| `fan_preset` | Fans | `src/webserver/types/fan.js` | `components/espcontrol/button_grid_fan.h` | `fan` | Yes | None | Experimental | Contract, Codec, Parser, HA |
+| `fan_speed` | Fans | `src/webserver/types/fan.js` | No direct match | `fan` | Yes | None | Experimental | Contract, Codec, Parser, HA |
+| `fan_switch` | Fans | `src/webserver/types/fan.js` | `components/espcontrol/button_grid_config.h`, `components/espcontrol/button_grid_fan.h`, `components/espcontrol/button_grid_subpages.h` | `fan` | Yes | None | Experimental | Contract, Codec, Parser, HA |
+| `garage` | Garage Door | `src/webserver/types/garage.js` | `components/espcontrol/button_grid_actions.h`, `components/espcontrol/button_grid_config.h`, `components/espcontrol/button_grid_grid.h`, `components/espcontrol/button_grid_subpages.h` | `cover` | Yes | Interaction: default, open, close; Display: label, status | Visible | Contract, Codec, Parser, HA, Backup |
+| `internal` | Internal Switches | `src/webserver/types/internal.js` | `components/espcontrol/button_grid_actions.h`, `components/espcontrol/button_grid_grid.h` | None | Yes | Mode: switch, push | Visible | Contract, Codec, Parser, Backup |
+| `light_brightness` | Lights | `src/webserver/types/slider.js` | No direct match | `light` | Yes | None | Visible | Contract, Codec, Parser, HA |
+| `light_switch` | Lights | `src/webserver/types/switch.js` | `components/espcontrol/button_grid_config.h`, `components/espcontrol/button_grid_subpages.h` | `light` | Yes | None | Visible | Contract, Codec, Parser, HA |
+| `light_temperature` | Lights | `src/webserver/types/light_temperature.js` | `components/espcontrol/button_grid_actions.h`, `components/espcontrol/button_grid_grid.h` | `light` | Yes | None | Visible | Contract, Codec, Parser, HA |
+| `lock` | Lock | `src/webserver/types/lock.js` | `components/espcontrol/button_grid_actions.h`, `components/espcontrol/button_grid_config.h`, `components/espcontrol/button_grid_grid.h` | `lock` | Yes | Type: default, lock, unlock | Visible | Contract, Codec, Parser, HA, Backup |
+| `media` | Media | `src/webserver/types/media.js` | `components/espcontrol/button_grid_actions.h`, `components/espcontrol/button_grid_config.h`, `components/espcontrol/button_grid_grid.h`, `components/espcontrol/button_grid_subpages.h` | `media_player` | Yes | Type: play_pause, previous, next, volume, position, now_playing; Type: default, state; Controls: default, progress, play_pause; Maximum Volume; Large Media Numbers | Visible | Contract, Codec, Parser, HA, Modals, Backup |
+| `option_select` | Option Select | No current web type | `components/espcontrol/button_grid_config.h`, `components/espcontrol/button_grid_grid.h`, `components/espcontrol/button_grid_subpages.h` | `select`, `input_select` | Yes | None | Hidden | Contract, Codec, Parser, HA, Modals |
+| `push` | Trigger | `src/webserver/types/push.js` | `components/espcontrol/button_grid_actions.h`, `components/espcontrol/button_grid_card_runtime.h`, `components/espcontrol/button_grid_cards.h`, `components/espcontrol/button_grid_grid.h` | None | Yes | None | Visible | Contract, Codec, Parser, HA |
+| `screen_lock` | Screen Lock | `src/webserver/types/screen_lock.js` | `components/espcontrol/button_grid_actions.h`, `components/espcontrol/button_grid_config.h`, `components/espcontrol/button_grid_grid.h` | None | Yes | None | Visible | Contract, Codec, Parser |
+| `webhook` | Webhook | `src/webserver/types/webhook.js` | `components/espcontrol/button_grid_actions.h`, `components/espcontrol/button_grid_config.h`, `components/espcontrol/button_grid_grid.h`, `components/espcontrol/button_grid_subpages.h` | None | Yes | Headers | Visible | Contract, Codec, Parser, HA, Backup |
+| `sensor` | Sensor | `src/webserver/types/sensor.js` | `components/espcontrol/button_grid_actions.h`, `components/espcontrol/button_grid_config.h`, `components/espcontrol/button_grid_grid.h`, `components/espcontrol/button_grid_subpages.h` | `sensor`, `binary_sensor`, `text_sensor` | Yes | Large Sensor Numbers; Active Color; Status Translation; Input Status; Display Text; Input Status 2; Display Text 2 | Visible | Contract, Codec, Parser, HA, Backup |
+| `slider` | Slider | `src/webserver/types/slider.js` | `components/espcontrol/button_grid_sliders.h` | `light`, `fan` | Yes | None | Visible | Contract, Codec, Parser, HA |
+| `subpage` | Subpage | `src/webserver/types/subpage.js` | `components/espcontrol/button_grid_actions.h`, `components/espcontrol/button_grid_cards.h`, `components/espcontrol/button_grid_config.h`, `components/espcontrol/button_grid_grid.h`, `components/espcontrol/button_grid_subpages.h` | None | No | Subpage Type: default, lights, climate, presence, media; Large State Numbers | Visible | Contract, Codec, Parser, Backup |
+| `timezone` | Date & Time | `src/webserver/types/timezone.js` | `components/espcontrol/button_grid_actions.h`, `components/espcontrol/button_grid_cards.h`, `components/espcontrol/button_grid_grid.h` | None | Yes | Type: clock, datetime, default, timezone; Large Clock | Visible | Contract, Codec, Parser, Backup |
+| `weather` | Weather | `src/webserver/types/weather.js` | `components/espcontrol/button_grid_cards.h`, `components/espcontrol/button_grid_config.h`, `components/espcontrol/button_grid_grid.h`, `components/espcontrol/button_grid_subpages.h`, `components/espcontrol/button_grid_subscriptions.h` | `weather` | Yes | Type: default, today, tomorrow; Large Temperature Numbers | Visible | Contract, Codec, Parser, HA, Backup |
+| `image` | Camera Card | `src/webserver/types/image.js` | `components/espcontrol/button_grid_actions.h`, `components/espcontrol/button_grid_config.h`, `components/espcontrol/button_grid_grid.h`, `components/espcontrol/button_grid_image.h`, `components/espcontrol/button_grid_subpages.h` | `camera`, `image` | Yes | Show Label; Show Icon; Expanded Image: fill, fit | Visible | Contract, Codec, Parser, HA, Modals, Backup |
+| `weather_forecast` | Weather Forecast | `src/webserver/types/weather_forecast.js` | `components/espcontrol/button_grid_actions.h`, `components/espcontrol/button_grid_cards.h`, `components/espcontrol/button_grid_config.h`, `components/espcontrol/button_grid_grid.h`, `components/espcontrol/button_grid_subpages.h` | `weather` | Yes | None | Hidden | Contract, Codec, Parser, HA |
+<!-- END GENERATED CARD TYPE MAP -->

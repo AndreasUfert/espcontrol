@@ -27,9 +27,23 @@ Common starting commands:
 ```bash
 python3 scripts/build.py            # run generators
 python3 scripts/build.py --check    # confirm generated output is current
+npm run check:dev-docs              # confirm internal docs tables and links
 npm run check:product               # product-level safety net
 npm run check:fast                  # broader pre-commit check
 ```
+
+## Most Common Tasks
+
+| If you need to... | Start here |
+|---|---|
+| Choose the right path for a broad request | [Task Router](task-router.md) |
+| Add or change a card | [Add or Change a Card Type](playbooks/add-card-type.md) and [Card Type Map](card-type-map.md) |
+| Change saved settings, backups, or compact config strings | [Change Saved Config](playbooks/change-saved-config.md) and [Compatibility Contract](compatibility-contract.md) |
+| Add or change supported hardware | [Add or Change a Supported Device](playbooks/add-supported-device.md) |
+| Change icons, glyphs, or firmware font roles | [Change Fonts or Icons](playbooks/change-fonts-or-icons.md) and [Font Guidelines](font-guidelines.md) |
+| Work out which check to run | [Check Matrix](check-matrix.md) |
+| Diagnose a broken behavior | [Failure Cookbook](failure-cookbook.md) |
+| Understand why the repo is shaped this way | [Architecture Decision Records](adr/README.md) |
 
 ## Fast Orientation
 
@@ -67,13 +81,21 @@ start in the contract and flow outward from there.
   current.
 - [Working Tree Rules](working-tree-rules.md) - how to handle dirty worktrees,
   unrelated local changes, staging, commits, and pushes.
+- [Task Router](task-router.md) - decision trees for common broad requests.
 - [Architecture](architecture.md) - how firmware, the web setup page, generated
   files, and device profiles fit together.
+- [Compatibility Contract](compatibility-contract.md) - what must keep working
+  across upgrades and releases.
+- [Failure Cookbook](failure-cookbook.md) - first files and checks for common
+  breakages.
 - [Change Workflows](change-workflows.md) - common edits and the files/checks
   they usually require.
 - [Task Playbooks](playbooks/README.md) - short, checklist-driven recipes for
   common changes with edit-first paths, generated-file expectations, and stop
   rules.
+- [Check Matrix](check-matrix.md) - generated path-to-check routing table.
+- [Architecture Decision Records](adr/README.md) - accepted structural decisions
+  that should not be undone casually.
 - [Card Contract](card-contract.md) - how card metadata moves from JSON into the
   web UI and firmware.
 - [Card Type Map](card-type-map.md) - per-card starting points for web files,
@@ -106,6 +128,9 @@ intentional decision to publish it.
 
 - Prefer source files over generated files. If a file says it is generated, find
   the generator and update its input.
+- Generated tables in this folder are updated with
+  `python3 scripts/check_dev_docs.py --update`; verify them with
+  `npm run check:dev-docs`.
 - After changing contract, device, entity, icon, or model inputs, run the
   relevant generator and commit the regenerated output.
 - Keep developer notes factual and repo-specific. Do not duplicate user-facing

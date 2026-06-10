@@ -1,5 +1,9 @@
 # Checks and Releases
 
+Use the generated [Check Matrix](check-matrix.md) first when you are choosing
+checks from changed paths. This page explains the broader release-facing checks
+and when to raise confidence beyond the minimum route.
+
 Use the smallest check that covers the change while developing, then run the
 broader checks before merging or publishing.
 

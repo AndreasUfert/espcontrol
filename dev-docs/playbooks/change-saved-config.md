@@ -37,6 +37,10 @@ Run this when the change also touches contract, model, web, or generated inputs:
 python3 scripts/build.py
 ```
 
+Do not edit generated model, contract, or web bundle outputs directly. The
+source-to-generated mapping is in
+[Source of Truth Contract](../source-of-truth.md).
+
 Expected generated files depend on the source touched. Common examples include:
 
 - `src/webserver/modules/model_generated.js`

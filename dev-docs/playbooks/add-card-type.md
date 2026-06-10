@@ -42,6 +42,9 @@ and firmware behavior show the real shape of the change.
 python3 scripts/build.py
 ```
 
+Do not edit generated files directly. The source-to-generated mapping is in
+[Source of Truth Contract](../source-of-truth.md).
+
 Expected generated files commonly include:
 
 - `src/webserver/modules/card_contract_generated.js`

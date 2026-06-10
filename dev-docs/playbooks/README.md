@@ -19,3 +19,6 @@ unexpected files change.
 - Stop and inspect before keeping unrelated generated output.
 - Ask before removing saved-config compatibility, changing public device
   support, or adding a new firmware font role.
+- Do not edit generated files or generated sections directly. Use
+  [Source of Truth Contract](../source-of-truth.md) to find the source file and
+  generator.

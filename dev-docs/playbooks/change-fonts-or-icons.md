@@ -44,6 +44,10 @@ For font roles or slot/profile data:
 python3 scripts/generate_device_slots.py
 ```
 
+Do not edit generated font, icon, or device-slot outputs directly. The
+source-to-generated mapping is in
+[Source of Truth Contract](../source-of-truth.md).
+
 Expected generated files commonly include:
 
 - generated icon outputs from `scripts/build.py icons`
