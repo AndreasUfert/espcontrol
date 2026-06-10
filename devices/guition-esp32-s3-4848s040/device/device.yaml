@@ -320,6 +320,18 @@ button:
       then:
         - script.execute: relay_3_push
 
+  - platform: template
+    name: Backlight Sweep Test
+    internal: true
+    disabled_by_default: true
+    entity_category: diagnostic
+    icon: mdi:brightness-percent
+    web_server:
+      sorting_group_id: sg_brightness
+    on_press:
+      then:
+        - script.execute: s3_backlight_sweep_test
+
 # ---------------------------------------------------------------------------
 # SPI bus (used by MIPI RGB driver for ST7701S init sequence)
 # ---------------------------------------------------------------------------
@@ -403,6 +415,36 @@ script:
       - switch.turn_on: relay_3
       - delay: 200ms
       - switch.turn_off: relay_3
+
+  - id: s3_backlight_sweep_test
+    mode: restart
+    then:
+      - script.execute: screensaver_wake
+      - script.wait: screensaver_wake
+      - light.turn_on:
+          id: display_backlight
+          brightness: 100%
+          transition_length: 0s
+      - delay: 3s
+      - light.turn_on:
+          id: display_backlight
+          brightness: 60%
+          transition_length: 0s
+      - delay: 3s
+      - light.turn_on:
+          id: display_backlight
+          brightness: 30%
+          transition_length: 0s
+      - delay: 3s
+      - light.turn_on:
+          id: display_backlight
+          brightness: 10%
+          transition_length: 0s
+      - delay: 3s
+      - light.turn_on:
+          id: display_backlight
+          brightness: 100%
+          transition_length: 0s
 
   - id: apply_screen_rotation
     then:
