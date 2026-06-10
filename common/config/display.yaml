@@ -138,8 +138,12 @@ switch:
       sorting_group_id: sg_display
     on_turn_on:
       - script.execute: clock_bar_apply
+      - delay: 50ms
+      - script.execute: refresh_button_grid
     on_turn_off:
       - script.execute: clock_bar_apply
+      - delay: 50ms
+      - script.execute: refresh_button_grid
 
   - platform: template
     name: "${entity_screen_network_status_icon}"
