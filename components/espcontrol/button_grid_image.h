@@ -12,6 +12,7 @@
 constexpr uint32_t IMAGE_CARD_STARTUP_RETRY_MS = 45000;
 constexpr uint32_t IMAGE_CARD_RETRY_INTERVAL_MS = 2000;
 constexpr uint32_t IMAGE_CARD_API_RETRY_INTERVAL_MS = 250;
+constexpr uint32_t IMAGE_CARD_MIN_REPEAT_REFRESH_MS = 30000;
 constexpr uint32_t IMAGE_CARD_MODAL_REFRESH_DELAY_MS = 1000;
 constexpr uint32_t IMAGE_CARD_MODAL_REQUEST_DELAY_MS = 100;
 constexpr uint32_t IMAGE_CARD_MODAL_CLEANUP_DELAY_MS = 100;
@@ -44,6 +45,7 @@ struct ImageCardCtx {
   uint32_t retry_deadline_ms = 0;
   uint32_t next_picture_retry_ms = 0;
   uint32_t next_download_retry_ms = 0;
+  uint32_t last_download_completed_ms = 0;
   int width_compensation_percent = 100;
   bool active = false;
   bool callbacks_bound = false;
@@ -411,6 +413,7 @@ inline void image_card_apply_downloaded(ImageCardCtx *ctx) {
   }
   ctx->image_ready = true;
   image_card_release_download_slot(ctx);
+  ctx->last_download_completed_ms = esphome::millis();
   ctx->startup_download_errors = 0;
   ctx->next_download_retry_ms = 0;
   image_card_hide_loading(ctx);
@@ -526,6 +529,7 @@ inline void reset_image_card_pool(const GridConfig &cfg) {
     contexts[i].retry_deadline_ms = 0;
     contexts[i].next_picture_retry_ms = 0;
     contexts[i].next_download_retry_ms = 0;
+    contexts[i].last_download_completed_ms = 0;
     contexts[i].width_compensation_percent = 100;
     if (contexts[i].modal_cleanup_timer) {
       lv_timer_del(contexts[i].modal_cleanup_timer);
@@ -1426,6 +1430,12 @@ inline void image_card_handle_picture(ImageCardCtx *ctx, esphome::StringRef pict
     return;
   }
   ctx->next_picture_retry_ms = 0;
+  uint32_t now = esphome::millis();
+  if (ctx->image_ready && ctx->source_url == url && ctx->last_download_completed_ms != 0 &&
+      (uint32_t)(now - ctx->last_download_completed_ms) < IMAGE_CARD_MIN_REPEAT_REFRESH_MS) {
+    ESP_LOGD("image_card", "Skipping recent image refresh for %s", ctx->entity_id.c_str());
+    return;
+  }
   ctx->source_url = url;
   if (image_card_modal_active_for(ctx)) {
     image_card_queue_modal_source_request(ctx);
